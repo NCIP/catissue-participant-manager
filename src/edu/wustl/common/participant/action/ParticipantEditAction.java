@@ -79,7 +79,8 @@ public class ParticipantEditAction extends CommonAddEditAction
 				}
 				else
 				{
-					forward = mapping.findForward(edu.wustl.common.util.global.Constants.SUCCESS);
+					forward = super.execute(mapping, (AbstractActionForm) participantForm, request,
+							response);
 				}
 			}
 			else

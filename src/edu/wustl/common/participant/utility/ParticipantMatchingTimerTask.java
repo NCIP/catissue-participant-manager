@@ -11,9 +11,17 @@ import edu.wustl.dao.daofactory.DAOConfigFactory;
 import edu.wustl.dao.daofactory.IDAOFactory;
 import edu.wustl.dao.exception.DAOException;
 
+/**
+ * @author geeta_jaggal.
+ * The Class ParticipantMatchingTimerTask :Used to perform the CIDER participants match
+ * asynchronously.
+ */
 public class ParticipantMatchingTimerTask extends TimerTask
 {
 
+	/* (non-Javadoc)
+	 * @see java.util.TimerTask#run()
+	 */
 	public void run()
 	{
 		try
@@ -27,6 +35,11 @@ public class ParticipantMatchingTimerTask extends TimerTask
 		}
 	}
 
+	/**
+	 * Per form participant match.
+	 *
+	 * @throws Exception the exception
+	 */
 	private void perFormParticipantMatch() throws Exception
 	{
 		List participantIdList = fetchSearchParticipantIds();
@@ -37,6 +50,13 @@ public class ParticipantMatchingTimerTask extends TimerTask
 		}
 	}
 
+	/**
+	 * Fetch search participant ids.
+	 *
+	 * @return the list
+	 *
+	 * @throws DAOException the DAO exception
+	 */
 	private List fetchSearchParticipantIds() throws DAOException
 	{
 		String appName = CommonServiceLocator.getInstance().getAppName();

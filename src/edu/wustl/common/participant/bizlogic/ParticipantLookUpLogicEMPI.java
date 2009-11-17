@@ -95,6 +95,8 @@ public class ParticipantLookUpLogicEMPI implements LookupLogic
 		maxNoOfPatients = Integer.valueOf(XMLPropertyHandler.getValue("empi.MaxNoOfPatients"))
 				.intValue();
 		List participantsEMPI;
+		String lastName=null;
+		String firstName=null;
 		try
 		{
 			PatientInfoLookUpService lookUpEMPI = new PatientInfoLookUpService();
@@ -108,6 +110,10 @@ public class ParticipantLookUpLogicEMPI implements LookupLogic
 				{
 					PatientInformation empiPatientInformation = (PatientInformation) participantsEMPI
 							.get(i);
+					lastName =empiPatientInformation.getLastName();
+					firstName=empiPatientInformation.getFirstName();
+					empiPatientInformation.setLastName(lastName.toLowerCase());
+					empiPatientInformation.setFirstName(firstName.toLowerCase());
 					empiPatientInformation.setActivityStatus("Active");
 					empiPatientInformation.setVitalStatus("");
 					empiPatientInformation.setIsFromEMPI("YES");
@@ -122,6 +128,7 @@ public class ParticipantLookUpLogicEMPI implements LookupLogic
 					{
 						empiPatientInformation.setSsn("");
 					}
+
 					empiPatientInformation.setId(new Long(0 - i));
 					matchingParticipantsList.add(empiPatientInformation);
 				}
