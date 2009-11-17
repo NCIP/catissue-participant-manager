@@ -1,3 +1,4 @@
+
 package edu.wustl.common.participant.action;
 
 import java.util.ArrayList;
@@ -8,7 +9,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
@@ -18,83 +18,111 @@ import org.apache.struts.action.ActionMessages;
 import edu.wustl.common.beans.SessionDataBean;
 import edu.wustl.common.exception.ApplicationException;
 import edu.wustl.common.participant.bizlogic.ParticipantMatchingBizLogic;
+import edu.wustl.common.participant.utility.Constants;
 import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.util.XMLPropertyHandler;
-import edu.wustl.common.util.global.Constants;
 import edu.wustl.common.util.global.QuerySessionData;
+
 
 /**
  * The Class ProcessMatchedParticipantsAction.
+ *
+ * @author geeta_jaggal
+ * @created-on Nov 16, 2009
+ * The Class ProcessMatchedParticipantsAction :
+ * Used for displaying processed matched participants.
  */
-public class ProcessMatchedParticipantsAction extends Action {
+public class ProcessMatchedParticipantsAction extends Action
+{
 
-	public ProcessMatchedParticipantsAction() {
+	/**
+	 * Instantiates a new process matched participants
+	 * action.
+	 */
+	public ProcessMatchedParticipantsAction()
+	{
 	}
 
+	/* (non-Javadoc)
+	 * @see org.apache.struts.action.Action#execute(org.apache.struts.action.ActionMapping, org.apache.struts.action.ActionForm, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
+	 */
 	public ActionForward execute(ActionMapping mapping, ActionForm form,
-			HttpServletRequest request, HttpServletResponse response)
-			throws ApplicationException {
+			HttpServletRequest request, HttpServletResponse response) throws ApplicationException
+	{
 		HttpSession session = request.getSession();
 		String target;
-		String recordsPerPageSessionValue = (String) session
-				.getAttribute("numResultsPerPage");
+		String recordsPerPageSessionValue = (String) session.getAttribute(edu.wustl.common.util.global.Constants.RESULTS_PER_PAGE);
 		int recordsPerPage;
-		try {
-			if (recordsPerPageSessionValue == null) {
+		try
+		{
+			if (recordsPerPageSessionValue == null)
+			{
 				recordsPerPage = Integer.parseInt(XMLPropertyHandler
-						.getValue("resultView.noOfRecordsPerPage"));
-				session.setAttribute("numResultsPerPage", (new StringBuilder())
-						.append(recordsPerPage).append("").toString());
-			} else {
-				recordsPerPage = (new Integer(recordsPerPageSessionValue))
-						.intValue();
+						.getValue(Constants.NO_OF_RECORDS_PER_PAGE));
+				session.setAttribute(edu.wustl.common.util.global.Constants.RESULTS_PER_PAGE, (new StringBuilder()).append(
+						recordsPerPage).append("").toString());
+			}
+			else
+			{
+				recordsPerPage = (new Integer(recordsPerPageSessionValue)).intValue();
 			}
 			String isDelete = request.getParameter("isDelete");
 			String particicipantId = request.getParameter("participantId");
 			ParticipantMatchingBizLogic bizLogic = new ParticipantMatchingBizLogic();
-			List columnNames = new ArrayList();
+			List<String> columnNames = new ArrayList<String>();
 			columnNames.add("ID");
 			columnNames.add("Last Name");
 			columnNames.add("First Name");
 			columnNames.add("Creation Date");
 			columnNames.add("Matched Participants Count");
 			columnNames.add("Clinical Stydy Name");
-			SessionDataBean sessionDataBean = (SessionDataBean) request
-					.getSession().getAttribute("sessionData");
+			SessionDataBean sessionDataBean = (SessionDataBean) request.getSession().getAttribute(
+					edu.wustl.common.util.global.Constants.SESSION_DATA);
 			Long userId = sessionDataBean.getUserId();
-			if (isDelete != null && isDelete != ""
-					&& isDelete.equalsIgnoreCase("yes")
-					&& particicipantId != null && particicipantId != "") {
-				boolean delStatus = ParticipantManagerUtility
-						.deleteProcessedParticipant(Long
-								.valueOf(particicipantId));
+			if (isDelete != null && isDelete != "" && isDelete.equalsIgnoreCase(Constants.YES)
+					&& particicipantId != null && particicipantId != "")
+			{
+				boolean delStatus = ParticipantManagerUtility.deleteProcessedParticipant(Long
+						.valueOf(particicipantId));
 				setStatusMessage(request, delStatus);
 			}
 			List list = bizLogic.getProcessedMatchedParticipants(userId);
 			QuerySessionData querySessionData = new QuerySessionData();
 			querySessionData.setRecordsPerPage(recordsPerPage);
 			querySessionData.setTotalNumberOfRecords(list.size());
-			session.setAttribute("querySessionData", querySessionData);
-			session.setAttribute("isSimpleSearch", Boolean.TRUE.toString());
-			target = "success";
-			request.setAttribute("pageOf", "pageOfMatchedParticipant");
-			request.setAttribute("spreadsheetDataList", list);
-			request.setAttribute("spreadsheetColumnList", columnNames);
+			session.setAttribute(edu.wustl.common.util.global.Constants.QUERY_SESSION_DATA, querySessionData);
+			session.setAttribute(Constants.IS_SIMPLE_SEARCH, Boolean.TRUE.toString());
+			target = edu.wustl.common.util.global.Constants.SUCCESS;
+			request.setAttribute(edu.wustl.common.util.global.Constants.PAGEOF, Constants.PAGE_OF_MATCHED_PARTIICPANTS);
+			request.setAttribute(Constants.SPREADSHEET_DATA_LIST, list);
+			request.setAttribute(edu.wustl.common.util.global.Constants.SPREADSHEET_COLUMN_LIST, columnNames);
 			return mapping.findForward(target);
-		} catch (Exception e) {
+		}
+		catch (Exception e)
+		{
 			e.printStackTrace();
 			throw new ApplicationException(null, e, e.getMessage());
 		}
 	}
 
-	private void setStatusMessage(HttpServletRequest request, boolean delStatus) {
+	/**
+	 * Sets the status message.
+	 *
+	 * @param request the request
+	 * @param delStatus the del status
+	 */
+	private void setStatusMessage(HttpServletRequest request, boolean delStatus)
+	{
 		ActionMessages actionMsgs = new ActionMessages();
-		if (delStatus) {
-			actionMsgs.add("org.apache.struts.action.GLOBAL_MESSAGE",
-					new ActionMessage("participant.processed.delete.success"));
-		} else {
-			actionMsgs.add("org.apache.struts.action.GLOBAL_MESSAGE",
-					new ActionMessage("participant.processed.delete.failure"));
+		if (delStatus)
+		{
+			actionMsgs.add("GLOBAL_MESSAGE", new ActionMessage(
+					"participant.processed.delete.success"));
+		}
+		else
+		{
+			actionMsgs.add("GLOBAL_MESSAGE", new ActionMessage(
+					"participant.processed.delete.failure"));
 		}
 		saveMessages(request, actionMsgs);
 	}

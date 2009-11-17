@@ -1,3 +1,4 @@
+
 package edu.wustl.common.participant.action;
 
 import java.text.ParseException;
@@ -21,20 +22,21 @@ import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.util.Utility;
 import edu.wustl.common.util.global.CommonServiceLocator;
 import edu.wustl.common.util.logger.Logger;
-import edu.wustl.dao.DAO;
 import edu.wustl.dao.JDBCDAO;
 import edu.wustl.dao.daofactory.DAOConfigFactory;
 import edu.wustl.dao.daofactory.IDAOFactory;
 import edu.wustl.dao.exception.DAOException;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Class ParticipantEditAction.
+ * @author geeta_jaggal.
+ * The Class ParticipantEditAction : User for updating the particiapnt.
+ * If the EMPI is off for CS simply edit the participant else if its not in pending state
+ *
  */
-public class ParticipantEditAction extends CommonAddEditAction {
+public class ParticipantEditAction extends CommonAddEditAction
+{
 
-	private static Logger logger = Logger
-			.getCommonLogger(ParticipantEditAction.class);
+	private static Logger logger = Logger.getCommonLogger(ParticipantEditAction.class);
 
 	/*
 	 * (non-Javadoc)
@@ -46,51 +48,50 @@ public class ParticipantEditAction extends CommonAddEditAction {
 	 * javax.servlet.http.HttpServletResponse)
 	 */
 	public ActionForward execute(ActionMapping mapping, ActionForm form,
-			HttpServletRequest request, HttpServletResponse response) {
+			HttpServletRequest request, HttpServletResponse response)
+	{
 		ActionForward forward = null;
 
 		IParticipantForm participantForm = (IParticipantForm) form;
-		try {
-			// chech the status first if its waiting for generating eMPI thn
-			// can't edit it util it get eMPi id.
-			// String eMPIStatus =
-			// ParticipantManagerUtility.getPartiEMPIStatus(participantForm.getId());
+		try
+		{
 
-			// if teh eMPI is on for Cs .. generate new eMPI id for the new
+			// if the eMPI is on for Cs .. generate new eMPI id for the new
 			// values.
-			if (Constants.EMPI_ID_CREATED.equals(participantForm
-					.getEmpiIdStatus())) {
-				if (ParticipantManagerUtility.csEMPIStatus(participantForm
-						.getId())) {
-					if (ParticipantManagerUtility.isParticipantValidForEMPI(
-							participantForm.getLastName(), participantForm
-									.getFirstName(), Utility
-									.parseDate(participantForm.getBirthDate()))) {
-						participantForm
-								.setEmpiIdStatus(Constants.EMPI_ID_PENDING);
+			if (ParticipantManagerUtility.csEMPIStatus(participantForm.getId()))
+			{
+				// if the
+				if (Constants.EMPI_ID_CREATED.equals(participantForm.getEmpiIdStatus()))
+				{
+					if (ParticipantManagerUtility.isParticipantValidForEMPI(participantForm
+							.getLastName(), participantForm.getFirstName(), Utility
+							.parseDate(participantForm.getBirthDate())))
+					{
+						participantForm.setEmpiIdStatus(Constants.EMPI_ID_PENDING);
 					}
-					forward = super.execute(mapping,
-							(AbstractActionForm) participantForm, request,
+					forward = super.execute(mapping, (AbstractActionForm) participantForm, request,
 							response);
-					if (!forward.getName().equals(
-							edu.wustl.common.util.global.Constants.FAILURE)) {
-						if (ParticipantManagerUtility
-								.csEMPIStatus(participantForm.getId())) {
-							// register new patient in EMPI to generate new eMPI
-							// id for the updated participant
-							regNewPatientToEMPI(participantForm);
-						}
+					if (!forward.getName().equals(edu.wustl.common.util.global.Constants.FAILURE))
+					{
+						// register new patient in EMPI to generate new eMPI id for the updated participant
+						regNewPatientToEMPI(participantForm);
 					}
 				}
-			} else if (!Constants.EMPI_ID_PENDING.equals(participantForm
-					.getEmpiIdStatus())) {
+				else
+				{
+					forward = mapping.findForward(edu.wustl.common.util.global.Constants.SUCCESS);
+				}
+			}
+			else
+			{
 				// if teh eMPI is OFF for Cs then simply update the participant.
-				forward = super
-						.execute(mapping, (AbstractActionForm) participantForm,
-								request, response);
+				forward = super.execute(mapping, (AbstractActionForm) participantForm, request,
+						response);
 			}
 
-		} catch (Exception e) {
+		}
+		catch (Exception e)
+		{
 			// TODO Auto-generated catch block
 			logger.info(e.getMessage());
 		}
@@ -110,22 +111,24 @@ public class ParticipantEditAction extends CommonAddEditAction {
 	 * @throws Exception
 	 *             the exception
 	 */
-	private void regNewPatientToEMPI(IParticipantForm participantForm)
-			throws BizLogicException, ParseException, Exception {
+	private void regNewPatientToEMPI(IParticipantForm participantForm) throws BizLogicException,
+			ParseException, Exception
+	{
 		String permanentPartiId = null;
 		String tempararyPartiId = null;
 		String oldeMPIId = null;
 		oldeMPIId = participantForm.getEmpiId();
 		tempararyPartiId = participantForm.getId() + "T";
-		if (ParticipantManagerUtility.isParticipantValidForEMPI(participantForm
-				.getLastName(), participantForm.getFirstName(), Utility
-				.parseDate(participantForm.getBirthDate()))) {
-			if (oldeMPIId != null && oldeMPIId != "") {
+		if (ParticipantManagerUtility.isParticipantValidForEMPI(participantForm.getLastName(),
+				participantForm.getFirstName(), Utility.parseDate(participantForm.getBirthDate())))
+		{
+			if (oldeMPIId != null && oldeMPIId != "")
+			{
 				permanentPartiId = String.valueOf(participantForm.getId());
 				mapParticipantId(oldeMPIId, permanentPartiId, tempararyPartiId);
 			}
-			if (!participantForm.getEmpiIdStatus().equals(
-					Constants.EMPI_ID_CREATED)) {
+			if (!participantForm.getEmpiIdStatus().equals(Constants.EMPI_ID_CREATED))
+			{
 				sendHL7RegMes(participantForm, tempararyPartiId);
 			}
 		}
@@ -144,24 +147,28 @@ public class ParticipantEditAction extends CommonAddEditAction {
 	 * @throws DAOException
 	 *             the DAO exception
 	 */
-	private void mapParticipantId(String oldeMPIId, String permanentPartiId,
-			String tempararyPartiId) throws DAOException {
+	private void mapParticipantId(String oldeMPIId, String permanentPartiId, String tempararyPartiId)
+			throws DAOException
+	{
 		String appName = CommonServiceLocator.getInstance().getAppName();
-		IDAOFactory daoFactory = DAOConfigFactory.getInstance().getDAOFactory(
-				appName);
+		IDAOFactory daoFactory = DAOConfigFactory.getInstance().getDAOFactory(appName);
 		JDBCDAO jdbcDao = null;
-		try {
+		try
+		{
 			jdbcDao = daoFactory.getJDBCDAO();
 			jdbcDao.openSession(null);
-			String sql = "INSERT INTO PARTICIPANT_EMPI_ID_MAPPING VALUES('"
-					+ permanentPartiId + "','" + tempararyPartiId + "','"
-					+ oldeMPIId + ")";
+			String sql = "INSERT INTO PARTICIPANT_EMPI_ID_MAPPING VALUES('" + permanentPartiId
+					+ "','" + tempararyPartiId + "','" + oldeMPIId + "')";
 			jdbcDao.executeUpdate(sql);
 			jdbcDao.commit();
-		} catch (DAOException e) {
+		}
+		catch (DAOException e)
+		{
 			logger.info("ERROE WHILE UPDATING THE PARTICIPANT EMPI STATUS");
 			throw new DAOException(e.getErrorKey(), e, e.getMsgValues());
-		} finally {
+		}
+		finally
+		{
 			jdbcDao.closeSession();
 		}
 	}
@@ -179,13 +186,13 @@ public class ParticipantEditAction extends CommonAddEditAction {
 	 * @throws Exception
 	 *             the exception
 	 */
-	private void sendHL7RegMes(IParticipantForm participantForm,
-			String tempararyPartiId) throws BizLogicException, Exception {
+	private void sendHL7RegMes(IParticipantForm participantForm, String tempararyPartiId)
+			throws BizLogicException, Exception
+	{
 
 		IParticipant participant = (IParticipant) ParticipantManagerUtility
 				.getParticipantInstance();
-		((AbstractDomainObject) participant)
-				.setAllValues((AbstractActionForm) participantForm);
+		((AbstractDomainObject) participant).setAllValues((AbstractActionForm) participantForm);
 		participant.setId(participantForm.getId());
 
 		EMPIParticipantRegistrationBizLogic eMPIPartiReg = new EMPIParticipantRegistrationBizLogic();

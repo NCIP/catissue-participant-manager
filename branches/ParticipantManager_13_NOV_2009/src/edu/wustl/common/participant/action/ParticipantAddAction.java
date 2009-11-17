@@ -1,42 +1,26 @@
 
-
 package edu.wustl.common.participant.action;
-
-import java.text.ParseException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.struts.Globals;
-import org.apache.struts.action.ActionError;
-import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
-import org.apache.struts.action.ActionMessages;
 
 import edu.wustl.common.action.CommonAddEditAction;
 import edu.wustl.common.actionForm.AbstractActionForm;
 import edu.wustl.common.beans.SessionDataBean;
-import edu.wustl.common.bizlogic.DefaultBizLogic;
-import edu.wustl.common.exception.ApplicationException;
 import edu.wustl.common.participant.actionForm.IParticipantForm;
 import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.util.Utility;
-import edu.wustl.common.util.global.CommonServiceLocator;
 import edu.wustl.common.util.global.Constants;
 import edu.wustl.common.util.logger.Logger;
-import edu.wustl.dao.JDBCDAO;
-import edu.wustl.dao.daofactory.DAOConfigFactory;
-import edu.wustl.dao.daofactory.IDAOFactory;
-import edu.wustl.dao.exception.DAOException;
-
-// TODO: Auto-generated Javadoc
 
 /**
- * @author geeta_jaggal
- *  The Class ParticipantAddAction.
+ * @author geeta_jaggal.
+ * The Class ParticipantAddAction : Used for participant add and storing the participant
+ * in process queue for CIDER participant match if its eligible for EMPI generation.
  */
 public class ParticipantAddAction extends CommonAddEditAction
 {
@@ -62,23 +46,26 @@ public class ParticipantAddAction extends CommonAddEditAction
 				Constants.SESSION_DATA);
 		try
 		{
-				// Add the new participant
-				participantForm.setOperation(Constants.ADD);
-				forward = super.execute(mapping, (AbstractActionForm)participantForm, request, response);
+			// Add the new participant
+			participantForm.setOperation(Constants.ADD);
+			forward = super.execute(mapping, (AbstractActionForm) participantForm, request,
+					response);
 
-				if (!forward.getName().equals("failure"))
+			if (!forward.getName().equals("failure"))
+			{
+				// if for CS eMPI is enable then set the eMPI status as pending if its eligible
+				if (ParticipantManagerUtility.csEMPIStatus(participantForm.getId()))
 				{
-					// if for CS eMPI is enable then set the eMPI status as pending if its eligible
-					if (ParticipantManagerUtility.csEMPIStatus(participantForm.getId()))
+					if (ParticipantManagerUtility.isParticipantValidForEMPI(participantForm
+							.getLastName(), participantForm.getFirstName(), Utility
+							.parseDate(participantForm.getBirthDate())))
 					{
-						if (ParticipantManagerUtility.isParticipantValidForEMPI(participantForm.getLastName(), participantForm
-								.getFirstName(), Utility.parseDate(participantForm.getBirthDate())))
-						{
-							// Process participant for CIDER participant matching.
-							ParticipantManagerUtility.addParticipantToProcessMessageQueue(sessionDataBean.getUserId(),participantForm.getId());
-						}
+						// Process participant for CIDER participant matching.
+						ParticipantManagerUtility.addParticipantToProcessMessageQueue(
+								sessionDataBean.getUserId(), participantForm.getId());
 					}
 				}
+			}
 		}
 		catch (Exception e)
 		{
@@ -89,9 +76,5 @@ public class ParticipantAddAction extends CommonAddEditAction
 		}
 		return forward;
 	}
-
-
-
-
 
 }
