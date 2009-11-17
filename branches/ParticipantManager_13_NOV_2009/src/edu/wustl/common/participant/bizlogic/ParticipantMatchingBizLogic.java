@@ -10,6 +10,7 @@ import java.util.List;
 
 import edu.wustl.common.exception.ApplicationException;
 import edu.wustl.common.participant.domain.IParticipant;
+import edu.wustl.common.participant.utility.Constants;
 import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.util.global.CommonServiceLocator;
 import edu.wustl.common.util.logger.Logger;
@@ -52,7 +53,7 @@ public class ParticipantMatchingBizLogic
                         List matchPartpantLst = ParticipantManagerUtility.getListOfMatchingParticipants(participant, null, "ParticipantLookupAlgoEMPI");
                         if(matchPartpantLst.size() == 0 && ParticipantManagerUtility.isParticipantValidForEMPI(participant.getLastName(), participant.getFirstName(), participant.getBirthDate()))
                         {
-                            ParticipantManagerUtility.setEMPIIdStatus(participant.getId(), "PENDING");
+                            ParticipantManagerUtility.setEMPIIdStatus(participant.getId(), Constants.EMPI_ID_PENDING);
                             EMPIParticipantRegistrationBizLogic bizLogic = new EMPIParticipantRegistrationBizLogic();
                             bizLogic.registerPatientToeMPI(participant);
                         }
