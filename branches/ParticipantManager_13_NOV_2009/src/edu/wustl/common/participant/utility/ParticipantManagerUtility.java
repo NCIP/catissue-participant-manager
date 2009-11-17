@@ -1,5 +1,6 @@
 
 package edu.wustl.common.participant.utility;
+
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,21 +49,37 @@ import edu.wustl.dao.query.generator.ColumnValueBean;
 import edu.wustl.patientLookUp.domain.PatientInformation;
 import edu.wustl.patientLookUp.util.PropertyHandler;
 
-public class ParticipantManagerUtility {
+// TODO: Auto-generated Javadoc
+/**
+ * The Class ParticipantManagerUtility.
+ */
+public class ParticipantManagerUtility
+{
 
-	private static Logger logger = Logger
-			.getCommonLogger(ParticipantManagerUtility.class);
+	/** The logger. */
+	private static Logger logger = Logger.getCommonLogger(ParticipantManagerUtility.class);
 
-	public ParticipantManagerUtility() {
+	/**
+	 * Instantiates a new participant manager utility.
+	 */
+	public ParticipantManagerUtility()
+	{
 	}
 
-	public static void registerWMQListener() throws JMSException {
+	/**
+	 * Register wmq listener.
+	 *
+	 * @throws JMSException the JMS exception
+	 */
+	public static void registerWMQListener() throws JMSException
+	{
 		String hostName = null;
 		String qmgName = null;
 		String channel = null;
 		String outBoundQueueName = null;
 		int port = 0;
-		try {
+		try
+		{
 			hostName = XMLPropertyHandler.getValue("WMQServerName");
 			qmgName = XMLPropertyHandler.getValue("WMQMGRName");
 			channel = XMLPropertyHandler.getValue("WMQChannel");
@@ -77,44 +94,59 @@ public class ParticipantManagerUtility {
 			connection.start();
 			QueueSession session = connection.createQueueSession(false, 1);
 			outBoundQueueName = XMLPropertyHandler.getValue("OutBoundQueue");
-			javax.jms.Queue outBoundQueue = session
-					.createQueue((new StringBuilder()).append("queue:///")
-							.append(outBoundQueueName).toString());
+			javax.jms.Queue outBoundQueue = session.createQueue((new StringBuilder()).append(
+					"queue:///").append(outBoundQueueName).toString());
 			QueueReceiver queueReceiver = session.createReceiver(outBoundQueue);
 			EMPIParticipantListener listener = new EMPIParticipantListener();
 			queueReceiver.setMessageListener(listener);
-			javax.jms.Queue mrgMessageQueue = session
-					.createQueue("CP.CLINPORTAL.MERGES");
+			javax.jms.Queue mrgMessageQueue = session.createQueue("CP.CLINPORTAL.MERGES");
 			queueReceiver = session.createReceiver(mrgMessageQueue);
 			EMPIParticipantMergeMessageListener mrgMesListener = new EMPIParticipantMergeMessageListener();
 			queueReceiver.setMessageListener(mrgMesListener);
-		} catch (JMSException e) {
+		}
+		catch (JMSException e)
+		{
 			e.printStackTrace();
 			throw new JMSException(e.getMessage());
 		}
 	}
 
-	public static void initialiseParticiapntMatchScheduler() {
+	/**
+	 * Initialise particiapnt match scheduler.
+	 */
+	public static void initialiseParticiapntMatchScheduler()
+	{
 		ParticipantMatchingTimerTask timerTask = new ParticipantMatchingTimerTask();
 		Timer scheduleTime = new Timer();
 		String delay = "120000";
 		scheduleTime.schedule(timerTask, 0x1d4c0L, Long.parseLong(delay));
 	}
 
-	public static IParticipantMedicalIdentifier getParticipantMedicalIdentifierObj(
-			String mrn, String facilityId) throws BizLogicException {
+	/**
+	 * Gets the participant medical identifier obj.
+	 *
+	 * @param mrn the mrn
+	 * @param facilityId the facility id
+	 *
+	 * @return the participant medical identifier obj
+	 *
+	 * @throws BizLogicException the biz logic exception
+	 */
+	public static IParticipantMedicalIdentifier getParticipantMedicalIdentifierObj(String mrn,
+			String facilityId) throws BizLogicException
+	{
 		String application = applicationType();
 		ISite site = null;
 		String sourceObjectName = ISite.class.getName();
-		String selectColumnNames[] = { "id", "name" };
-		String whereColumnName[] = { "facilityId" };
-		String whColCondn[] = { "=" };
-		Object whereColumnValue[] = { facilityId };
+		String selectColumnNames[] = {"id", "name"};
+		String whereColumnName[] = {"facilityId"};
+		String whColCondn[] = {"="};
+		Object whereColumnValue[] = {facilityId};
 		DefaultBizLogic siteBizLogic = new DefaultBizLogic();
-		List siteObject = siteBizLogic.retrieve(sourceObjectName,
-				selectColumnNames, whereColumnName, whColCondn,
-				whereColumnValue, null);
-		if (siteObject != null && siteObject.size() > 0) {
+		List siteObject = siteBizLogic.retrieve(sourceObjectName, selectColumnNames,
+				whereColumnName, whColCondn, whereColumnValue, null);
+		if (siteObject != null && siteObject.size() > 0)
+		{
 			Object siteList[] = (Object[]) (Object[]) siteObject.get(0);
 			Long siteId = (Long) siteList[0];
 			String siteName = (String) siteList[1];
@@ -128,21 +160,37 @@ public class ParticipantManagerUtility {
 		return participantMedicalIdentifier;
 	}
 
-	public static Object getObject(String bizLogicFactoryName)
-			throws BizLogicException {
-		try {
+	/**
+	 * Gets the object.
+	 *
+	 * @param bizLogicFactoryName the biz logic factory name
+	 *
+	 * @return the object
+	 *
+	 * @throws BizLogicException the biz logic exception
+	 */
+	public static Object getObject(String bizLogicFactoryName) throws BizLogicException
+	{
+		try
+		{
 			Class className = Class.forName(bizLogicFactoryName);
 			Object newobj = className.newInstance();
 			return newobj;
-		} catch (IllegalAccessException e) {
+		}
+		catch (IllegalAccessException e)
+		{
 			e.printStackTrace();
 			throw new BizLogicException(null, null, "IllegalAccessException",
 					"IllegalAccessException");
-		} catch (InstantiationException e) {
+		}
+		catch (InstantiationException e)
+		{
 			e.printStackTrace();
 			throw new BizLogicException(null, null, "InstantiationException",
 					"InstantiationException");
-		} catch (ClassNotFoundException e) {
+		}
+		catch (ClassNotFoundException e)
+		{
 			e.printStackTrace();
 			throw new BizLogicException(null, null, "ClassNotFoundException",
 					"ClassNotFoundException");
@@ -152,50 +200,77 @@ public class ParticipantManagerUtility {
 
 	/**
 	 * This function takes identifier as parameter and returns corresponding
-	 * Participant
+	 * Participant.
 	 *
-	 * @param identifier
+	 * @param identifier the identifier
+	 *
 	 * @return - Participant object
-	 * @throws BizLogicException
-	 * @throws Exception
-	 */
-	public static IParticipant getParticipantById(Long identifier)
-			throws BizLogicException {
+	 *
+	 * @throws BizLogicException the biz logic exception
+	 * @throws Exception 	 */
+	public static IParticipant getParticipantById(Long identifier) throws BizLogicException
+	{
 		// Initializing instance of IBizLogic
-		IFactory factory = AbstractFactoryConfig.getInstance()
-				.getBizLogicFactory();
+		IFactory factory = AbstractFactoryConfig.getInstance().getBizLogicFactory();
 
 		IBizLogic bizLogic = factory.getBizLogic(Constants.DEFAULT_BIZ_LOGIC);
 		String sourceObjectName = IParticipant.class.getName();
 		// getting all the participants from the database
-		List participantList = bizLogic.retrieve(sourceObjectName, "id",
-				identifier);
+		List participantList = bizLogic.retrieve(sourceObjectName, "id", identifier);
 		return (IParticipant) participantList.get(0);
 
 	}
 
-	public static boolean isParticipantValidForEMPI(String LName, String FName,
-			Date dob) {
+	/**
+	 * Checks if is participant valid for empi.
+	 *
+	 * @param LName the l name
+	 * @param FName the f name
+	 * @param dob the dob
+	 *
+	 * @return true, if is participant valid for empi
+	 */
+	public static boolean isParticipantValidForEMPI(String LName, String FName, Date dob)
+	{
 		boolean isValid = true;
-		if (LName == null || LName == "") {
+		if (LName == null || LName == "")
+		{
 			isValid = false;
-		} else if (FName == null || FName == "") {
+		}
+		else if (FName == null || FName == "")
+		{
 			isValid = false;
-		} else if (dob == null) {
+		}
+		else if (dob == null)
+		{
 			isValid = false;
 		}
 		return isValid;
 	}
 
+	/**
+	 * Gets the list of matching participants.
+	 *
+	 * @param participant the participant
+	 * @param sessionDataBean the session data bean
+	 * @param lookupAlgorithm the lookup algorithm
+	 *
+	 * @return the list of matching participants
+	 *
+	 * @throws Exception the exception
+	 */
 	public static List getListOfMatchingParticipants(IParticipant participant,
-			SessionDataBean sessionDataBean, String lookupAlgorithm)
-			throws Exception {
+			SessionDataBean sessionDataBean, String lookupAlgorithm) throws Exception
+	{
 		List matchParticipantList = null;
 		LookupLogic partLookupLgic = null;
-		if (lookupAlgorithm == null) {
+		if (lookupAlgorithm == null)
+		{
 			partLookupLgic = (LookupLogic) Utility.getObject(XMLPropertyHandler
 					.getValue(Constants.PARTICIPANT_LOOKUP_ALGO));
-		} else {
+		}
+		else
+		{
 			partLookupLgic = (LookupLogic) Utility.getObject(XMLPropertyHandler
 					.getValue(lookupAlgorithm));
 		}
@@ -205,55 +280,110 @@ public class ParticipantManagerUtility {
 		return matchParticipantList;
 	}
 
-	public static Object getRaceInstance() throws BizLogicException {
+	/**
+	 * Gets the race instance.
+	 *
+	 * @return the race instance
+	 *
+	 * @throws BizLogicException the biz logic exception
+	 */
+	public static Object getRaceInstance() throws BizLogicException
+	{
 		String application = applicationType();
 		Object raceInstance = null;
-		if ("clinportal".equals(application)) {
+		if ("clinportal".equals(application))
+		{
 			raceInstance = getObject("edu.wustl.clinportal.domain.Race");
-		} else {
+		}
+		else
+		{
 			raceInstance = getObject("edu.wustl.catissuecore.domain.Race");
 		}
 		return raceInstance;
 	}
 
-	public static Object getSiteInstance() throws BizLogicException {
+	/**
+	 * Gets the site instance.
+	 *
+	 * @return the site instance
+	 *
+	 * @throws BizLogicException the biz logic exception
+	 */
+	public static Object getSiteInstance() throws BizLogicException
+	{
 		String application = applicationType();
 		Object siteInstance = null;
-		if ("clinportal".equals(application)) {
+		if ("clinportal".equals(application))
+		{
 			siteInstance = getObject("edu.wustl.clinportal.domain.Site");
-		} else {
+		}
+		else
+		{
 			siteInstance = getObject("edu.wustl.catissuecore.domain.Site");
 		}
 		return siteInstance;
 	}
 
-	public static Object getParticipantInstance() throws BizLogicException {
+	/**
+	 * Gets the participant instance.
+	 *
+	 * @return the participant instance
+	 *
+	 * @throws BizLogicException the biz logic exception
+	 */
+	public static Object getParticipantInstance() throws BizLogicException
+	{
 		String application = applicationType();
 		Object partiicpantInstance = null;
-		if ("clinportal".equals(application)) {
+		if ("clinportal".equals(application))
+		{
 			partiicpantInstance = getObject("edu.wustl.clinportal.domain.Participant");
-		} else {
+		}
+		else
+		{
 			partiicpantInstance = getObject("edu.wustl.catissuecore.domain.Participant");
 		}
 		return partiicpantInstance;
 	}
 
-	public static Object getPMIInstance() throws BizLogicException {
+	/**
+	 * Gets the pMI instance.
+	 *
+	 * @return the pMI instance
+	 *
+	 * @throws BizLogicException the biz logic exception
+	 */
+	public static Object getPMIInstance() throws BizLogicException
+	{
 		String application = applicationType();
 		Object PMIInstance = null;
-		if ("clinportal".equals(application)) {
+		if ("clinportal".equals(application))
+		{
 			PMIInstance = getObject("edu.wustl.clinportal.domain.ParticipantMedicalIdentifier");
-		} else {
+		}
+		else
+		{
 			PMIInstance = getObject("edu.wustl.catissuecore.domain.ParticipantMedicalIdentifier");
 		}
 		return PMIInstance;
 	}
 
-	private static String applicationType() throws BizLogicException {
+	/**
+	 * Application type.
+	 *
+	 * @return the string
+	 *
+	 * @throws BizLogicException the biz logic exception
+	 */
+	private static String applicationType() throws BizLogicException
+	{
 		String application = null;
-		try {
+		try
+		{
 			application = PropertyHandler.getValue("application");
-		} catch (Exception e) {
+		}
+		catch (Exception e)
+		{
 			logger.info(e.getStackTrace());
 			throw new BizLogicException(null, e,
 					"Error while get value from PatientInfoLookUpService.properties");
@@ -261,33 +391,46 @@ public class ParticipantManagerUtility {
 		return application;
 	}
 
-
-
-	public static void setEMPIIdStatus(Long participantId, String status)
-			throws DAOException {
-		Exception exception;
-		String appName = CommonServiceLocator.getInstance().getAppName();
-		IDAOFactory daoFactory = DAOConfigFactory.getInstance().getDAOFactory(
-				appName);
+	/**
+	 * Sets the empi id status.
+	 *
+	 * @param participantId the participant id
+	 * @param status the status
+	 *
+	 * @throws DAOException the DAO exception
+	 */
+	public static void setEMPIIdStatus(Long participantId, String status) throws DAOException
+	{
 		JDBCDAO jdbcDao = null;
-		try {
-			jdbcDao = daoFactory.getJDBCDAO();
-			jdbcDao.openSession(null);
+		try
+		{
+			jdbcDao = getJDBCDAO();
 			String sql = (new StringBuilder()).append(
-					"UPDATE CATISSUE_PARTICIPANT SET EMPI_ID_STATUS='").append(
-					status).append("' WHERE IDENTIFIER='")
-					.append(participantId).append("'").toString();
+					"UPDATE CATISSUE_PARTICIPANT SET EMPI_ID_STATUS='").append(status).append(
+					"' WHERE IDENTIFIER='").append(participantId).append("'").toString();
 			jdbcDao.executeUpdate(sql);
 			jdbcDao.commit();
-		} catch (DAOException e) {
+		}
+		catch (DAOException e)
+		{
 			logger.info("ERROE WHILE UPDATING THE PARTICIPANT EMPI STATUS");
 			throw new DAOException(e.getErrorKey(), e, e.getMsgValues());
-		} finally {
+		}
+		finally
+		{
 			jdbcDao.closeSession();
 		}
 	}
 
-	public static String getSSN(String ssn) {
+	/**
+	 * Gets the sSN.
+	 *
+	 * @param ssn the ssn
+	 *
+	 * @return the sSN
+	 */
+	public static String getSSN(String ssn)
+	{
 		String ssnA = "";
 		String ssnB = "";
 		String ssnC = "";
@@ -295,78 +438,106 @@ public class ParticipantManagerUtility {
 		Pattern pattern = Pattern.compile("[0-9]{3}-[0-9]{2}-[0-9]{4}", 2);
 		Matcher mat = pattern.matcher(ssn);
 		result = mat.matches();
-		if (result) {
+		if (result)
+		{
 			return ssn;
 		}
-		if (ssn.length() >= 9) {
+		if (ssn.length() >= 9)
+		{
 			ssnA = ssn.substring(0, 3);
 			ssnB = ssn.substring(3, 5);
 			ssnC = ssn.substring(5, 9);
-		} else if (ssn.length() >= 4) {
+		}
+		else if (ssn.length() >= 4)
+		{
 			ssnC = ssn.substring(0, 3);
-		} else {
+		}
+		else
+		{
 			return ssn;
 		}
-		ssn = (new StringBuilder()).append(ssnA).append("-").append(ssnB)
-				.append("-").append(ssnC).toString();
+		ssn = (new StringBuilder()).append(ssnA).append("-").append(ssnB).append("-").append(ssnC)
+				.toString();
 		return ssn;
 	}
 
-	public static List getColumnList(List columnList) throws DAOException {
-		List displayList = new ArrayList();
-		String appName = CommonServiceLocator.getInstance().getAppName();
-		IDAOFactory daoFactory = DAOConfigFactory.getInstance().getDAOFactory(
-				appName);
-		JDBCDAO jdbcDao = daoFactory.getJDBCDAO();
-		jdbcDao.openSession(null);
-		String sql = "SELECT  columnData.COLUMN_NAME,displayData.DISPLAY_NAME FROM CATISSUE_INTERFACE_"
-				+ "COLUMN_DATA columnData,CATISSUE_TABLE_RELATION relationData,CATISSUE_QUERY_TABLE"
-				+ "_DATA tableData,CATISSUE_SEARCH_DISPLAY_DATA displayData where relationData.CHIL"
-				+ "D_TABLE_ID = columnData.TABLE_ID and relationData.PARENT_TABLE_ID = tableData.TA"
-				+ "BLE_ID and relationData.RELATIONSHIP_ID = displayData.RELATIONSHIP_ID and column"
-				+ "Data.IDENTIFIER = displayData.COL_ID and tableData.ALIAS_NAME = 'Participant'";
-		logger.debug((new StringBuilder()).append("DATA ELEMENT SQL : ")
-				.append(sql).toString());
-		List list = jdbcDao.executeQuery(sql);
-		for (Iterator iterator1 = columnList.iterator(); iterator1.hasNext();) {
-			String colName1 = (String) iterator1.next();
-			Logger.out.debug((new StringBuilder()).append(
-					"colName1------------------------").append(colName1)
-					.toString());
-			Iterator iterator2 = list.iterator();
-			while (iterator2.hasNext()) {
-				List rowList = (List) iterator2.next();
-				String colName2 = (String) rowList.get(0);
-				Logger.out.debug((new StringBuilder()).append(
-						"colName2------------------------").append(colName2)
-						.toString());
-				if (colName1.equals(colName2)) {
-					displayList.add((String) rowList.get(1));
+	/**
+	 * Gets the column list.
+	 *
+	 * @param columnList the column list
+	 *
+	 * @return the column list
+	 *
+	 * @throws DAOException the DAO exception
+	 */
+	public static List<String> getColumnList(List<String> columnList) throws DAOException
+	{
+		List<String> displayList = new ArrayList<String>();
+
+		JDBCDAO jdbcDao = null;
+		try
+		{
+			jdbcDao = getJDBCDAO();
+
+			String sql = "SELECT  columnData.COLUMN_NAME,displayData.DISPLAY_NAME FROM CATISSUE_INTERFACE_"
+					+ "COLUMN_DATA columnData,CATISSUE_TABLE_RELATION relationData,CATISSUE_QUERY_TABLE"
+					+ "_DATA tableData,CATISSUE_SEARCH_DISPLAY_DATA displayData where relationData.CHIL"
+					+ "D_TABLE_ID = columnData.TABLE_ID and relationData.PARENT_TABLE_ID = tableData.TA"
+					+ "BLE_ID and relationData.RELATIONSHIP_ID = displayData.RELATIONSHIP_ID and column"
+					+ "Data.IDENTIFIER = displayData.COL_ID and tableData.ALIAS_NAME = 'Participant'";
+			logger
+					.debug((new StringBuilder()).append("DATA ELEMENT SQL : ").append(sql)
+							.toString());
+			List list = jdbcDao.executeQuery(sql);
+			for (Iterator iterator1 = columnList.iterator(); iterator1.hasNext();)
+			{
+				String colName1 = (String) iterator1.next();
+				Iterator iterator2 = list.iterator();
+				while (iterator2.hasNext())
+				{
+					List rowList = (List) iterator2.next();
+					String colName2 = (String) rowList.get(0);
+					if (colName1.equals(colName2))
+					{
+						displayList.add((String) rowList.get(1));
+					}
 				}
 			}
 		}
+		finally
+		{
+			jdbcDao.closeSession();
+		}
 
-		jdbcDao.closeSession();
 		return displayList;
 	}
 
-	public static boolean csEMPIStatus(long participantId) throws DAOException {
+	/**
+	 * Cs empi status.
+	 *
+	 * @param participantId the participant id
+	 *
+	 * @return true, if successful
+	 *
+	 * @throws DAOException the DAO exception
+	 */
+	public static boolean csEMPIStatus(long participantId) throws DAOException
+	{
 		boolean status;
-		IDAOFactory daoFactory;
-		JDBCDAO dao;
+
+		JDBCDAO dao = null;
 		status = false;
-		String appName = CommonServiceLocator.getInstance().getAppName();
-		daoFactory = DAOConfigFactory.getInstance().getDAOFactory(appName);
-		dao = null;
-		dao = daoFactory.getJDBCDAO();
-		dao.openSession(null);
+
+		dao = getJDBCDAO();
 		String query = " SELECT SP.IS_EMPI_ENABLE FROM  CATISSUE_SPECIMEN_PROTOCOL SP JOIN  CATISSUE_CLINICAL_STUDY_REG CSR  "
 				+ " ON SP.IDENTIFIER = CSR.CLINICAL_STUDY_ID  WHERE CSR.PARTICIPANT_id='"
 				+ participantId + "'";
 		List statusList = dao.executeQuery(query);
-		if (!statusList.isEmpty() && statusList.get(0) != "") {
+		if (!statusList.isEmpty() && statusList.get(0) != "")
+		{
 			List idList = (List) statusList.get(0);
-			if (!idList.isEmpty() && ((String) idList.get(0)).equals("1")) {
+			if (!idList.isEmpty() && ((String) idList.get(0)).equals("1"))
+			{
 				status = true;
 			}
 		}
@@ -374,103 +545,152 @@ public class ParticipantManagerUtility {
 		return status;
 	}
 
-	public static void updatePartiEMPIId(long participantId, String lastName,
-			String firstName, Date dob) throws ParseException, DAOException {
-		if (isParticipantValidForEMPI(lastName, firstName, dob)) {
-			String appName = CommonServiceLocator.getInstance().getAppName();
-			IDAOFactory daoFactory = DAOConfigFactory.getInstance()
-					.getDAOFactory(appName);
+	/**
+	 * Update parti empi id.
+	 *
+	 * @param participantId the participant id
+	 * @param lastName the last name
+	 * @param firstName the first name
+	 * @param dob the dob
+	 *
+	 * @throws ParseException the parse exception
+	 * @throws DAOException the DAO exception
+	 */
+	public static void updatePartiEMPIId(long participantId, String lastName, String firstName,
+			Date dob) throws ParseException, DAOException
+	{
+		if (isParticipantValidForEMPI(lastName, firstName, dob))
+		{
 			JDBCDAO dao = null;
-			try {
-				dao = daoFactory.getJDBCDAO();
-				dao.openSession(null);
+			try
+			{
+				dao = getJDBCDAO();
 				String query = (new StringBuilder())
 						.append(
 								"UPDATE CATISSUE_PARTICIPANT SET EMPI_ID_STATUS='PENDING' WHERE IDENTIFIER='")
 						.append(participantId).append("'").toString();
 				dao.executeUpdate(query);
 				dao.commit();
-				dao.closeSession();
-			} catch (DAOException exp) {
-				logger.info("ERROR WHILE UPDATING THE EMPI STATUS");
-				throw new DAOException(exp.getErrorKey(), exp, exp
-						.getMsgValues());
+
 			}
+			catch (DAOException exp)
+			{
+				logger.info("ERROR WHILE UPDATING THE EMPI STATUS");
+				throw new DAOException(exp.getErrorKey(), exp, exp.getMsgValues());
+			}
+			finally
+			{
+				dao.closeSession();
+			}
+
 		}
 	}
 
-	public static String getPartiEMPIStatus(long participantId)
-			throws DAOException {
-		String appName = CommonServiceLocator.getInstance().getAppName();
-		IDAOFactory daoFactory = DAOConfigFactory.getInstance().getDAOFactory(
-				appName);
+	/**
+	 * Gets the parti empi status.
+	 *
+	 * @param participantId the participant id
+	 *
+	 * @return the parti empi status
+	 *
+	 * @throws DAOException the DAO exception
+	 */
+	public static String getPartiEMPIStatus(long participantId) throws DAOException
+	{
+
 		JDBCDAO dao = null;
 		String eMPIStatus = "";
-		try {
-			dao = daoFactory.getJDBCDAO();
-			dao.openSession(null);
-			String query = (new StringBuilder())
-					.append(
-							"SELECT EMPI_ID_STATUS FROM CATISSUE_PARTICIPANT  WHERE IDENTIFIER='")
-					.append(participantId).append("'").toString();
+		try
+		{
+			dao = getJDBCDAO();
+			String query = (new StringBuilder()).append(
+					"SELECT EMPI_ID_STATUS FROM CATISSUE_PARTICIPANT  WHERE IDENTIFIER='").append(
+					participantId).append("'").toString();
 			List list = dao.executeQuery(query);
-			if (!list.isEmpty() && list.get(0) != "") {
+			if (!list.isEmpty() && list.get(0) != "")
+			{
 				List statusList = (List) list.get(0);
-				if (!statusList.isEmpty()) {
+				if (!statusList.isEmpty())
+				{
 					eMPIStatus = (String) statusList.get(0);
 				}
 			}
 			dao.commit();
 			dao.closeSession();
-		} catch (DAOException exp) {
+		}
+		catch (DAOException exp)
+		{
 			logger.info("ERROR WHILE GETTING THE EMPI STATUS");
 			throw new DAOException(exp.getErrorKey(), exp, exp.getMsgValues());
 		}
 		return eMPIStatus;
 	}
 
-	public static boolean isCallToLookupLogicNeeded(IParticipant participant) {
+	/**
+	 * Checks if is call to lookup logic needed.
+	 *
+	 * @param participant the participant
+	 *
+	 * @return true, if is call to lookup logic needed
+	 */
+	public static boolean isCallToLookupLogicNeeded(IParticipant participant)
+	{
 		boolean flag = true;
-		if ((participant.getFirstName() == null || participant.getFirstName()
-				.length() == 0)
-				&& (participant.getMiddleName() == null || participant
-						.getMiddleName().length() == 0)
-				&& (participant.getLastName() == null || participant
-						.getLastName().length() == 0)
+		if ((participant.getFirstName() == null || participant.getFirstName().length() == 0)
+				&& (participant.getMiddleName() == null || participant.getMiddleName().length() == 0)
+				&& (participant.getLastName() == null || participant.getLastName().length() == 0)
 				&& (participant.getSocialSecurityNumber() == null || participant
 						.getSocialSecurityNumber().length() == 0)
 				&& participant.getBirthDate() == null
 				&& (participant.getParticipantMedicalIdentifierCollection() == null || participant
-						.getParticipantMedicalIdentifierCollection().size() == 0)) {
+						.getParticipantMedicalIdentifierCollection().size() == 0))
+		{
 			flag = false;
 		}
 		return flag;
 	}
 
-	public static List getColumnHeadingList() throws DAOException {
-		String columnHeaderList[] = { "LAST_NAME", "FIRST_NAME", "MIDDLE_NAME",
-				"BIRTH_DATE", "DEATH_DATE", "VITAL_STATUS", "GENDER",
-				"SOCIAL_SECURITY_NUMBER", "MEDICAL_RECORD_NUMBER" };
-		List columnList = Arrays.asList(columnHeaderList);
-		Logger.out.info((new StringBuilder()).append("column List size ;")
-				.append(columnList.size()).toString());
-		List displayList = new ArrayList();
+	/**
+	 * Gets the column heading list.
+	 *
+	 * @return the column heading list
+	 *
+	 * @throws DAOException the DAO exception
+	 */
+	public static List<String> getColumnHeadingList() throws DAOException
+	{
+		String columnHeaderList[] = {"LAST_NAME", "FIRST_NAME", "MIDDLE_NAME", "BIRTH_DATE",
+				"DEATH_DATE", "VITAL_STATUS", "GENDER", "SOCIAL_SECURITY_NUMBER",
+				"MEDICAL_RECORD_NUMBER"};
+		List<String> columnList = Arrays.asList(columnHeaderList);
+
+		List<String> displayList = new ArrayList<String>();
 		displayList.add("EMPI");
 		displayList.add("EMPIID");
-		List displayListTemp = getColumnList(columnList);
+		List<String> displayListTemp = getColumnList(columnList);
 		displayList.addAll(displayListTemp);
 		return displayList;
 	}
 
-	public static List getParticipantDisplayList(List participantList) {
-		List pcpantDisplaylst = new ArrayList();
-		Iterator itr = participantList.iterator();
+	/**
+	 * Gets the participant display list.
+	 *
+	 * @param participantList the participant list
+	 *
+	 * @return the participant display list
+	 */
+	public static List<List<String>> getParticipantDisplayList(
+			List<DefaultLookupResult> participantList)
+	{
+		List<List<String>> pcpantDisplaylst = new ArrayList<List<String>>();
+		Iterator<DefaultLookupResult> itr = participantList.iterator();
 		String medicalRecordNo = "";
-		List participantInfo;
-		for (; itr.hasNext(); pcpantDisplaylst.add(participantInfo)) {
+		List<String> participantInfo;
+		for (; itr.hasNext(); pcpantDisplaylst.add(participantInfo))
+		{
 			DefaultLookupResult result = (DefaultLookupResult) itr.next();
 			IParticipant participant = (IParticipant) result.getObject();
-			participantInfo = new ArrayList();
+			participantInfo = new ArrayList<String>();
 			participantInfo.add(participant.getIsFromEMPI());
 			participantInfo.add(participant.getEmpiId());
 			participantInfo.add(Utility.toString(participant.getLastName()));
@@ -480,175 +700,225 @@ public class ParticipantManagerUtility {
 			participantInfo.add(Utility.toString(participant.getDeathDate()));
 			participantInfo.add(Utility.toString(participant.getVitalStatus()));
 			participantInfo.add(Utility.toString(participant.getGender()));
-			participantInfo.add(Utility.toString(participant
-					.getSocialSecurityNumber()));
-			if (participant.getParticipantMedicalIdentifierCollection() != null) {
+			participantInfo.add(Utility.toString(participant.getSocialSecurityNumber()));
+			if (participant.getParticipantMedicalIdentifierCollection() != null)
+			{
 				medicalRecordNo = getParticipantMrnDisplay(participant);
 			}
 			participantInfo.add(Utility.toString(medicalRecordNo));
-			participantInfo.add(participant.getId());
+			//participantInfo.add(participant.getId());
+			participantInfo.add(String.valueOf(participant.getId()));
 		}
 
 		return pcpantDisplaylst;
 	}
 
-	private static String getParticipantMrnDisplay(IParticipant participant) {
+	/**
+	 * Gets the participant mrn display.
+	 *
+	 * @param participant the participant
+	 *
+	 * @return the participant mrn display
+	 */
+	private static String getParticipantMrnDisplay(IParticipant participant)
+	{
 		StringBuffer mrn = new StringBuffer();
-		if (participant.getParticipantMedicalIdentifierCollection() != null) {
-			Iterator pmiItr = participant
-					.getParticipantMedicalIdentifierCollection().iterator();
-			do {
-				if (!pmiItr.hasNext()) {
+		if (participant.getParticipantMedicalIdentifierCollection() != null)
+		{
+			Iterator pmiItr = participant.getParticipantMedicalIdentifierCollection().iterator();
+			do
+			{
+				if (!pmiItr.hasNext())
+				{
 					break;
 				}
 				IParticipantMedicalIdentifier participantMedicalIdentifier = (IParticipantMedicalIdentifier) pmiItr
 						.next();
 				if (participantMedicalIdentifier.getSite() != null
-						&& ((ISite) participantMedicalIdentifier.getSite())
-								.getId() != null) {
-					String siteName = ((ISite) participantMedicalIdentifier
-							.getSite()).getName();
-					mrn.append(participantMedicalIdentifier
-							.getMedicalRecordNumber());
+						&& ((ISite) participantMedicalIdentifier.getSite()).getId() != null)
+				{
+					String siteName = ((ISite) participantMedicalIdentifier.getSite()).getName();
+					mrn.append(participantMedicalIdentifier.getMedicalRecordNumber());
 					mrn.append(':');
 					mrn.append(siteName);
 					mrn.append("\n<br>");
 				}
-			} while (true);
+			}
+			while (true);
 		}
 		return mrn.toString();
 	}
 
-	public static void addParticipantToProcessMessageQueue(Long userId,
-			Long participantId) throws DAOException {
+	public static JDBCDAO getJDBCDAO() throws DAOException
+	{
 		String appName = CommonServiceLocator.getInstance().getAppName();
-		IDAOFactory daoFactory = DAOConfigFactory.getInstance().getDAOFactory(
-				appName);
+		IDAOFactory daoFactory = DAOConfigFactory.getInstance().getDAOFactory(appName);
+		JDBCDAO jdbcdao = null;
+		jdbcdao = daoFactory.getJDBCDAO();
+		jdbcdao.openSession(null);
+		return jdbcdao;
+	}
+
+	/**
+	 * Adds the participant to process message queue.
+	 *
+	 * @param userId the user id
+	 * @param participantId the participant id
+	 *
+	 * @throws DAOException the DAO exception
+	 */
+	public static void addParticipantToProcessMessageQueue(Long userId, Long participantId)
+			throws DAOException
+	{
+
 		JDBCDAO jdbcdao = null;
 		String query = null;
-		try {
-			jdbcdao = daoFactory.getJDBCDAO();
-			jdbcdao.openSession(null);
-			List idList = jdbcdao
-					.executeQuery((new StringBuilder())
-							.append(
-									"SELECT SEARCHED_PARTICIPANT_ID FROM MATCHED_PARTICIPANT_MAPPING WHERE SEARCHED_P"
-											+ "ARTICIPANT_ID='").append(
-									participantId).append("'").toString());
-			if (!idList.isEmpty() && idList.get(0) != "") {
+		try
+		{
+			jdbcdao = getJDBCDAO();
+			List idList = jdbcdao.executeQuery((new StringBuilder()).append(
+					"SELECT SEARCHED_PARTICIPANT_ID FROM MATCHED_PARTICIPANT_MAPPING WHERE SEARCHED_P"
+							+ "ARTICIPANT_ID='").append(participantId).append("'").toString());
+			if (!idList.isEmpty() && idList.get(0) != "")
+			{
 				query = (new StringBuilder())
 						.append(
 								"UPDATE MATCHED_PARTICIPANT_MAPPING SET SEARCHED_PARTICIPANT_ID=?,NO_OF_MATCHED_P"
 										+ "ARTICIPANTS=?,USER_ID=?,CREATION_DATE=? WHERE SEARCHED_PARTICIPANT_ID ='")
 						.append(participantId).append("'").toString();
-			} else {
+			}
+			else
+			{
 				query = "INSERT INTO MATCHED_PARTICIPANT_MAPPING VALUES(?,?,?,?)";
 			}
 			Calendar cal = Calendar.getInstance();
 			Date date = cal.getTime();
-			LinkedList columnValueBeanList = new LinkedList();
-			columnValueBeanList.add(new ColumnValueBean(
-					"SEARCHED_PARTICIPANT_ID", participantId, 3));
-			columnValueBeanList.add(new ColumnValueBean(
-					"NO_OF_MATCHED_PARTICIPANTS", Integer.valueOf(-1), 3));
+			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
+			columnValueBeanList
+					.add(new ColumnValueBean("SEARCHED_PARTICIPANT_ID", participantId, 3));
+			columnValueBeanList.add(new ColumnValueBean("NO_OF_MATCHED_PARTICIPANTS", Integer
+					.valueOf(-1), 3));
 			columnValueBeanList.add(new ColumnValueBean("USER_ID", userId, 3));
-			columnValueBeanList.add(new ColumnValueBean("CREATION_DATE", date,
-					13));
+			columnValueBeanList.add(new ColumnValueBean("CREATION_DATE", date, 13));
 			jdbcdao.executeUpdate(query, columnValueBeanList);
 			jdbcdao.commit();
 			jdbcdao.closeSession();
-		} catch (DAOException e) {
+		}
+		catch (DAOException e)
+		{
 			jdbcdao.rollback();
 			throw new DAOException(e.getErrorKey(), e, e.getMessage());
 		}
 	}
 
-	public static PatientInformation populatePatientObject(
-			IParticipant participant) {
+	/**
+	 * Populate patient object.
+	 *
+	 * @param participant the participant
+	 *
+	 * @return the patient information
+	 */
+	public static PatientInformation populatePatientObject(IParticipant participant)
+	{
 		PatientInformation patientInformation = new PatientInformation();
 		patientInformation.setLastName(participant.getLastName());
 		patientInformation.setFirstName(participant.getFirstName());
 		patientInformation.setMiddleName(participant.getMiddleName());
 		String ssn = participant.getSocialSecurityNumber();
-		if (ssn != null) {
+		if (ssn != null)
+		{
 			String ssnValue[] = ssn.split("-");
 			ssn = ssnValue[0];
-			ssn = (new StringBuilder()).append(ssn).append(ssnValue[1])
-					.toString();
-			ssn = (new StringBuilder()).append(ssn).append(ssnValue[2])
-					.toString();
+			ssn = (new StringBuilder()).append(ssn).append(ssnValue[1]).toString();
+			ssn = (new StringBuilder()).append(ssn).append(ssnValue[2]).toString();
 		}
 		patientInformation.setSsn(ssn);
-		if (participant.getBirthDate() != null) {
+		if (participant.getBirthDate() != null)
+		{
 			patientInformation.setDob(participant.getBirthDate());
 		}
 		patientInformation.setGender(participant.getGender());
-		Collection participantInfoMedicalIdentifierCollection = new LinkedList();
+		Collection<String> participantInfoMedicalIdentifierCollection = new LinkedList<String>();
 		Collection participantMedicalIdentifierCollection = participant
 				.getParticipantMedicalIdentifierCollection();
-		if (participantMedicalIdentifierCollection != null) {
+		if (participantMedicalIdentifierCollection != null)
+		{
 			Iterator itr = participantMedicalIdentifierCollection.iterator();
-			do {
-				if (!itr.hasNext()) {
+			do
+			{
+				if (!itr.hasNext())
+				{
 					break;
 				}
 				IParticipantMedicalIdentifier participantMedicalIdentifier = (IParticipantMedicalIdentifier) itr
 						.next();
-				if (participantMedicalIdentifier.getMedicalRecordNumber() != null) {
-					participantInfoMedicalIdentifierCollection
-							.add(participantMedicalIdentifier
-									.getMedicalRecordNumber());
+				if (participantMedicalIdentifier.getMedicalRecordNumber() != null)
+				{
+					participantInfoMedicalIdentifierCollection.add(participantMedicalIdentifier
+							.getMedicalRecordNumber());
 					participantInfoMedicalIdentifierCollection.add(String
-							.valueOf(((ISite) participantMedicalIdentifier
-									.getSite()).getId()));
+							.valueOf(((ISite) participantMedicalIdentifier.getSite()).getId()));
 					participantInfoMedicalIdentifierCollection
-							.add(((ISite) participantMedicalIdentifier
-									.getSite()).getName());
+							.add(((ISite) participantMedicalIdentifier.getSite()).getName());
 				}
-			} while (true);
+			}
+			while (true);
 		}
 		patientInformation
 				.setParticipantMedicalIdentifierCollection(participantInfoMedicalIdentifierCollection);
-		Collection participantInfoRaceCollection = new HashSet();
+		Collection<String> participantInfoRaceCollection = new HashSet<String>();
 		Collection participantRaceCollection = participant.getRaceCollection();
-		if (participantRaceCollection != null) {
+		if (participantRaceCollection != null)
+		{
 			Iterator itr = participantRaceCollection.iterator();
-			do {
-				if (!itr.hasNext()) {
+			do
+			{
+				if (!itr.hasNext())
+				{
 					break;
 				}
 				IRace race = (IRace) itr.next();
-				if (race != null) {
+				if (race != null)
+				{
 					participantInfoRaceCollection.add(race.getRaceName());
 				}
-			} while (true);
+			}
+			while (true);
 		}
 		patientInformation.setRaceCollection(participantInfoRaceCollection);
 		return patientInformation;
 	}
 
-	public static boolean deleteProcessedParticipant(Long id)
-			throws DAOException {
+	/**
+	 * Delete processed participant.
+	 *
+	 * @param id the id
+	 *
+	 * @return true, if successful
+	 *
+	 * @throws DAOException the DAO exception
+	 */
+	public static boolean deleteProcessedParticipant(Long id) throws DAOException
+	{
 		boolean status;
-		Exception exception;
 		status = false;
-		String appName = CommonServiceLocator.getInstance().getAppName();
-		IDAOFactory daoFactory = DAOConfigFactory.getInstance().getDAOFactory(
-				appName);
+
 		JDBCDAO jdbcdao = null;
-		try {
-			jdbcdao = daoFactory.getJDBCDAO();
-			jdbcdao.openSession(null);
-			jdbcdao
-					.executeUpdate((new StringBuilder())
-							.append(
-									"DELETE FROM MATCHED_PARTICIPANT_MAPPING WHERE SEARCHED_PARTICIPANT_ID='")
-							.append(id).append("'").toString());
+		try
+		{
+			jdbcdao = getJDBCDAO();
+			jdbcdao.executeUpdate((new StringBuilder()).append(
+					"DELETE FROM MATCHED_PARTICIPANT_MAPPING WHERE SEARCHED_PARTICIPANT_ID='")
+					.append(id).append("'").toString());
 			jdbcdao.commit();
-		} catch (DAOException e) {
+		}
+		catch (DAOException e)
+		{
 			jdbcdao.rollback();
 			throw new DAOException(e.getErrorKey(), e, e.getMessage());
-		} finally {
+		}
+		finally
+		{
 			jdbcdao.closeSession();
 		}
 		jdbcdao.closeSession();

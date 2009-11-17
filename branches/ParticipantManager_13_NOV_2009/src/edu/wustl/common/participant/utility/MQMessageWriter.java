@@ -1,87 +1,179 @@
+
 package edu.wustl.common.participant.utility;
+
 import java.io.IOException;
 
+import com.ibm.mq.MQC;
+import com.ibm.mq.MQEnvironment;
 import com.ibm.mq.MQException;
+import com.ibm.mq.MQMessage;
+import com.ibm.mq.MQQueue;
+import com.ibm.mq.MQQueueManager;
 
-import com.ibm.mq.*;
-
+// TODO: Auto-generated Javadoc
+/**
+ * The Class MQMessageWriter.
+ */
 public class MQMessageWriter
 {
+
+	/** The host name. */
 	private String hostName;
+
+	/** The port. */
 	private int port;
+
+	/** The q manager name. */
 	private String qManagerName;
+
+	/** The channel name. */
 	private String channelName;
+
+	/** The q name. */
 	private String qName;
-	
-	public void setHostName(String hostName) {
+
+	/**
+	 * Sets the host name.
+	 *
+	 * @param hostName the new host name
+	 */
+	public void setHostName(String hostName)
+	{
 		this.hostName = hostName;
 	}
-	public String getHostName() {
+
+	/**
+	 * Gets the host name.
+	 *
+	 * @return the host name
+	 */
+	public String getHostName()
+	{
 		return hostName;
 	}
-	
-	public void setPort(int port) {
+
+	/**
+	 * Sets the port.
+	 *
+	 * @param port the new port
+	 */
+	public void setPort(int port)
+	{
 		this.port = port;
 	}
-	public int getPort() {
+
+	/**
+	 * Gets the port.
+	 *
+	 * @return the port
+	 */
+	public int getPort()
+	{
 		return port;
 	}
-	
-	public void setQManagerName(String qManagerName) {
+
+	/**
+	 * Sets the q manager name.
+	 *
+	 * @param qManagerName the new q manager name
+	 */
+	public void setQManagerName(String qManagerName)
+	{
 		this.qManagerName = qManagerName;
 	}
-	public String getQManagerName() {
+
+	/**
+	 * Gets the q manager name.
+	 *
+	 * @return the q manager name
+	 */
+	public String getQManagerName()
+	{
 		return qManagerName;
 	}
-	
-	public void setChannelName(String channelName) {
+
+	/**
+	 * Sets the channel name.
+	 *
+	 * @param channelName the new channel name
+	 */
+	public void setChannelName(String channelName)
+	{
 		this.channelName = channelName;
 	}
-	public String getChannelName() {
+
+	/**
+	 * Gets the channel name.
+	 *
+	 * @return the channel name
+	 */
+	public String getChannelName()
+	{
 		return channelName;
 	}
-	
-	public void setQName(String qName) {
+
+	/**
+	 * Sets the q name.
+	 *
+	 * @param qName the new q name
+	 */
+	public void setQName(String qName)
+	{
 		this.qName = qName;
 	}
-	public String getQName() {
+
+	/**
+	 * Gets the q name.
+	 *
+	 * @return the q name
+	 */
+	public String getQName()
+	{
 		return qName;
 	}
+
 	/**
-	 * Method to send MQ text messages
+	 * Method to send MQ text messages.
+	 *
 	 * @param messageStr Message String
 	 */
 	@SuppressWarnings("unchecked")
-	public void sendTextMessage(String messageStr) {
-		try {
-			MQEnvironment.hostname = getHostName(); 
-			MQEnvironment.channel = getChannelName(); 
+	public void sendTextMessage(String messageStr)
+	{
+		try
+		{
+			MQEnvironment.hostname = getHostName();
+			MQEnvironment.channel = getChannelName();
 			MQEnvironment.port = getPort();
 			MQEnvironment.properties.put(MQC.TRANSPORT_PROPERTY, MQC.TRANSPORT_MQSERIES);
-			
+
 			MQQueueManager mqManager = new MQQueueManager(getQManagerName());
-			
+
 			//int openOptions = MQC.MQOO_INPUT_AS_Q_DEF | MQC.MQOO_OUTPUT;
 			int openOptions = MQC.MQOO_OUTPUT;
 			MQQueue queue = mqManager.accessQueue(getQName(), openOptions);
-			
+
 			MQMessage message = new MQMessage();
 			message.format = MQC.MQFMT_STRING;
 			message.expiry = MQC.MQEI_UNLIMITED;
 			message.writeString(messageStr);
-			
+
 			queue.put(message);
-			
+
 			//close queue
-			queue.close(); 
-			// Disconnect from the mq manager 
-			mqManager.disconnect(); 
-		} catch (IOException e) {
+			queue.close();
+			// Disconnect from the mq manager
+			mqManager.disconnect();
+		}
+		catch (IOException e)
+		{
 			new RuntimeException("Can not write message to the queue" + e);
-		} catch (MQException e) {
+		}
+		catch (MQException e)
+		{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} 
+		}
 	}
-	
+
 }
