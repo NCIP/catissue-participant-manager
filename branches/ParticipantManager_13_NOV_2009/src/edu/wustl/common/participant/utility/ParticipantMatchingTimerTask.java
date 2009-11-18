@@ -59,13 +59,20 @@ public class ParticipantMatchingTimerTask extends TimerTask
 	 */
 	private List fetchSearchParticipantIds() throws DAOException
 	{
-		String appName = CommonServiceLocator.getInstance().getAppName();
-		IDAOFactory daoFactory = DAOConfigFactory.getInstance().getDAOFactory(appName);
-		JDBCDAO dao = daoFactory.getJDBCDAO();
-		dao.openSession(null);
-		String query = "SELECT SEARCHED_PARTICIPANT_ID FROM MATCHED_PARTICIPANT_MAPPING WHERE NO_OF_MATCHED_PARTICIPANTS='-1'";
-		List idList = dao.executeQuery(query);
-		dao.closeSession();
+
+		JDBCDAO dao = null;
+		List idList = null;
+		try
+		{
+			dao = ParticipantManagerUtility.getJDBCDAO();
+			dao.openSession(null);
+			String query = "SELECT SEARCHED_PARTICIPANT_ID FROM MATCHED_PARTICIPANT_MAPPING WHERE NO_OF_MATCHED_PARTICIPANTS='-1'";
+			idList = dao.executeQuery(query);
+		}
+		finally
+		{
+			dao.closeSession();
+		}
 		return idList;
 	}
 }

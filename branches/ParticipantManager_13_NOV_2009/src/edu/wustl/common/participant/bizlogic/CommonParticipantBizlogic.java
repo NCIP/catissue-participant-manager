@@ -55,9 +55,7 @@ public class CommonParticipantBizlogic
 	{
 		final IParticipant participant = (IParticipant) obj;
 		// update metaPhoneInformartion
-		final Metaphone metaPhoneObj = new Metaphone();
-		final String lNameMetaPhone = metaPhoneObj.metaphone(participant.getLastName());
-		participant.setMetaPhoneCode(lNameMetaPhone);
+		setMetaPhoneCode(participant);
 		dao.insert(participant);
 		auditManager.insertAudit(dao, participant);
 		Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> pmiCollection = participant
@@ -102,13 +100,17 @@ public class CommonParticipantBizlogic
 	public static void update(DAO dao, IParticipant participant, IParticipant oldParticipant,
 			AuditManager auditManager) throws BizLogicException, DAOException, AuditException
 	{
-		final Metaphone metaPhoneObj = new Metaphone();
-		final String lNameMetaPhone = metaPhoneObj.metaphone(participant.getLastName());
-		participant.setMetaPhoneCode(lNameMetaPhone);
+
+		setMetaPhoneCode(participant);
 		dao.update(participant);
 		auditManager.updateAudit(dao, participant, oldParticipant);
 	}
 
+	private static void setMetaPhoneCode(IParticipant participant){
+		final Metaphone metaPhoneObj = new Metaphone();
+		final String lNameMetaPhone = metaPhoneObj.metaphone(participant.getLastName());
+		participant.setMetaPhoneCode(lNameMetaPhone);
+	}
 	/**
 	 * Update pmi.
 	 *

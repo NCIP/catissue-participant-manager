@@ -26,7 +26,7 @@ public class ParticipantAddAction extends CommonAddEditAction
 {
 
 	/** The logger. */
-	private static Logger logger = Logger.getCommonLogger(ParticipantAddAction.class);
+	private static final Logger logger = Logger.getCommonLogger(ParticipantAddAction.class);
 
 	/*
 	 * (non-Javadoc)
@@ -51,7 +51,7 @@ public class ParticipantAddAction extends CommonAddEditAction
 			forward = super.execute(mapping, (AbstractActionForm) participantForm, request,
 					response);
 
-			if (!forward.getName().equals("failure"))
+			if (!forward.getName().equals(Constants.FAILURE))
 			{
 				// if for CS eMPI is enable then set the eMPI status as pending if its eligible
 				if (ParticipantManagerUtility.csEMPIStatus(participantForm.getId()))

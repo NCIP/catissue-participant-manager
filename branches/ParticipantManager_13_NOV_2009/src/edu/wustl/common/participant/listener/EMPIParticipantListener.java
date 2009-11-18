@@ -34,6 +34,7 @@ import edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
 import edu.wustl.common.participant.domain.IRace;
 import edu.wustl.common.participant.domain.ISite;
 import edu.wustl.common.participant.domain.IUser;
+import edu.wustl.common.participant.utility.Constants;
 import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.util.XMLPropertyHandler;
 import edu.wustl.common.util.global.CommonServiceLocator;
@@ -63,7 +64,7 @@ public class EMPIParticipantListener implements MessageListener
 {
 
 	/** The logger. */
-	private static Logger logger = Logger.getCommonLogger(EMPIParticipantListener.class);
+	private static final Logger logger = Logger.getCommonLogger(EMPIParticipantListener.class);
 	/** The document. */
 	private Document document;
 
@@ -162,8 +163,10 @@ public class EMPIParticipantListener implements MessageListener
 			if (message instanceof TextMessage)
 			{
 				personDemoGraphics = ((TextMessage) message).getText();
-				loginName = XMLPropertyHandler.getValue("catissueAdminLoginId");
-				validUser = getUser(loginName, "Active");
+				logger.info(" Received demographics message \n \n" );
+				logger.info(personDemoGraphics);
+				loginName = XMLPropertyHandler.getValue(Constants.CATISSUE_ADMIN_LOGIN_ID);
+				validUser = getUser(loginName,  Constants.ACTIVITY_STATUS_ACTIVE);
 				sourceObjectName = IParticipant.class.getName();
 				document = getDocument(personDemoGraphics);
 				docEle = document.getDocumentElement();
@@ -198,6 +201,7 @@ public class EMPIParticipantListener implements MessageListener
 		}
 		catch (Exception e)
 		{
+			logger.info(e.getCause());
 			logger.info(e.getMessage());
 		}
 	}
@@ -215,22 +219,26 @@ public class EMPIParticipantListener implements MessageListener
 	private String getPermanentId(String clinPortalId) throws DAOException, SQLException
 	{
 		String permanentId = null;
-		String appName = CommonServiceLocator.getInstance().getAppName();
-		IDAOFactory daoFactory = DAOConfigFactory.getInstance().getDAOFactory(appName);
+
 		JDBCDAO jdbcdao = null;
-		jdbcdao = daoFactory.getJDBCDAO();
-		jdbcdao.openSession(null);
-		ResultSet rs = jdbcdao.getQueryResultSet((new StringBuilder()).append(
-				"select permanent_participant_id from catissue_empi_parti_id_mapping where tempar"
-						+ "ary_participant_id='").append(clinPortalId).append("'").toString());
-		if (rs != null)
+		try
 		{
-			while (rs.next())
+			jdbcdao=ParticipantManagerUtility.getJDBCDAO();
+			ResultSet rs = jdbcdao.getQueryResultSet((new StringBuilder()).append(
+					"select permanent_participant_id from catissue_empi_parti_id_mapping where tempar"
+							+ "ary_participant_id='").append(clinPortalId).append("'").toString());
+			if (rs != null)
 			{
-				permanentId = rs.getString("permanent_participant_id");
+				while (rs.next())
+				{
+					permanentId = rs.getString("permanent_participant_id");
+				}
 			}
 		}
-		jdbcdao.closeSession();
+		finally
+		{
+			jdbcdao.closeSession();
+		}
 		return permanentId;
 	}
 
@@ -244,7 +252,7 @@ public class EMPIParticipantListener implements MessageListener
 	 */
 	private void checkUserAccount(String loginName) throws BizLogicException, Exception
 	{
-		if (getUser(loginName, "Closed") != null)
+		if (getUser(loginName, Constants.ACTIVITY_STATUS_CLOSED) != null)
 		{
 			throw new Exception((new StringBuilder()).append(loginName).append(
 					" Closed user. Sending back to the login Page").toString());
@@ -280,16 +288,16 @@ public class EMPIParticipantListener implements MessageListener
 					.getChildNodes();
 			for (int i = 0; i < childNodeList.getLength(); i++)
 			{
-				if (("Unspecified".equals(partcipantObj.getGender()) || "Unknown"
+				if ((Constants.UNSPECIFIED.equals(partcipantObj.getGender()) || Constants.UNKNOWN
 						.equals(partcipantObj.getGender()))
-						&& "gender".equals(childNodeList.item(i).getNodeName()))
+						&& Constants.EMPI_DEMOGRAPHIC_XML_GENDER.equals(childNodeList.item(i).getNodeName()))
 				{
 					Element ele = (Element) childNodeList.item(i);
 					String value = getNodeValue(ele, "id");
 					gender = PropertyHandler.getValue(value);
 					partcipantObj.setGender(gender);
 				}
-				if ("raceCollection".equals(childNodeList.item(i).getNodeName()))
+				if (Constants.EMPI_DEMOGRAPHIC_XML_RACE_COLLECTION.equals(childNodeList.item(i).getNodeName()))
 				{
 					setRaceCollection(partcipantObj, childNodeList.item(i));
 				}
@@ -299,7 +307,8 @@ public class EMPIParticipantListener implements MessageListener
 			processPartiMedIdColl(partiMedicalIdColl, partcipantObj);
 			participant = partcipantObj;
 			partcipantObj.setEmpiId(personUpi);
-			partcipantObj.setEmpiIdStatus("CREATED");
+			partcipantObj.setEmpiIdStatus(Constants.EMPI_ID_CREATED);
+			//partcipantObj.setEmpiIdStatus(Constants.EMPI_ID_PENDING);
 			partcipantObj.setParticipantMedicalIdentifierCollection(partiMedicalIdColl);
 			DefaultBizLogic bizlogic = new DefaultBizLogic();
 			bizlogic.update(partcipantObj, participant, sessionData);
@@ -332,9 +341,9 @@ public class EMPIParticipantListener implements MessageListener
 				}
 				race = (IRace) itr.next();
 			}
-			while (!"Unknown".equalsIgnoreCase(race.getRaceName())
-					&& !"Not Reported".equals(race.getRaceName())
-					&& !"Not Specified".equals(race.getRaceName()));
+			while (!Constants.UNKNOWN.equalsIgnoreCase(race.getRaceName())
+					&& !Constants.NOT_REPORTED.equals(race.getRaceName())
+					&& !Constants.NOTSPECIFIED.equals(race.getRaceName()));
 			raceCollection = getRaceCollection(childNode, partcipantObj);
 			partcipantObj.setRaceCollection(raceCollection);
 		}
@@ -507,10 +516,9 @@ public class EMPIParticipantListener implements MessageListener
 	 * Process domographic xml.
 	 *
 	 * @param docEle the doc ele
-	 *
-	 * @throws BizLogicException the biz logic exception
+	 * @throws Exception
 	 */
-	private void processDomographicXML(Element docEle) throws BizLogicException
+	private void processDomographicXML(Element docEle) throws Exception
 	{
 		IParticipantMedicalIdentifier participantMedicalIdentifier = null;
 		partiMedIdColl = new LinkedHashSet();
@@ -540,7 +548,7 @@ public class EMPIParticipantListener implements MessageListener
 				}
 			}
 
-			if ("6B".equals(facilityId))
+			if (Constants.CLINPORTAL_FACILITY_ID.equals(facilityId))
 			{
 				clinPortalId = mrn;
 			}

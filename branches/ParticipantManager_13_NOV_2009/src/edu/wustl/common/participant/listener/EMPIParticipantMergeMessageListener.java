@@ -12,6 +12,7 @@ import javax.jms.MessageListener;
 import javax.jms.TextMessage;
 
 import edu.wustl.common.participant.utility.Constants;
+import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.util.global.CommonServiceLocator;
 import edu.wustl.common.util.logger.Logger;
 import edu.wustl.dao.JDBCDAO;
@@ -23,7 +24,7 @@ import edu.wustl.dao.query.generator.ColumnValueBean;
 public class EMPIParticipantMergeMessageListener implements MessageListener
 {
 
-	private static Logger logger = Logger
+	private static final Logger logger = Logger
 			.getCommonLogger(EMPIParticipantMergeMessageListener.class);
 
 	public EMPIParticipantMergeMessageListener()
@@ -43,8 +44,7 @@ public class EMPIParticipantMergeMessageListener implements MessageListener
 		String mrgEmpiId = "";
 		String pidEmpiId = "";
 		String mergeMessage = "";
-		String appName = CommonServiceLocator.getInstance().getAppName();
-		IDAOFactory daoFactory = DAOConfigFactory.getInstance().getDAOFactory(appName);
+
 		JDBCDAO jdbcdao = null;
 		try
 		{
@@ -83,8 +83,8 @@ public class EMPIParticipantMergeMessageListener implements MessageListener
 					mrgEmpiId = getEMPIId(mrgEmpiId);
 					try
 					{
-						jdbcdao = daoFactory.getJDBCDAO();
-						jdbcdao.openSession(null);
+
+						jdbcdao =ParticipantManagerUtility.getJDBCDAO();
 						if (isEMPIIdExists(jdbcdao, pidEmpiId, mrgEmpiId))
 						{
 							storeMergeMessage(jdbcdao, mergeMessage, hl7EventType, pidEmpiId,

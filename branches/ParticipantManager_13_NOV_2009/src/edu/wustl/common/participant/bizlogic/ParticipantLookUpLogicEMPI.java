@@ -9,6 +9,7 @@ import edu.wustl.common.lookup.DefaultLookupParameters;
 import edu.wustl.common.lookup.LookupLogic;
 import edu.wustl.common.lookup.LookupParameters;
 import edu.wustl.common.participant.domain.IParticipant;
+import edu.wustl.common.participant.utility.Constants;
 import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.util.XMLPropertyHandler;
 import edu.wustl.patientLookUp.domain.PatientInformation;
@@ -54,10 +55,9 @@ public class ParticipantLookUpLogicEMPI implements LookupLogic
 			IParticipant participant = (IParticipant) participantParams.getObject();
 			PatientInformation patientInformation = ParticipantManagerUtility
 					.populatePatientObject(participant);
-			cutoffPoints = Integer.valueOf(XMLPropertyHandler.getValue("empi.threshold"))
-					.intValue();
-			maxNoOfParticipantsToReturn = Integer.valueOf(
-					XMLPropertyHandler.getValue("empi.MaxNoOfPatients")).intValue();
+			cutoffPoints = Integer.valueOf(XMLPropertyHandler.getValue(Constants.EMPITHRESHOLD));
+			maxNoOfParticipantsToReturn = Integer.valueOf(XMLPropertyHandler
+					.getValue(Constants.EMPIMAXNOOFPATIENS));
 			List empiParticipantsList = searchMatchingParticipantFromEMPI(participant,
 					patientInformation);
 			return empiParticipantsList;
@@ -78,22 +78,14 @@ public class ParticipantLookUpLogicEMPI implements LookupLogic
 	protected List searchMatchingParticipantFromEMPI(IParticipant participant,
 			PatientInformation patientInformation) throws BizLogicException, PatientLookupException
 	{
-		List matchingParticipantsList;
-		String dbURL;
-		String dbUser;
-		String dbPassword;
-		String dbDriver;
-		String dbSchema;
-		int maxNoOfPatients;
-		matchingParticipantsList = new ArrayList();
-		dbURL = XMLPropertyHandler.getValue("empi.DBURL");
-		dbUser = XMLPropertyHandler.getValue("empi.DBUserName");
-		dbPassword = XMLPropertyHandler.getValue("empi.DBUserPassword");
-		dbDriver = XMLPropertyHandler.getValue("empi.DBDriverName");
-		dbSchema = XMLPropertyHandler.getValue("empi.DBSchema");
-		cutoffPoints = Integer.valueOf(XMLPropertyHandler.getValue("empi.threshold")).intValue();
-		maxNoOfPatients = Integer.valueOf(XMLPropertyHandler.getValue("empi.MaxNoOfPatients"))
-				.intValue();
+		List matchingParticipantsList = new ArrayList();
+		String dbURL = XMLPropertyHandler.getValue(Constants.EMPIDBURL);
+		String dbUser = XMLPropertyHandler.getValue(Constants.EMPIDBUSERNAME);
+		String dbPassword = XMLPropertyHandler.getValue(Constants.EMPIDBUSERPASSWORD);
+		String dbDriver = XMLPropertyHandler.getValue(Constants.EMPIDBDRIVERNAME);
+		String dbSchema = XMLPropertyHandler.getValue(Constants.EMPIDBSCHEMA);
+
+
 		List participantsEMPI;
 		String lastName=null;
 		String firstName=null;
@@ -103,7 +95,7 @@ public class ParticipantLookUpLogicEMPI implements LookupLogic
 			edu.wustl.patientLookUp.queryExecutor.IQueryExecutor xQueyExecutor = PatientLookUpFactory
 					.getQueryExecutorImpl(dbURL, dbUser, dbPassword, dbDriver, dbSchema);
 			participantsEMPI = lookUpEMPI.patientLookupService(patientInformation, xQueyExecutor,
-					cutoffPoints, maxNoOfPatients);
+					cutoffPoints, maxNoOfParticipantsToReturn);
 			if (participantsEMPI != null && participantsEMPI.size() > 0)
 			{
 				for (int i = 0; i < participantsEMPI.size(); i++)
@@ -129,7 +121,7 @@ public class ParticipantLookUpLogicEMPI implements LookupLogic
 						empiPatientInformation.setSsn("");
 					}
 
-					empiPatientInformation.setId(new Long(0 - i));
+					empiPatientInformation.setId(Long.valueOf((0 - i)));
 					matchingParticipantsList.add(empiPatientInformation);
 				}
 

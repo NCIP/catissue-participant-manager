@@ -15,6 +15,7 @@ import edu.wustl.common.lookup.LookupParameters;
 import edu.wustl.common.participant.domain.IParticipant;
 import edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
 import edu.wustl.common.participant.domain.ISite;
+import edu.wustl.common.participant.utility.Constants;
 import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.util.XMLPropertyHandler;
 import edu.wustl.common.util.global.CommonServiceLocator;
@@ -86,10 +87,10 @@ public class ParticipantLookupLogic implements LookupLogic
 			IParticipant participant = (IParticipant) participantParams.getObject();
 			PatientInformation patientInformation = ParticipantManagerUtility
 					.populatePatientObject(participant);
-			cutoffPoints = Integer.valueOf(XMLPropertyHandler.getValue("empi.threshold"))
+			cutoffPoints = Integer.valueOf(XMLPropertyHandler.getValue(Constants.EMPITHRESHOLD))
 					.intValue();
 			maxNoOfParticipantsToReturn = Integer.valueOf(
-					XMLPropertyHandler.getValue("empi.MaxNoOfPatients")).intValue();
+					XMLPropertyHandler.getValue(Constants.EMPIMAXNOOFPATIENS)).intValue();
 			List matchingParticipantsList = searchMatchingParticipant(patientInformation);
 			return matchingParticipantsList;
 		}
@@ -110,12 +111,10 @@ public class ParticipantLookupLogic implements LookupLogic
 	{
 		List matchingParticipantsList = new ArrayList();
 		PatientInfoLookUpService patientLookupObj = new PatientInfoLookUpService();
+		JDBCDAO jdbcDAO =  null;
 		try
 		{
-			String appName = CommonServiceLocator.getInstance().getAppName();
-			IDAOFactory daoFactory = DAOConfigFactory.getInstance().getDAOFactory(appName);
-			JDBCDAO jdbcDAO = daoFactory.getJDBCDAO();
-			jdbcDAO.openSession(null);
+			jdbcDAO = ParticipantManagerUtility.getJDBCDAO();
 			edu.wustl.patientLookUp.queryExecutor.IQueryExecutor queryExecutor = new SQLQueryExecutorImpl(
 					jdbcDAO);
 			List patientInfoList = patientLookupObj.patientLookupService(patientInformation,
@@ -172,13 +171,14 @@ public class ParticipantLookupLogic implements LookupLogic
 					result.setObject(partcipantNew);
 					matchingParticipantsList.add(result);
 				}
-
 			}
-			jdbcDAO.closeSession();
+
 		}
 		catch (DAOException daoExp)
 		{
 			throw new ApplicationException(daoExp.getErrorKey(), daoExp, daoExp.getMsgValues());
+		}finally {
+			jdbcDAO.closeSession();
 		}
 		return matchingParticipantsList;
 	}
