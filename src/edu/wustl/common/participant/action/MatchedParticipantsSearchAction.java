@@ -70,7 +70,7 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 		try
 		{
 			forward = super.execute(mapping, participantForm, request, response);
-			if (!forward.getName().equals("failure"))
+			if (!forward.getName().equals(edu.wustl.common.util.global.Constants.FAILURE))
 			{
 				String obj = request.getParameter("id");
 				Long identifier = Long.valueOf(Utility.toLong(obj));
@@ -100,7 +100,7 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 	 */
 	protected SessionDataBean getSessionData(HttpServletRequest request)
 	{
-		return (SessionDataBean) request.getSession().getAttribute("sessionData");
+		return (SessionDataBean) request.getSession().getAttribute(edu.wustl.common.util.global.Constants.SESSION_DATA);
 	}
 
 	/**
@@ -117,13 +117,12 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 	private void fetchMatchedParticipantsFromDB(long participantId, HttpServletRequest request)
 			throws Exception
 	{
-		String appName = CommonServiceLocator.getInstance().getAppName();
-		IDAOFactory daoFactory = DAOConfigFactory.getInstance().getDAOFactory(appName);
+		JDBCDAO dao = null;
 		List<DefaultLookupResult> matchPartpantLst = null;
 		try
 		{
-			JDBCDAO dao = daoFactory.getJDBCDAO();
-			dao.openSession(null);
+			dao = ParticipantManagerUtility.getJDBCDAO();
+
 			String query = getSelectQuery(participantId);
 			List matchPartpantLstTemp = dao.executeQuery(query);
 			if (matchPartpantLstTemp != null && !matchPartpantLstTemp.isEmpty())
@@ -136,12 +135,14 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 				setStatusMessage(request);
 				ParticipantManagerUtility.deleteProcessedParticipant(Long.valueOf(participantId));
 			}
-			dao.closeSession();
+
 		}
 		catch (DAOException e)
 		{
 			e.printStackTrace();
 			throw new DAOException(e.getErrorKey(), e, e.getMsgValues());
+		}finally{
+			dao.closeSession();
 		}
 	}
 
@@ -231,7 +232,7 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 		if (participantValueList.get(9) != null && participantValueList.get(9) != "")
 		{
 			dateStr = (String) participantValueList.get(9);
-			date = Utility.parseDate(dateStr, "MM-dd-yyyy");
+			date = Utility.parseDate(dateStr,Constants.DATE_FORMAT);
 			participant.setDeathDate(date);
 		}
 		participant.setVitalStatus((String) participantValueList.get(10));
@@ -320,45 +321,13 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 		String values[] = value.split(":");
 		String mrn = values[0];
 		String facilityId = values[1];
-		ISite siteObj = getSiteObject(facilityId);
+		ISite siteObj = ParticipantManagerUtility.getSiteObject(facilityId);
 		participantMedicalIdentifier.setMedicalRecordNumber(mrn);
 		participantMedicalIdentifier.setSite(siteObj);
 		return participantMedicalIdentifier;
 	}
 
-	/**
-	 * Gets the site object.
-	 *
-	 * @param facilityId
-	 *            the facility id
-	 *
-	 * @return the site object
-	 *
-	 * @throws Exception
-	 *             the exception
-	 */
-	private ISite getSiteObject(String facilityId) throws Exception
-	{
-		String sourceObjectName = ISite.class.getName();
-		String selectColumnNames[] = {"id", "name"};
-		String whereColumnName[] = {"facilityId"};
-		String whColCondn[] = {"="};
-		DefaultBizLogic bizLogic = new DefaultBizLogic();
-		ISite site = null;
-		Object whereColumnValue[] = {facilityId};
-		List siteObject = bizLogic.retrieve(sourceObjectName, selectColumnNames, whereColumnName,
-				whColCondn, whereColumnValue, null);
-		if (siteObject != null && siteObject.size() > 0)
-		{
-			Object siteList[] = (Object[]) (Object[]) siteObject.get(0);
-			Long siteId = (Long) siteList[0];
-			String siteName = (String) siteList[1];
-			site = (ISite) ParticipantManagerUtility.getSiteInstance();
-			site.setId(siteId);
-			site.setName(siteName);
-		}
-		return site;
-	}
+
 
 	/**
 	 * Gets the select query.
@@ -392,10 +361,10 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 	{
 		ActionMessages messages = new ActionMessages();
 		List<String> columnList = ParticipantManagerUtility.getColumnHeadingList();
-		request.setAttribute("spreadsheetColumnList", columnList);
+		request.setAttribute(edu.wustl.common.util.global.Constants.SPREADSHEET_COLUMN_LIST, columnList);
 		List<List<String>> pcpantDisplayLst = ParticipantManagerUtility
 				.getParticipantDisplayList(matchPartpantLst);
-		request.setAttribute("spreadsheetDataList", pcpantDisplayLst);
+		request.setAttribute(Constants.SPREADSHEET_DATA_LIST, pcpantDisplayLst);
 		HttpSession session = request.getSession();
 		session.setAttribute("MatchedParticpant", matchPartpantLst);
 		if (request.getAttribute("continueLookup") == null)

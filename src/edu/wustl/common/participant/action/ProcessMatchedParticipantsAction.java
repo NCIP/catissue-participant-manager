@@ -64,7 +64,7 @@ public class ProcessMatchedParticipantsAction extends Action
 			}
 			else
 			{
-				recordsPerPage = (new Integer(recordsPerPageSessionValue)).intValue();
+				recordsPerPage = (Integer.valueOf((recordsPerPageSessionValue))).intValue();
 			}
 			String isDelete = request.getParameter("isDelete");
 			String particicipantId = request.getParameter("participantId");

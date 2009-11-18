@@ -229,11 +229,20 @@ public class Constants
 	/** The Constant PARTICIPANT_EMPI_GENERATION_ACTION. */
 	public static final String PARTICIPANT_EMPI_GENERATION_ACTION = "ParticipantEMPIGeneration.do";
 
+	public static final String TIMESTAMP_PATTERN = "MM-dd-yyyy HH:mm";
+
+
 	/** The Constant CSM. */
 	public static final String CSM = "csm";
 
 	/** The Constant YES. */
 	public static final String YES = "yes";
+
+	public static final String UNDEFINED = "Undefined";
+	public static final String UNKNOWN = "Unknown";
+	public static final String UNSPECIFIED = "Unspecified";
+	public static final String NOTSPECIFIED = "Not Specified";
+
 
 	/**
 	 * Instantiates a new constants.

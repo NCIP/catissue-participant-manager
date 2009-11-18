@@ -11,7 +11,9 @@ import java.util.Locale;
 
 import edu.wustl.common.participant.domain.IParticipant;
 import edu.wustl.common.participant.domain.IRace;
+import edu.wustl.common.participant.utility.Constants;
 import edu.wustl.common.participant.utility.MQMessageWriter;
+import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.participant.utility.RaceGenderCodesProperyHandler;
 import edu.wustl.common.util.Utility;
 import edu.wustl.common.util.XMLPropertyHandler;
@@ -32,7 +34,7 @@ public class EMPIParticipantRegistrationBizLogic
 {
 
 	/** The logger. */
-	private static Logger logger = Logger
+	private static final Logger logger = Logger
 			.getCommonLogger(EMPIParticipantRegistrationBizLogic.class);
 
 	/** The blank literal. */
@@ -126,7 +128,7 @@ public class EMPIParticipantRegistrationBizLogic
 	public void registerPatientToeMPI(IParticipant participant) throws Exception
 	{
 		String hl7Message = "";
-		String eventTypeCode = "A04";
+		String eventTypeCode = Constants.HL7_REG_EVENT_TYPE;
 		try
 		{
 			String commonHL7Segments = getMSHEVNPIDSengment(participant, eventTypeCode);
@@ -197,7 +199,7 @@ public class EMPIParticipantRegistrationBizLogic
 	{
 		logger.info("\n\n  MRN Merge HL7 Message \n \n \n\n\n");
 		String hl7Message = "";
-		String eventTypeCode = "A34";
+		String eventTypeCode = Constants.HL7_MERGE_EVENT_TYPE_A34;
 		String commonHL7Segments = getMSHEVNPIDSengment(participant, eventTypeCode);
 		String mgrSegment = getHL7MgrSegment(participant.getEmpiId(), oldParticipantId);
 		hl7Message = (new StringBuilder()).append(commonHL7Segments).append("\r")
@@ -218,7 +220,7 @@ public class EMPIParticipantRegistrationBizLogic
 	{
 		String hl7Message = "";
 		logger.info("\n\n  EMPI Merge HL7 Message \n \n \n\n\n");
-		String eventTypeCode = "A34";
+		String eventTypeCode = Constants.HL7_MERGE_EVENT_TYPE_A34;
 		String commonHL7Segments = getMSHEVNPIDSengment(participant, eventTypeCode);
 		String mgrSegment = getHL7MgrSegment(oldEMPIID, String.valueOf(participant.getId()));
 		hl7Message = (new StringBuilder()).append(commonHL7Segments).append("\r")
@@ -267,7 +269,7 @@ public class EMPIParticipantRegistrationBizLogic
 	{
 		String empiIdZeroAppnd = getZeroAppendedEMPIId(eMPI);
 		String eMPIID = (new StringBuilder()).append(empiIdZeroAppnd).append("^^^64").toString();
-		String mrn = (new StringBuilder()).append(particiapntId).append("^^^").append("6B").append(
+		String mrn = (new StringBuilder()).append(particiapntId).append("^^^").append(Constants.CLINPORTAL_FACILITY_ID).append(
 				"^U").toString();
 		String mgrSegment = (new StringBuilder()).append("MGR|").append(mrn).append("||").append(
 				eMPIID).toString();
@@ -279,7 +281,7 @@ public class EMPIParticipantRegistrationBizLogic
 	 */
 	private void setCurrentDateTime()
 	{
-		SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy", Locale.US);
+		SimpleDateFormat dateFormat = new SimpleDateFormat(Constants.DATE_FORMAT, Locale.US);
 		Calendar calendar = Calendar.getInstance();
 		String dateStr[] = dateFormat.format(calendar.getTime()).split("-");
 		String month = dateStr[0];
@@ -343,7 +345,7 @@ public class EMPIParticipantRegistrationBizLogic
 	 */
 	private String getHL7PIDSegment(IParticipant participant) throws Exception
 	{
-		String facilityId = "6B";
+		String facilityId = Constants.CLINPORTAL_FACILITY_ID;
 		String lastName = participant.getLastName();
 		String firstName = participant.getFirstName();
 		String middleName = getMiddleName(participant.getMiddleName());
@@ -390,10 +392,8 @@ public class EMPIParticipantRegistrationBizLogic
 		pvSegment = null;
 		try
 		{
-			String appName = CommonServiceLocator.getInstance().getAppName();
-			IDAOFactory daoFactory = DAOConfigFactory.getInstance().getDAOFactory(appName);
-			dao = daoFactory.getDAO();
-			dao.openSession(null);
+
+			dao = ParticipantManagerUtility.getJDBCDAO();
 			String hql = getQuery(participant.getId().longValue());
 			List csPINameColl = dao.executeQuery(hql);
 			if (csPINameColl != null && !csPINameColl.isEmpty())
@@ -480,11 +480,13 @@ public class EMPIParticipantRegistrationBizLogic
 	 */
 	private void sendHLMessage(String hl7Message)
 	{
-		String hostName = XMLPropertyHandler.getValue("WMQServerName");
-		String qmgName = XMLPropertyHandler.getValue("WMQMGRName");
-		String channelName = XMLPropertyHandler.getValue("WMQChannel");
-		int port = Integer.parseInt(XMLPropertyHandler.getValue("WMQPort"));
-		String inBoundQueueName = XMLPropertyHandler.getValue("InBoundQueue");
+
+		String hostName = XMLPropertyHandler.getValue(Constants.WMQ_SERVER_NAME);
+		String qmgName = XMLPropertyHandler.getValue(Constants.WMQ_QMG_NAME);
+		String channelName = XMLPropertyHandler.getValue(Constants.WMQ_CHANNEL);
+		int port = Integer.parseInt(XMLPropertyHandler.getValue(Constants.WMQ_PORT));
+		String inBoundQueueName = XMLPropertyHandler.getValue(Constants.IN_BOUND_QUEUE_NAME);
+
 		MQMessageWriter messageWriter = new MQMessageWriter();
 		messageWriter.setHostName(hostName);
 		messageWriter.setPort(port);
@@ -591,7 +593,7 @@ public class EMPIParticipantRegistrationBizLogic
 		String dateOfBirth = null;
 		if (dob != null)
 		{
-			dateOfBirth = Utility.parseDateToString(dob, "yyyy-MM-dd");
+			dateOfBirth = Utility.parseDateToString(dob,Constants.DATE_PATTERN_YYYY_MM_DD);
 			if (dateOfBirth != null && dateOfBirth != "")
 			{
 				String dobStr[] = dateOfBirth.split("-");

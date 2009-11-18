@@ -39,7 +39,7 @@ public class ParticipantEMPIGenerationAction extends CommonAddEditAction
 {
 
 	/** The logger. */
-	private static Logger logger = Logger.getCommonLogger(ParticipantEMPIGenerationAction.class);
+	private static final  Logger logger = Logger.getCommonLogger(ParticipantEMPIGenerationAction.class);
 
 	/* (non-Javadoc)
 	 * @see edu.wustl.common.action.CommonAddEditAction#execute(org.apache.struts.action.ActionMapping, org.apache.struts.action.ActionForm, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)

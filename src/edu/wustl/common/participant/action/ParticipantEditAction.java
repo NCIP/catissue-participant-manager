@@ -36,7 +36,7 @@ import edu.wustl.dao.exception.DAOException;
 public class ParticipantEditAction extends CommonAddEditAction
 {
 
-	private static Logger logger = Logger.getCommonLogger(ParticipantEditAction.class);
+	private static final Logger logger = Logger.getCommonLogger(ParticipantEditAction.class);
 
 	/*
 	 * (non-Javadoc)
@@ -151,13 +151,9 @@ public class ParticipantEditAction extends CommonAddEditAction
 	private void mapParticipantId(String oldeMPIId, String permanentPartiId, String tempararyPartiId)
 			throws DAOException
 	{
-		String appName = CommonServiceLocator.getInstance().getAppName();
-		IDAOFactory daoFactory = DAOConfigFactory.getInstance().getDAOFactory(appName);
 		JDBCDAO jdbcDao = null;
-		try
-		{
-			jdbcDao = daoFactory.getJDBCDAO();
-			jdbcDao.openSession(null);
+		try{
+			jdbcDao=ParticipantManagerUtility.getJDBCDAO();
 			String sql = "INSERT INTO PARTICIPANT_EMPI_ID_MAPPING VALUES('" + permanentPartiId
 					+ "','" + tempararyPartiId + "','" + oldeMPIId + "')";
 			jdbcDao.executeUpdate(sql);

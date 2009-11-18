@@ -48,6 +48,7 @@ public interface IParticipantMedicalIdentifier<T, S>
 	 *
 	 * @param site the new site
 	 */
+
 	public void setSite(S site);
 
 	/**
