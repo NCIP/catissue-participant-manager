@@ -189,12 +189,14 @@ public class EMPIParticipantMergeMessageListener implements MessageListener
 			columnValueBeanList.add(new ColumnValueBean("MESSAGE_STATUS", "false", 21));
 			jdbcdao.executeUpdate(insQuery, columnValueBeanList);
 			jdbcdao.commit();
-			logger.info((new StringBuilder()).append(" Stored merge messages\n").append(hl7Message)
+			logger.info((new StringBuilder()).append("\n \n  ----------- STORED MERGE MESSAGE ----------  \n\n")
 					.toString());
+			logger.info(hl7Message);
 		}
 		catch (DAOException e)
 		{
-			logger.info("Error while storing the participant merge messages\n");
+			logger.info("\n \n --------  ERROR WHILE STORING THE FOLLOWING MERGE MESSAGE ----------\n\n\n");
+			logger.info(hl7Message);
 			logger.info(e.getMessage());
 			throw new DAOException(e.getErrorKey(), e, e.getMessage());
 		}

@@ -26,8 +26,10 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import edu.wustl.common.beans.SessionDataBean;
+import edu.wustl.common.bizlogic.AbstractBizLogic;
 import edu.wustl.common.bizlogic.DefaultBizLogic;
 import edu.wustl.common.exception.BizLogicException;
+import edu.wustl.common.participant.bizlogic.CommonParticipantBizlogic;
 import edu.wustl.common.participant.bizlogic.EMPIParticipantRegistrationBizLogic;
 import edu.wustl.common.participant.domain.IParticipant;
 import edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
@@ -39,6 +41,7 @@ import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.util.XMLPropertyHandler;
 import edu.wustl.common.util.global.CommonServiceLocator;
 import edu.wustl.common.util.logger.Logger;
+import edu.wustl.dao.DAO;
 import edu.wustl.dao.JDBCDAO;
 import edu.wustl.dao.daofactory.DAOConfigFactory;
 import edu.wustl.dao.daofactory.IDAOFactory;
@@ -167,7 +170,11 @@ public class EMPIParticipantListener implements MessageListener
 				logger.info(personDemoGraphics);
 				loginName = XMLPropertyHandler.getValue(Constants.CATISSUE_ADMIN_LOGIN_ID);
 				validUser = getUser(loginName,  Constants.ACTIVITY_STATUS_ACTIVE);
-				sourceObjectName = IParticipant.class.getName();
+				if("clinportal".equals(ParticipantManagerUtility.applicationType())){
+					sourceObjectName = "edu.wustl.clinportal.domain.Participant";
+				}else{
+					sourceObjectName ="edu.wustl.catissue.domain.Participant";
+				}
 				document = getDocument(personDemoGraphics);
 				docEle = document.getDocumentElement();
 				processDomographicXML(docEle);
@@ -225,8 +232,7 @@ public class EMPIParticipantListener implements MessageListener
 		{
 			jdbcdao=ParticipantManagerUtility.getJDBCDAO();
 			ResultSet rs = jdbcdao.getQueryResultSet((new StringBuilder()).append(
-					"select permanent_participant_id from catissue_empi_parti_id_mapping where tempar"
-							+ "ary_participant_id='").append(clinPortalId).append("'").toString());
+					"SELECT PERMANENT_PARTICIPANT_ID FROM PARTICIPANT_EMPI_ID_MAPPING WHERE TEMPARARY_PARTICIPANT_ID='").append(clinPortalId).append("'").toString());
 			if (rs != null)
 			{
 				while (rs.next())
@@ -273,9 +279,10 @@ public class EMPIParticipantListener implements MessageListener
 	 *
 	 * @throws PatientLookupException the patient lookup exception
 	 * @throws BizLogicException the biz logic exception
+	 * @throws DAOException
 	 */
 	private void updateParticipant(Element docEle, IParticipant partcipantObj,
-			SessionDataBean sessionData) throws PatientLookupException, BizLogicException
+			SessionDataBean sessionData) throws PatientLookupException, BizLogicException, DAOException
 	{
 		IParticipant participant = null;
 		String gender = null;
@@ -302,16 +309,18 @@ public class EMPIParticipantListener implements MessageListener
 					setRaceCollection(partcipantObj, childNodeList.item(i));
 				}
 			}
-
 			partiMedicalIdColl = getPartiMedIdColl();
 			processPartiMedIdColl(partiMedicalIdColl, partcipantObj);
 			participant = partcipantObj;
 			partcipantObj.setEmpiId(personUpi);
 			partcipantObj.setEmpiIdStatus(Constants.EMPI_ID_CREATED);
-			//partcipantObj.setEmpiIdStatus(Constants.EMPI_ID_PENDING);
 			partcipantObj.setParticipantMedicalIdentifierCollection(partiMedicalIdColl);
-			DefaultBizLogic bizlogic = new DefaultBizLogic();
+			DAO dao =ParticipantManagerUtility.getDAO();
+			CommonParticipantBizlogic bizlogic = new CommonParticipantBizlogic();
+			//bizlogic.update(partcipantObj);
 			bizlogic.update(partcipantObj, participant, sessionData);
+
+			logger.info("\n\n\n\n\nPARTIICPANT SUCCESSFULLY UPDATED WITH  EMPI \n\n\n\n\n");
 		}
 	}
 
@@ -556,7 +565,9 @@ public class EMPIParticipantListener implements MessageListener
 			{
 				participantMedicalIdentifier = ParticipantManagerUtility
 						.getParticipantMedicalIdentifierObj(mrn, facilityId);
-				partiMedIdColl.add(participantMedicalIdentifier);
+				if(participantMedicalIdentifier!=null){
+					partiMedIdColl.add(participantMedicalIdentifier);
+				}
 			}
 			facilityId = "";
 			mrn = "";

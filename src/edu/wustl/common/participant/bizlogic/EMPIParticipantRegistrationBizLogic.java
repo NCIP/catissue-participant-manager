@@ -269,8 +269,8 @@ public class EMPIParticipantRegistrationBizLogic
 	{
 		String empiIdZeroAppnd = getZeroAppendedEMPIId(eMPI);
 		String eMPIID = (new StringBuilder()).append(empiIdZeroAppnd).append("^^^64").toString();
-		String mrn = (new StringBuilder()).append(particiapntId).append("^^^").append(Constants.CLINPORTAL_FACILITY_ID).append(
-				"^U").toString();
+		String mrn = (new StringBuilder()).append(particiapntId).append("^^^").append(
+				Constants.CLINPORTAL_FACILITY_ID).append("^U").toString();
 		String mgrSegment = (new StringBuilder()).append("MGR|").append(mrn).append("||").append(
 				eMPIID).toString();
 		return mgrSegment;
@@ -393,7 +393,12 @@ public class EMPIParticipantRegistrationBizLogic
 		try
 		{
 
-			dao = ParticipantManagerUtility.getJDBCDAO();
+			//dao = ParticipantManagerUtility.getJDBCDAO();
+			String appName = CommonServiceLocator.getInstance().getAppName();
+			IDAOFactory daoFactory = DAOConfigFactory.getInstance().getDAOFactory(appName);
+			dao = daoFactory.getDAO();
+			dao.openSession(null);
+
 			String hql = getQuery(participant.getId().longValue());
 			List csPINameColl = dao.executeQuery(hql);
 			if (csPINameColl != null && !csPINameColl.isEmpty())
@@ -593,7 +598,7 @@ public class EMPIParticipantRegistrationBizLogic
 		String dateOfBirth = null;
 		if (dob != null)
 		{
-			dateOfBirth = Utility.parseDateToString(dob,Constants.DATE_PATTERN_YYYY_MM_DD);
+			dateOfBirth = Utility.parseDateToString(dob, Constants.DATE_PATTERN_YYYY_MM_DD);
 			if (dateOfBirth != null && dateOfBirth != "")
 			{
 				String dobStr[] = dateOfBirth.split("-");

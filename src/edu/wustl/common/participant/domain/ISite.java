@@ -35,4 +35,8 @@ public interface ISite
 	 * @param name the new name
 	 */
 	public void setName(String name);
+
+	public String getFacilityId();
+
+	public void setFacilityId(String facilityId);
 }

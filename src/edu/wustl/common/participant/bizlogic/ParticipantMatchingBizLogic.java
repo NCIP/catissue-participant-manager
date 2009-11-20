@@ -308,12 +308,10 @@ public class ParticipantMatchingBizLogic
 		try
 		{
 			dao = ParticipantManagerUtility.getJDBCDAO();
-			String query = (new StringBuilder())
-					.append(
-							"SELECT SEARCHED_PARTICIPANT_ID,LAST_NAME,FIRST_NAME,CREATION_DATE,NO_OF_MATCHED_"
+			String query =  "SELECT SEARCHED_PARTICIPANT_ID,LAST_NAME,FIRST_NAME,CREATION_DATE,NO_OF_MATCHED_"
 									+ "PARTICIPANTS FROM MATCHED_PARTICIPANT_MAPPING  PARTIMAPPING JOIN CATISSUE_PARTIC"
 									+ "IPANT PARTI ON PARTI.IDENTIFIER=PARTIMAPPING.SEARCHED_PARTICIPANT_ID WHERE PARTI"
-									+ "MAPPING.USER_ID='").append(userId).append("'").toString();
+									+ "MAPPING.USER_ID='"+userId+"' AND PARTIMAPPING.NO_OF_MATCHED_PARTICIPANTS!='-1'";
 			list = dao.executeQuery(query);
 			populateListWithCSName(list, dao);
 		}
