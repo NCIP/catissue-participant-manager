@@ -77,6 +77,10 @@ public class ParticipantEditAction extends CommonAddEditAction
 						regNewPatientToEMPI(participantForm);
 					}
 				}
+				else if (Constants.EMPI_ID_PENDING.equals(participantForm.getEmpiIdStatus()))
+				{
+					forward = mapping.findForward(edu.wustl.common.util.global.Constants.SUCCESS);
+				}
 				else
 				{
 					forward = super.execute(mapping, (AbstractActionForm) participantForm, request,
@@ -152,8 +156,9 @@ public class ParticipantEditAction extends CommonAddEditAction
 			throws DAOException
 	{
 		JDBCDAO jdbcDao = null;
-		try{
-			jdbcDao=ParticipantManagerUtility.getJDBCDAO();
+		try
+		{
+			jdbcDao = ParticipantManagerUtility.getJDBCDAO();
 			String sql = "INSERT INTO PARTICIPANT_EMPI_ID_MAPPING VALUES('" + permanentPartiId
 					+ "','" + tempararyPartiId + "','" + oldeMPIId + "')";
 			jdbcDao.executeUpdate(sql);

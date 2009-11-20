@@ -8,33 +8,38 @@ import java.util.List;
 
 import org.apache.commons.codec.language.Metaphone;
 
-import edu.wustl.catissuecore.domain.ParticipantMedicalIdentifier;
-import edu.wustl.catissuecore.domain.Site;
 import edu.wustl.common.audit.AuditManager;
+import edu.wustl.common.beans.SessionDataBean;
 import edu.wustl.common.cde.CDEManager;
 import edu.wustl.common.domain.AbstractDomainObject;
 import edu.wustl.common.exception.AuditException;
 import edu.wustl.common.exception.BizLogicException;
+import edu.wustl.common.participant.action.ParticipantAddAction;
 import edu.wustl.common.participant.domain.IParticipant;
 import edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
 import edu.wustl.common.participant.domain.IRace;
 import edu.wustl.common.participant.domain.ISite;
 import edu.wustl.common.participant.utility.Constants;
+import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.util.Utility;
 import edu.wustl.common.util.global.ApplicationProperties;
 import edu.wustl.common.util.global.CommonServiceLocator;
 import edu.wustl.common.util.global.Status;
 import edu.wustl.common.util.global.Validator;
+import edu.wustl.common.util.logger.Logger;
 import edu.wustl.dao.DAO;
+import edu.wustl.dao.daofactory.DAOConfigFactory;
 import edu.wustl.dao.exception.DAOException;
 
 // TODO: Auto-generated Javadoc
 /**
  * The Class CommonParticipantBizlogic.
  */
-public class CommonParticipantBizlogic
+public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 {
 
+
+	private static final Logger logger = Logger.getCommonLogger(ParticipantAddAction.class);
 	/**
 	 * Insert.
 	 *
@@ -106,11 +111,13 @@ public class CommonParticipantBizlogic
 		auditManager.updateAudit(dao, participant, oldParticipant);
 	}
 
-	private static void setMetaPhoneCode(IParticipant participant){
+	private static void setMetaPhoneCode(IParticipant participant)
+	{
 		final Metaphone metaPhoneObj = new Metaphone();
 		final String lNameMetaPhone = metaPhoneObj.metaphone(participant.getLastName());
 		participant.setMetaPhoneCode(lNameMetaPhone);
 	}
+
 	/**
 	 * Update pmi.
 	 *
@@ -137,33 +144,34 @@ public class CommonParticipantBizlogic
 		}
 
 		// Audit of ParticipantMedicalIdentifier.
-		final IParticipantMedicalIdentifier oldPmIdentifier = (IParticipantMedicalIdentifier) getCorrespondingOldObject(
+		final IParticipantMedicalIdentifier oldPmIdentifier = (IParticipantMedicalIdentifier) getCorrespondingOldObj(
 				oldParticipantMedicalIdentifierCollection, pmIdentifier.getId());
 
 		auditManager.updateAudit(dao, pmIdentifier, oldPmIdentifier);
 	}
 
+
 	/**
-	 * Gets the corresponding old object.
-	 *
-	 * @param objectCollection the object collection
-	 * @param id the id
-	 *
-	 * @return the corresponding old object
+	 * This method gets Corresponding Old Object.
+	 * @param objectCollection object Collection
+	 * @param identifier id.
+	 * @return Object.
 	 */
-	private static Object getCorrespondingOldObject(Collection objectCollection, Long id)
+	public static Object getCorrespondingOldObj(Collection objectCollection, Long identifier)
 	{
 		Iterator iterator = objectCollection.iterator();
+		AbstractDomainObject abstractDomainObject = null;
 		while (iterator.hasNext())
 		{
-			AbstractDomainObject abstractDomainObject = (AbstractDomainObject) iterator.next();
+			AbstractDomainObject abstractDomainObj = (AbstractDomainObject) iterator.next();
 
-			if (id != null && id.equals(abstractDomainObject.getId()))
+			if (identifier != null && identifier.equals(abstractDomainObj.getId()))
 			{
-				return abstractDomainObject;
+				abstractDomainObject = abstractDomainObj;
+				break;
 			}
 		}
-		return null;
+		return abstractDomainObject;
 	}
 
 	/**
@@ -286,9 +294,9 @@ public class CommonParticipantBizlogic
 			final Iterator itr = paticipantMedicicalCollection.iterator();
 			while (itr.hasNext())
 			{
-				final ParticipantMedicalIdentifier participantIdentifier = (ParticipantMedicalIdentifier) itr
+				final IParticipantMedicalIdentifier participantIdentifier = (IParticipantMedicalIdentifier) itr
 						.next();
-				final Site site = participantIdentifier.getSite();
+				final ISite site = (ISite) participantIdentifier.getSite();
 				final String medicalRecordNo = participantIdentifier.getMedicalRecordNumber();
 				if (validator.isEmpty(medicalRecordNo) || site == null || site.getId() == null)
 				{
@@ -345,6 +353,193 @@ public class CommonParticipantBizlogic
 			}
 		}
 		return true;
+	}
+
+
+
+
+
+	/* (non-Javadoc)
+	 * @see edu.wustl.common.bizlogic.AbstractBizLogic#update(edu.wustl.dao.DAO, java.lang.Object, java.lang.Object, edu.wustl.common.beans.SessionDataBean)
+	 */
+	@Override
+	protected void update(DAO dao, Object obj, Object oldObj, SessionDataBean sessionDataBean)
+			throws BizLogicException
+	{
+		final IParticipant participant = (IParticipant) obj;
+		modifyParticipantObject(dao, sessionDataBean, participant);
+
+	}
+
+
+	/**
+	 * @param dao
+	 * @param sessionDataBean
+	 * @param participant
+	 * @throws BizLogicException
+	 */
+	private void modifyParticipantObject(DAO dao, SessionDataBean sessionDataBean,
+			IParticipant participant) throws BizLogicException
+	{
+		IParticipant oldParticipant;
+		DAO cleanDAO = null;
+		try
+		{
+			String applicationName = CommonServiceLocator.getInstance().getAppName();
+			cleanDAO = DAOConfigFactory.getInstance().getDAOFactory(applicationName).getDAO();
+			cleanDAO.openSession(sessionDataBean);
+			oldParticipant = getOldParticipant(cleanDAO, participant.getId());
+			final AuditManager auditManager = updateParticipant(dao, sessionDataBean, participant,
+					oldParticipant);
+
+			pmiUpdate(dao, participant, auditManager, oldParticipant);
+
+
+		}
+		catch (DAOException e)
+		{
+			throw new BizLogicException(e);
+		}
+		catch (BizLogicException biz)
+		{
+			logger.debug(biz.getMessage(), biz);
+			throw getBizLogicException(biz, biz.getErrorKeyName(), biz.getMsgValues());
+
+		}
+		catch (Exception exception)
+		{
+			throw getBizLogicException(exception, "Error while updating object", "");
+		}
+		finally
+		{
+			try
+			{
+				if (cleanDAO != null)
+				{
+					cleanDAO.closeSession();
+				}
+			}
+			catch (DAOException daoExp)
+			{
+				logger.debug(daoExp.getMessage(), daoExp);
+				throw getBizLogicException(daoExp, daoExp.getErrorKeyName(), daoExp.getMsgValues());
+			}
+		}
+	}
+
+	/**
+	 * This method will update and audit Participant Object.
+	 * @param participant Participant object
+	 * @param oldParticipant Persistent participant object
+	 * @param dao DAO Object
+	 * @param sessionDataBean SessionDataBean Object
+	 * @return AuditManager
+	 * @throws BizLogicException BizLogicException Exception
+	 * @throws DAOException	DAOException Exception
+	 * @throws AuditException AuditException Exception
+	 */
+	private AuditManager updateParticipant(DAO dao, SessionDataBean sessionDataBean,
+			final IParticipant participant, final IParticipant oldParticipant)
+			throws BizLogicException, DAOException, AuditException
+	{
+		final AuditManager auditManager = this.getAuditManager(sessionDataBean);
+		CommonParticipantBizlogic.update(dao, participant, oldParticipant, auditManager);
+		return auditManager;
+	}
+
+	private void pmiUpdate(DAO dao, IParticipant participant, AuditManager auditManager,
+			IParticipant oldParticipant) throws DAOException, AuditException, BizLogicException
+	{
+		Collection oldPartMedIdColln = (Collection) oldParticipant
+				.getParticipantMedicalIdentifierCollection();
+		Collection partiMedIdColln = participant.getParticipantMedicalIdentifierCollection();
+		Iterator iterator = partiMedIdColln.iterator();
+		while (iterator.hasNext())
+		{
+			IParticipantMedicalIdentifier pmIdentifier = (IParticipantMedicalIdentifier) iterator
+					.next();
+			setParticipantMedicalIdentifierDefault(pmIdentifier);
+			pmIdentifier.setParticipant(participant);
+			updatePMI(dao, auditManager, oldPartMedIdColln, pmIdentifier);
+		}
+	}
+
+
+	/**
+	 * check not null
+	 * @param object object
+	 * @return boolean
+	 */
+
+	public static boolean isNullobject(Object object)
+	{
+		boolean result = true;
+		if (object != null)
+		{
+			result = false;
+		}
+		return result;
+	}
+
+	/**
+	 * @param partMedIdentifier
+	 * @throws BizLogicException
+	 */
+	public static void setParticipantMedicalIdentifierDefault(
+			IParticipantMedicalIdentifier partMedIdentifier) throws BizLogicException
+	{
+		if (isNullobject(partMedIdentifier.getSite()))
+		{
+
+			partMedIdentifier.setSite(ParticipantManagerUtility.getSiteInstance());
+		}
+	}
+
+
+
+	/**
+	 * This method will be called to return the Audit manager.
+	 * @param sessionDataBean
+	 * @return
+	 */
+	public AuditManager getAuditManager(SessionDataBean sessionDataBean)
+	{
+
+		AuditManager auditManager = new AuditManager();
+		if (sessionDataBean == null)
+		{
+			auditManager.setUserId(null);
+		}
+		else
+		{
+			auditManager.setUserId(sessionDataBean.getUserId());
+			auditManager.setIpAddress(sessionDataBean.getIpAddress());
+		}
+		return auditManager;
+
+	}
+
+
+	/**
+	 * @param dao
+	 * @param identifier
+	 * @return
+	 * @throws BizLogicException
+	 */
+	private IParticipant getOldParticipant(DAO dao, Long identifier) throws BizLogicException
+	{
+		IParticipant oldParticipant;
+		try
+		{
+			oldParticipant = (IParticipant) dao
+					.retrieveById("edu.wustl.clinportal.domain.Participant", identifier);
+		}
+		catch (DAOException e)
+		{
+			logger.debug(e.getMessage(), e);
+			throw getBizLogicException(e, e.getErrorKeyName(), e.getMsgValues());
+		}
+		return oldParticipant;
 	}
 
 }

@@ -43,6 +43,7 @@ import edu.wustl.common.util.Utility;
 import edu.wustl.common.util.XMLPropertyHandler;
 import edu.wustl.common.util.global.CommonServiceLocator;
 import edu.wustl.common.util.logger.Logger;
+import edu.wustl.dao.DAO;
 import edu.wustl.dao.JDBCDAO;
 import edu.wustl.dao.daofactory.DAOConfigFactory;
 import edu.wustl.dao.daofactory.IDAOFactory;
@@ -175,9 +176,12 @@ public class ParticipantManagerUtility
 		*/
 		ISite site = null;
 		site=getSiteObject(facilityId);
-		IParticipantMedicalIdentifier participantMedicalIdentifier = (IParticipantMedicalIdentifier) getPMIInstance();
-		participantMedicalIdentifier.setMedicalRecordNumber(mrn);
-		participantMedicalIdentifier.setSite(site);
+		IParticipantMedicalIdentifier participantMedicalIdentifier = null;
+		if(site!=null){
+			participantMedicalIdentifier = (IParticipantMedicalIdentifier) getPMIInstance();
+			participantMedicalIdentifier.setMedicalRecordNumber(mrn);
+			participantMedicalIdentifier.setSite(site);
+		}
 		return participantMedicalIdentifier;
 	}
 
@@ -430,7 +434,7 @@ public class ParticipantManagerUtility
 	 *
 	 * @throws BizLogicException the biz logic exception
 	 */
-	private static String applicationType() throws BizLogicException
+	public static String applicationType() throws BizLogicException
 	{
 		String application = null;
 		try
@@ -820,6 +824,16 @@ public class ParticipantManagerUtility
 		return jdbcdao;
 	}
 
+
+	public static DAO getDAO() throws DAOException
+	{
+		DAO dao = null;
+		String appName = CommonServiceLocator.getInstance().getAppName();
+		IDAOFactory daoFactory = DAOConfigFactory.getInstance().getDAOFactory(appName);
+		dao = daoFactory.getDAO();
+		dao.openSession(null);
+		return dao;
+	}
 	/**
 	 * Adds the participant to process message queue.
 	 *

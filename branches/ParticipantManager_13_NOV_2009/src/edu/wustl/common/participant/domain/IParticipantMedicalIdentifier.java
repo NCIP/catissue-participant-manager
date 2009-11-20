@@ -1,7 +1,7 @@
 
 package edu.wustl.common.participant.domain;
 
-// TODO: Auto-generated Javadoc
+
 /**
  * The Interface IParticipantMedicalIdentifier.
  */
@@ -43,13 +43,6 @@ public interface IParticipantMedicalIdentifier<T, S>
 	 */
 	public void setParticipant(T participant);
 
-	/**
-	 * Sets the site.
-	 *
-	 * @param site the new site
-	 */
-
-	public void setSite(S site);
 
 	/**
 	 * Gets the site.
@@ -57,4 +50,12 @@ public interface IParticipantMedicalIdentifier<T, S>
 	 * @return the site
 	 */
 	public S getSite();
+
+	/**
+	 * Sets the site.
+	 *
+	 * @param site the new site
+	 */
+
+	public void setSite(S site);
 }

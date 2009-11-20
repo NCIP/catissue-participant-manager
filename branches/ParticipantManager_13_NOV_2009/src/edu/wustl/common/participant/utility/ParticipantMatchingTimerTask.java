@@ -65,7 +65,6 @@ public class ParticipantMatchingTimerTask extends TimerTask
 		try
 		{
 			dao = ParticipantManagerUtility.getJDBCDAO();
-			dao.openSession(null);
 			String query = "SELECT SEARCHED_PARTICIPANT_ID FROM MATCHED_PARTICIPANT_MAPPING WHERE NO_OF_MATCHED_PARTICIPANTS='-1'";
 			idList = dao.executeQuery(query);
 		}
