@@ -378,23 +378,22 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 	 * @param participant
 	 * @throws BizLogicException
 	 */
-	private void modifyParticipantObject(DAO dao, SessionDataBean sessionDataBean,
+	public void modifyParticipantObject(DAO dao, SessionDataBean sessionDataBean,
 			IParticipant participant) throws BizLogicException
 	{
 		IParticipant oldParticipant;
 		DAO cleanDAO = null;
 		try
 		{
-			String applicationName = CommonServiceLocator.getInstance().getAppName();
-			cleanDAO = DAOConfigFactory.getInstance().getDAOFactory(applicationName).getDAO();
-			cleanDAO.openSession(sessionDataBean);
+			//String applicationName = CommonServiceLocator.getInstance().getAppName();
+			//cleanDAO = DAOConfigFactory.getInstance().getDAOFactory(applicationName).getDAO();
+			//cleanDAO.openSession(sessionDataBean);
+
+			cleanDAO=ParticipantManagerUtility.getDAO();
 			oldParticipant = getOldParticipant(cleanDAO, participant.getId());
 			final AuditManager auditManager = updateParticipant(dao, sessionDataBean, participant,
 					oldParticipant);
-
 			pmiUpdate(dao, participant, auditManager, oldParticipant);
-
-
 		}
 		catch (DAOException e)
 		{
@@ -443,7 +442,7 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 			throws BizLogicException, DAOException, AuditException
 	{
 		final AuditManager auditManager = this.getAuditManager(sessionDataBean);
-		CommonParticipantBizlogic.update(dao, participant, oldParticipant, auditManager);
+		update(dao, participant, oldParticipant, auditManager);
 		return auditManager;
 	}
 
@@ -526,7 +525,7 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 	 * @return
 	 * @throws BizLogicException
 	 */
-	private IParticipant getOldParticipant(DAO dao, Long identifier) throws BizLogicException
+	public IParticipant getOldParticipant(DAO dao, Long identifier) throws BizLogicException
 	{
 		IParticipant oldParticipant;
 		try
@@ -537,7 +536,7 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 		catch (DAOException e)
 		{
 			logger.debug(e.getMessage(), e);
-			throw getBizLogicException(e, e.getErrorKeyName(), e.getMsgValues());
+			throw new BizLogicException(e.getErrorKey(), e, e.getMsgValues());
 		}
 		return oldParticipant;
 	}

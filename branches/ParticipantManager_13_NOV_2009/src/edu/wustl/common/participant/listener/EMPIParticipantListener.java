@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.List;
 
 import javax.jms.Message;
 import javax.jms.MessageListener;
@@ -26,7 +25,6 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import edu.wustl.common.beans.SessionDataBean;
-import edu.wustl.common.bizlogic.AbstractBizLogic;
 import edu.wustl.common.bizlogic.DefaultBizLogic;
 import edu.wustl.common.exception.BizLogicException;
 import edu.wustl.common.participant.bizlogic.CommonParticipantBizlogic;
@@ -38,13 +36,8 @@ import edu.wustl.common.participant.domain.ISite;
 import edu.wustl.common.participant.domain.IUser;
 import edu.wustl.common.participant.utility.Constants;
 import edu.wustl.common.participant.utility.ParticipantManagerUtility;
-import edu.wustl.common.util.XMLPropertyHandler;
-import edu.wustl.common.util.global.CommonServiceLocator;
 import edu.wustl.common.util.logger.Logger;
-import edu.wustl.dao.DAO;
 import edu.wustl.dao.JDBCDAO;
-import edu.wustl.dao.daofactory.DAOConfigFactory;
-import edu.wustl.dao.daofactory.IDAOFactory;
 import edu.wustl.dao.exception.DAOException;
 import edu.wustl.patientLookUp.util.PatientLookupException;
 import edu.wustl.patientLookUp.util.PropertyHandler;
@@ -70,6 +63,26 @@ public class EMPIParticipantListener implements MessageListener
 	private static final Logger logger = Logger.getCommonLogger(EMPIParticipantListener.class);
 	/** The document. */
 	private Document document;
+
+	public static SessionDataBean sessionData = null;
+
+
+	/**
+	 * @return the sessionData
+	 */
+	public static SessionDataBean getSessionData()
+	{
+		return sessionData;
+	}
+
+
+	/**
+	 * @param sessionData the sessionData to set
+	 */
+	public static void setSessionData(SessionDataBean sessionData)
+	{
+		EMPIParticipantListener.sessionData = sessionData;
+	}
 
 	/** The parti med id coll. */
 	private Collection partiMedIdColl;
@@ -152,12 +165,11 @@ public class EMPIParticipantListener implements MessageListener
 	{
 		try
 		{
-			SessionDataBean sessionData = null;
+
 			String clinPortalId = null;
 			String sourceObjectName = null;
 			Element docEle = null;
-			IUser validUser = null;
-			String loginName = null;
+
 			IParticipant partcipantObj = null;
 			String personDemoGraphics = null;
 			String oldParticipantId = null;
@@ -166,14 +178,16 @@ public class EMPIParticipantListener implements MessageListener
 			if (message instanceof TextMessage)
 			{
 				personDemoGraphics = ((TextMessage) message).getText();
-				logger.info(" Received demographics message \n \n" );
+				logger.info(" Received demographics message \n \n");
 				logger.info(personDemoGraphics);
-				loginName = XMLPropertyHandler.getValue(Constants.CATISSUE_ADMIN_LOGIN_ID);
-				validUser = getUser(loginName,  Constants.ACTIVITY_STATUS_ACTIVE);
-				if("clinportal".equals(ParticipantManagerUtility.applicationType())){
+
+				if ("clinportal".equals(ParticipantManagerUtility.applicationType()))
+				{
 					sourceObjectName = "edu.wustl.clinportal.domain.Participant";
-				}else{
-					sourceObjectName ="edu.wustl.catissue.domain.Participant";
+				}
+				else
+				{
+					sourceObjectName = "edu.wustl.catissue.domain.Participant";
 				}
 				document = getDocument(personDemoGraphics);
 				docEle = document.getDocumentElement();
@@ -190,21 +204,15 @@ public class EMPIParticipantListener implements MessageListener
 				partcipantObj = (IParticipant) bizlogic.retrieve(sourceObjectName, Long
 						.valueOf(Long.parseLong(clinPortalId)));
 				oldEMPIID = String.valueOf(partcipantObj.getEmpiId());
-				if (validUser != null)
+
+				updateParticipant(docEle, partcipantObj, sessionData);
+				if (isGenerateMgrMessage)
 				{
-					sessionData = getSessionDataBean(validUser, loginName);
-					updateParticipant(docEle, partcipantObj, sessionData);
-					if (isGenerateMgrMessage)
-					{
-						EMPIParticipantRegistrationBizLogic eMPIPartiReg = new EMPIParticipantRegistrationBizLogic();
-						eMPIPartiReg.sendMergeMessage(partcipantObj, oldParticipantId, oldEMPIID);
-					}
-				}
-				else
-				{
-					checkUserAccount(loginName);
+					EMPIParticipantRegistrationBizLogic eMPIPartiReg = new EMPIParticipantRegistrationBizLogic();
+					eMPIPartiReg.sendMergeMessage(partcipantObj, oldParticipantId, oldEMPIID);
 				}
 			}
+
 		}
 		catch (Exception e)
 		{
@@ -230,9 +238,12 @@ public class EMPIParticipantListener implements MessageListener
 		JDBCDAO jdbcdao = null;
 		try
 		{
-			jdbcdao=ParticipantManagerUtility.getJDBCDAO();
-			ResultSet rs = jdbcdao.getQueryResultSet((new StringBuilder()).append(
-					"SELECT PERMANENT_PARTICIPANT_ID FROM PARTICIPANT_EMPI_ID_MAPPING WHERE TEMPARARY_PARTICIPANT_ID='").append(clinPortalId).append("'").toString());
+			jdbcdao = ParticipantManagerUtility.getJDBCDAO();
+			ResultSet rs = jdbcdao
+					.getQueryResultSet((new StringBuilder())
+							.append(
+									"SELECT PERMANENT_PARTICIPANT_ID FROM PARTICIPANT_EMPI_ID_MAPPING WHERE TEMPARARY_PARTICIPANT_ID='")
+							.append(clinPortalId).append("'").toString());
 			if (rs != null)
 			{
 				while (rs.next())
@@ -249,28 +260,6 @@ public class EMPIParticipantListener implements MessageListener
 	}
 
 	/**
-	 * Check user account.
-	 *
-	 * @param loginName the login name
-	 *
-	 * @throws BizLogicException the biz logic exception
-	 * @throws Exception the exception
-	 */
-	private void checkUserAccount(String loginName) throws BizLogicException, Exception
-	{
-		if (getUser(loginName, Constants.ACTIVITY_STATUS_CLOSED) != null)
-		{
-			throw new Exception((new StringBuilder()).append(loginName).append(
-					" Closed user. Sending back to the login Page").toString());
-		}
-		else
-		{
-			throw new Exception((new StringBuilder()).append(loginName).append(
-					"Invalid user. Sending back to the login Page").toString());
-		}
-	}
-
-	/**
 	 * Update participant.
 	 *
 	 * @param docEle the doc ele
@@ -282,7 +271,8 @@ public class EMPIParticipantListener implements MessageListener
 	 * @throws DAOException
 	 */
 	private void updateParticipant(Element docEle, IParticipant partcipantObj,
-			SessionDataBean sessionData) throws PatientLookupException, BizLogicException, DAOException
+			SessionDataBean sessionData) throws PatientLookupException, BizLogicException,
+			DAOException
 	{
 		IParticipant participant = null;
 		String gender = null;
@@ -297,14 +287,16 @@ public class EMPIParticipantListener implements MessageListener
 			{
 				if ((Constants.UNSPECIFIED.equals(partcipantObj.getGender()) || Constants.UNKNOWN
 						.equals(partcipantObj.getGender()))
-						&& Constants.EMPI_DEMOGRAPHIC_XML_GENDER.equals(childNodeList.item(i).getNodeName()))
+						&& Constants.EMPI_DEMOGRAPHIC_XML_GENDER.equals(childNodeList.item(i)
+								.getNodeName()))
 				{
 					Element ele = (Element) childNodeList.item(i);
 					String value = getNodeValue(ele, "id");
 					gender = PropertyHandler.getValue(value);
 					partcipantObj.setGender(gender);
 				}
-				if (Constants.EMPI_DEMOGRAPHIC_XML_RACE_COLLECTION.equals(childNodeList.item(i).getNodeName()))
+				if (Constants.EMPI_DEMOGRAPHIC_XML_RACE_COLLECTION.equals(childNodeList.item(i)
+						.getNodeName()))
 				{
 					setRaceCollection(partcipantObj, childNodeList.item(i));
 				}
@@ -315,9 +307,7 @@ public class EMPIParticipantListener implements MessageListener
 			partcipantObj.setEmpiId(personUpi);
 			partcipantObj.setEmpiIdStatus(Constants.EMPI_ID_CREATED);
 			partcipantObj.setParticipantMedicalIdentifierCollection(partiMedicalIdColl);
-			DAO dao =ParticipantManagerUtility.getDAO();
 			CommonParticipantBizlogic bizlogic = new CommonParticipantBizlogic();
-			//bizlogic.update(partcipantObj);
 			bizlogic.update(partcipantObj, participant, sessionData);
 
 			logger.info("\n\n\n\n\nPARTIICPANT SUCCESSFULLY UPDATED WITH  EMPI \n\n\n\n\n");
@@ -565,7 +555,8 @@ public class EMPIParticipantListener implements MessageListener
 			{
 				participantMedicalIdentifier = ParticipantManagerUtility
 						.getParticipantMedicalIdentifierObj(mrn, facilityId);
-				if(participantMedicalIdentifier!=null){
+				if (participantMedicalIdentifier != null)
+				{
 					partiMedIdColl.add(participantMedicalIdentifier);
 				}
 			}
@@ -585,50 +576,16 @@ public class EMPIParticipantListener implements MessageListener
 	 *
 	 * @return the session data bean
 	 */
-	private SessionDataBean getSessionDataBean(IUser validUser, String loginName)
+	private SessionDataBean getSessionDataBean(IUser validUser)
 	{
 		SessionDataBean sessionData = new SessionDataBean();
-		Long userId = validUser.getId();
-		boolean adminUser = false;
-		if ("1".equalsIgnoreCase(validUser.getRoleId()))
-		{
-			adminUser = true;
-		}
-		sessionData.setAdmin(adminUser);
-		sessionData.setUserName(loginName);
-		sessionData.setUserId(userId);
+		sessionData.setAdmin(validUser.getAdminuser());
+		sessionData.setUserName(validUser.getLoginName());
+		sessionData.setUserId(validUser.getId());
 		sessionData.setFirstName(validUser.getFirstName());
 		sessionData.setLastName(validUser.getLastName());
 		sessionData.setCsmUserId(validUser.getCsmUserId().toString());
 		return sessionData;
 	}
 
-	/**
-	 * Gets the user.
-	 *
-	 * @param loginName the login name
-	 * @param activityStatus the activity status
-	 *
-	 * @return the user
-	 *
-	 * @throws BizLogicException the biz logic exception
-	 */
-	private IUser getUser(String loginName, String activityStatus) throws BizLogicException
-	{
-		String getActiveUser = (new StringBuilder()).append(
-				"from edu.wustl.clinportal.domain.User user where user.activityStatus= '").append(
-				activityStatus).append("' and user.loginName =").append("'").append(loginName)
-				.append("'").toString();
-		DefaultBizLogic bizlogic = new DefaultBizLogic();
-		List users = bizlogic.executeQuery(getActiveUser);
-		if (users != null && !users.isEmpty())
-		{
-			IUser validUser = (IUser) users.get(0);
-			return validUser;
-		}
-		else
-		{
-			return null;
-		}
-	}
 }
