@@ -37,6 +37,7 @@ import edu.wustl.common.participant.domain.IParticipant;
 import edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
 import edu.wustl.common.participant.domain.IRace;
 import edu.wustl.common.participant.domain.ISite;
+import edu.wustl.common.participant.domain.IUser;
 import edu.wustl.common.participant.listener.EMPIParticipantListener;
 import edu.wustl.common.participant.listener.EMPIParticipantMergeMessageListener;
 import edu.wustl.common.util.Utility;
@@ -73,8 +74,9 @@ public class ParticipantManagerUtility
 	 * Register wmq listener.
 	 *
 	 * @throws JMSException the JMS exception
+	 * @throws BizLogicException
 	 */
-	public static void registerWMQListener() throws JMSException
+	public static void registerWMQListener() throws JMSException, BizLogicException
 	{
 		String hostName = null;
 		String qmgName = null;
@@ -87,8 +89,9 @@ public class ParticipantManagerUtility
 			hostName = XMLPropertyHandler.getValue(Constants.WMQ_SERVER_NAME);
 			qmgName = XMLPropertyHandler.getValue(Constants.WMQ_QMG_NAME);
 			channel = XMLPropertyHandler.getValue(Constants.WMQ_CHANNEL);
-			port = Integer.parseInt(XMLPropertyHandler.getValue(Constants.WMQ_PORT));
-
+			if(XMLPropertyHandler.getValue(Constants.WMQ_PORT)!=null && XMLPropertyHandler.getValue(Constants.WMQ_PORT)!=""){
+				port = Integer.parseInt(XMLPropertyHandler.getValue(Constants.WMQ_PORT));
+			}
 			MQQueueConnectionFactory factory = new MQQueueConnectionFactory();
 			factory.setTransportType(JMSC.MQJMS_TP_CLIENT_MQ_TCPIP);
 			factory.setQueueManager(qmgName);
@@ -102,14 +105,12 @@ public class ParticipantManagerUtility
 
 			QueueSession session = connection.createQueueSession(false,
 					javax.jms.Session.AUTO_ACKNOWLEDGE);
-
-			//Queue outBoundQueue = session.createQueue("queue:///SYSTEM.DEFAULT.LOCAL.QUEUE");
-
 			outBoundQueueName = XMLPropertyHandler.getValue(Constants.OUT_BOUND_QUEUE_NAME);
 			Queue outBoundQueue = session.createQueue("queue:///" + outBoundQueueName);
 			QueueReceiver queueReceiver = session.createReceiver(outBoundQueue);
 
 			EMPIParticipantListener listener = new EMPIParticipantListener();
+
 			queueReceiver.setMessageListener(listener);
 
 			// Set the merge message queue listener.
@@ -118,17 +119,17 @@ public class ParticipantManagerUtility
 			queueReceiver = session.createReceiver(mrgMessageQueue);
 			EMPIParticipantMergeMessageListener mrgMesListener = new EMPIParticipantMergeMessageListener();
 			queueReceiver.setMessageListener(mrgMesListener);
-
 		}
 		catch (JMSException e)
 		{
 			// TODO Auto-generated catch block
-			logger.error("Error while initialising message queue for merge messages ");
+			logger.error(" -------------  ERROR WHILE INITIALISING THE MESSAGE QUEUES \n \n ------------- ");
 			logger.info(e.getMessage());
 			throw new JMSException(e.getMessage());
 
 		}
 	}
+
 
 	/**
 	 * Initialise particiapnt match scheduler.
@@ -140,6 +141,8 @@ public class ParticipantManagerUtility
 		String delay = "120000";
 		scheduleTime.schedule(timerTask, 0x1d4c0L, Long.parseLong(delay));
 	}
+
+
 
 	/**
 	 * Gets the participant medical identifier obj.
@@ -153,38 +156,18 @@ public class ParticipantManagerUtility
 	public static IParticipantMedicalIdentifier getParticipantMedicalIdentifierObj(String mrn,
 			String facilityId) throws Exception
 	{
-		/*
-		String application = applicationType();
+
 		ISite site = null;
-		String sourceObjectName = ISite.class.getName();
-		String selectColumnNames[] = {"id", "name"};
-		String whereColumnName[] = {"facilityId"};
-		String whColCondn[] = {"="};
-		Object whereColumnValue[] = {facilityId};
-		DefaultBizLogic siteBizLogic = new DefaultBizLogic();
-		List siteObject = siteBizLogic.retrieve(sourceObjectName, selectColumnNames,
-				whereColumnName, whColCondn, whereColumnValue, null);
-		if (siteObject != null && siteObject.size() > 0)
-		{
-			Object siteList[] = (Object[]) (Object[]) siteObject.get(0);
-			Long siteId = (Long) siteList[0];
-			String siteName = (String) siteList[1];
-			site = (ISite) getSiteInstance();
-			site.setId(siteId);
-			site.setName(siteName);
-		}
-		*/
-		ISite site = null;
-		site=getSiteObject(facilityId);
+		site = getSiteObject(facilityId);
 		IParticipantMedicalIdentifier participantMedicalIdentifier = null;
-		if(site!=null){
+		if (site != null)
+		{
 			participantMedicalIdentifier = (IParticipantMedicalIdentifier) getPMIInstance();
 			participantMedicalIdentifier.setMedicalRecordNumber(mrn);
 			participantMedicalIdentifier.setSite(site);
 		}
 		return participantMedicalIdentifier;
 	}
-
 
 	/**
 	 * Gets the site object.
@@ -219,6 +202,7 @@ public class ParticipantManagerUtility
 		}
 		return site;
 	}
+
 	/**
 	 * Gets the object.
 	 *
@@ -588,7 +572,8 @@ public class ParticipantManagerUtility
 		status = false;
 
 		dao = getJDBCDAO();
-		try{
+		try
+		{
 			String query = " SELECT SP.IS_EMPI_ENABLE FROM  CATISSUE_SPECIMEN_PROTOCOL SP JOIN  CATISSUE_CLINICAL_STUDY_REG CSR  "
 					+ " ON SP.IDENTIFIER = CSR.CLINICAL_STUDY_ID  WHERE CSR.PARTICIPANT_id='"
 					+ participantId + "'";
@@ -602,7 +587,8 @@ public class ParticipantManagerUtility
 				}
 			}
 		}
-		finally{
+		finally
+		{
 			dao.closeSession();
 		}
 		return status;
@@ -685,7 +671,9 @@ public class ParticipantManagerUtility
 		{
 			logger.info("ERROR WHILE GETTING THE EMPI STATUS");
 			throw new DAOException(exp.getErrorKey(), exp, exp.getMsgValues());
-		}finally{
+		}
+		finally
+		{
 			dao.closeSession();
 		}
 		return eMPIStatus;
@@ -824,7 +812,6 @@ public class ParticipantManagerUtility
 		return jdbcdao;
 	}
 
-
 	public static DAO getDAO() throws DAOException
 	{
 		DAO dao = null;
@@ -834,6 +821,7 @@ public class ParticipantManagerUtility
 		dao.openSession(null);
 		return dao;
 	}
+
 	/**
 	 * Adds the participant to process message queue.
 	 *
@@ -882,7 +870,9 @@ public class ParticipantManagerUtility
 		{
 			jdbcdao.rollback();
 			throw new DAOException(e.getErrorKey(), e, e.getMessage());
-		}finally{
+		}
+		finally
+		{
 			jdbcdao.closeSession();
 		}
 	}

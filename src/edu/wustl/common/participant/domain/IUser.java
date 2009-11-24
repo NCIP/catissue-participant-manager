@@ -70,4 +70,12 @@ public interface IUser
 	 * @param csmUserId the new csm user id
 	 */
 	public void setCsmUserId(Long csmUserId);
+
+	public String getLoginName();
+
+	public void setLoginName(String loginName);
+
+	public Boolean getAdminuser();
+
+	public void setAdminuser(Boolean adminuser);
 }
