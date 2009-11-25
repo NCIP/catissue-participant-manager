@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 
 import javax.jms.Message;
 import javax.jms.MessageListener;
@@ -36,6 +37,7 @@ import edu.wustl.common.participant.domain.ISite;
 import edu.wustl.common.participant.domain.IUser;
 import edu.wustl.common.participant.utility.Constants;
 import edu.wustl.common.participant.utility.ParticipantManagerUtility;
+import edu.wustl.common.util.XMLPropertyHandler;
 import edu.wustl.common.util.logger.Logger;
 import edu.wustl.dao.JDBCDAO;
 import edu.wustl.dao.exception.DAOException;
@@ -64,25 +66,23 @@ public class EMPIParticipantListener implements MessageListener
 	/** The document. */
 	private Document document;
 
-	public static SessionDataBean sessionData = null;
-
+	//public static SessionDataBean sessionData = null;
 
 	/**
 	 * @return the sessionData
 	 */
-	public static SessionDataBean getSessionData()
-	{
-		return sessionData;
-	}
-
+	//public static SessionDataBean getSessionData()
+	//{
+	//return sessionData;
+	//}
 
 	/**
 	 * @param sessionData the sessionData to set
 	 */
-	public static void setSessionData(SessionDataBean sessionData)
-	{
-		EMPIParticipantListener.sessionData = sessionData;
-	}
+	//public static void setSessionData(SessionDataBean sessionData)
+	//{
+	//EMPIParticipantListener.sessionData = sessionData;
+	//}
 
 	/** The parti med id coll. */
 	private Collection partiMedIdColl;
@@ -169,11 +169,13 @@ public class EMPIParticipantListener implements MessageListener
 			String clinPortalId = null;
 			String sourceObjectName = null;
 			Element docEle = null;
-
+			IUser validUser = null;
+			String loginName = null;
 			IParticipant partcipantObj = null;
 			String personDemoGraphics = null;
 			String oldParticipantId = null;
 			String oldEMPIID = null;
+			SessionDataBean sessionData = null;
 			boolean isGenerateMgrMessage = false;
 			if (message instanceof TextMessage)
 			{
@@ -189,6 +191,7 @@ public class EMPIParticipantListener implements MessageListener
 				{
 					sourceObjectName = "edu.wustl.catissue.domain.Participant";
 				}
+
 				document = getDocument(personDemoGraphics);
 				docEle = document.getDocumentElement();
 				processDomographicXML(docEle);
@@ -205,11 +208,23 @@ public class EMPIParticipantListener implements MessageListener
 						.valueOf(Long.parseLong(clinPortalId)));
 				oldEMPIID = String.valueOf(partcipantObj.getEmpiId());
 
-				updateParticipant(docEle, partcipantObj, sessionData);
-				if (isGenerateMgrMessage)
+				loginName = XMLPropertyHandler.getValue(Constants.HL7_LISTENER_ADMIN_USER);
+				//loginName = Constants.CLINPORTAL_EMPI_ADMIN_LOGIN_ID;
+				validUser = getUser(loginName, Constants.ACTIVITY_STATUS_ACTIVE);
+
+				if (validUser != null)
 				{
-					EMPIParticipantRegistrationBizLogic eMPIPartiReg = new EMPIParticipantRegistrationBizLogic();
-					eMPIPartiReg.sendMergeMessage(partcipantObj, oldParticipantId, oldEMPIID);
+					sessionData = getSessionDataBean(validUser);
+					updateParticipant(docEle, partcipantObj, sessionData);
+					if (isGenerateMgrMessage)
+					{
+						EMPIParticipantRegistrationBizLogic eMPIPartiReg = new EMPIParticipantRegistrationBizLogic();
+						eMPIPartiReg.sendMergeMessage(partcipantObj, oldParticipantId, oldEMPIID);
+					}
+				}
+				else
+				{
+					checkUserAccount(loginName);
 				}
 			}
 
@@ -586,6 +601,57 @@ public class EMPIParticipantListener implements MessageListener
 		sessionData.setLastName(validUser.getLastName());
 		sessionData.setCsmUserId(validUser.getCsmUserId().toString());
 		return sessionData;
+	}
+
+	/**
+	 * Check user account.
+	 *
+	 * @param loginName the login name
+	 *
+	 * @throws BizLogicException the biz logic exception
+	 * @throws Exception the exception
+	 */
+	private void checkUserAccount(String loginName) throws BizLogicException, Exception
+	{
+		if (getUser(loginName, Constants.ACTIVITY_STATUS_CLOSED) != null)
+		{
+			throw new Exception((new StringBuilder()).append(loginName).append(
+					" Closed user. Sending back to the login Page").toString());
+		}
+		else
+		{
+			throw new Exception((new StringBuilder()).append(loginName).append(
+					"Invalid user. Sending back to the login Page").toString());
+		}
+	}
+
+	/**
+	 * Gets the user.
+	 *
+	 * @param loginName the login name
+	 * @param activityStatus the activity status
+	 *
+	 * @return the user
+	 *
+	 * @throws BizLogicException the biz logic exception
+	 */
+	private IUser getUser(String loginName, String activityStatus) throws BizLogicException
+	{
+		String getActiveUser = (new StringBuilder()).append(
+				"from edu.wustl.clinportal.domain.User user where user.activityStatus= '").append(
+				activityStatus).append("' and user.loginName =").append("'").append(loginName)
+				.append("'").toString();
+		DefaultBizLogic bizlogic = new DefaultBizLogic();
+		List users = bizlogic.executeQuery(getActiveUser);
+		if (users != null && !users.isEmpty())
+		{
+			IUser validUser = (IUser) users.get(0);
+			return validUser;
+		}
+		else
+		{
+			return null;
+		}
 	}
 
 }
