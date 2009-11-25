@@ -231,6 +231,7 @@ public class Constants
 
 	public static final String TIMESTAMP_PATTERN = "MM-dd-yyyy HH:mm";
 
+	public static final String CLINPORTAL_EMPI_ADMIN_LOGIN_ID = "clinportal_eMPIadmin@persistent.co.in";
 
 	/** The Constant CSM. */
 	public static final String CSM = "csm";
