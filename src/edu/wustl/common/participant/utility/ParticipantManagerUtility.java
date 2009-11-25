@@ -924,8 +924,7 @@ public class ParticipantManagerUtility
 							.getMedicalRecordNumber());
 					participantInfoMedicalIdentifierCollection.add(String
 							.valueOf(((ISite) participantMedicalIdentifier.getSite()).getId()));
-					participantInfoMedicalIdentifierCollection
-							.add(((ISite) participantMedicalIdentifier.getSite()).getName());
+					//participantInfoMedicalIdentifierCollection.add(((ISite) participantMedicalIdentifier.getSite()).getName());
 				}
 			}
 			while (true);
