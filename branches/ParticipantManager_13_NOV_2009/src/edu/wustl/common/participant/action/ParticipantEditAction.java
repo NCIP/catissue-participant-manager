@@ -58,7 +58,7 @@ public class ParticipantEditAction extends CommonAddEditAction
 
 			// if the eMPI is on for Cs .. generate new eMPI id for the new
 			// values.
-			if (ParticipantManagerUtility.csEMPIStatus(participantForm.getId()))
+			if (ParticipantManagerUtility.isEMPIEnable(participantForm.getId()))
 			{
 				// if the
 				if (Constants.EMPI_ID_CREATED.equals(participantForm.getEmpiIdStatus()))
