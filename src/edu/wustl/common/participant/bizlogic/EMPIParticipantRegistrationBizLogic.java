@@ -128,16 +128,9 @@ public class EMPIParticipantRegistrationBizLogic
 	public void registerPatientToeMPI(IParticipant participant) throws Exception
 	{
 		String hl7Message = "";
-		String eventTypeCode = Constants.HL7_REG_EVENT_TYPE;
 		try
 		{
-			String commonHL7Segments = getMSHEVNPIDSengment(participant, eventTypeCode);
-			String pvSegment = getHL7PVSegment(participant, dateTime);
-			logger.info((new StringBuilder()).append(pvSegment).append("\n").toString());
-			hl7Message = (new StringBuilder()).append(commonHL7Segments).append("\r").append(
-					pvSegment).append("\n").toString();
-			logger.info((new StringBuilder()).append("\n\nHL7 Message \n \n \n\n\n").append(
-					hl7Message).toString());
+			hl7Message = getHL7Message(participant);
 			sendHLMessage(hl7Message);
 		}
 		catch (Exception e)
@@ -146,6 +139,19 @@ public class EMPIParticipantRegistrationBizLogic
 			logger.info(e.getMessage());
 			throw new Exception(e.getMessage());
 		}
+	}
+
+	public String getHL7Message(IParticipant participant) throws Exception
+	{
+		String hl7Message = "";
+		String eventTypeCode = Constants.HL7_REG_EVENT_TYPE;
+		logger.info("\n\nHL7 Message \n \n \n\n\n");
+		String commonHL7Segments = getMSHEVNPIDSengment(participant, eventTypeCode);
+		String pvSegment = getHL7PVSegment(participant, dateTime);
+		logger.info((new StringBuilder()).append(pvSegment).append("\n").toString());
+		hl7Message = (new StringBuilder()).append(commonHL7Segments).append("\r").append(pvSegment)
+				.append("\n").toString();
+		return hl7Message;
 	}
 
 	/**
@@ -457,7 +463,7 @@ public class EMPIParticipantRegistrationBizLogic
 					"Error while get value from PatientInfoLookUpService.properties");
 		}
 		StringBuffer hql = new StringBuffer();
-		if ("clinportal".equals(application))
+		if (Constants.CLINPORTAL_APPLICATION_NAME.equals(application))
 		{
 			hql
 					.append("select CSReg.clinicalStudy.principalInvestigator.firstName,CSReg.clinicalStudy.p"
