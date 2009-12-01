@@ -231,7 +231,7 @@ public class Constants
 
 	public static final String TIMESTAMP_PATTERN = "MM-dd-yyyy HH:mm";
 
-	public static final String CLINPORTAL_EMPI_ADMIN_LOGIN_ID = "clinportal_eMPIadmin@persistent.co.in";
+	public static final String HL7_LISTENER_ADMIN_USER = "HL7ListenerAdminUser";
 
 	/** The Constant CSM. */
 	public static final String CSM = "csm";
@@ -244,6 +244,9 @@ public class Constants
 	public static final String UNSPECIFIED = "Unspecified";
 	public static final String NOTSPECIFIED = "Not Specified";
 
+	public static final String CLINPORTAL_APPLICATION_NAME = "clinportal";
+
+	public static final String CATISSUE_APPLICATION_NAME = "catissue";
 
 	/**
 	 * Instantiates a new constants.

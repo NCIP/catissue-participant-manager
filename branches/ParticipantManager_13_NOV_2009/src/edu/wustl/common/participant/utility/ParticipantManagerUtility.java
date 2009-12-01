@@ -89,7 +89,9 @@ public class ParticipantManagerUtility
 			hostName = XMLPropertyHandler.getValue(Constants.WMQ_SERVER_NAME);
 			qmgName = XMLPropertyHandler.getValue(Constants.WMQ_QMG_NAME);
 			channel = XMLPropertyHandler.getValue(Constants.WMQ_CHANNEL);
-			if(XMLPropertyHandler.getValue(Constants.WMQ_PORT)!=null && XMLPropertyHandler.getValue(Constants.WMQ_PORT)!=""){
+			if (XMLPropertyHandler.getValue(Constants.WMQ_PORT) != null
+					&& XMLPropertyHandler.getValue(Constants.WMQ_PORT) != "")
+			{
 				port = Integer.parseInt(XMLPropertyHandler.getValue(Constants.WMQ_PORT));
 			}
 			MQQueueConnectionFactory factory = new MQQueueConnectionFactory();
@@ -123,13 +125,13 @@ public class ParticipantManagerUtility
 		catch (JMSException e)
 		{
 			// TODO Auto-generated catch block
-			logger.error(" -------------  ERROR WHILE INITIALISING THE MESSAGE QUEUES \n \n ------------- ");
+			logger
+					.error(" -------------  ERROR WHILE INITIALISING THE MESSAGE QUEUES \n \n ------------- ");
 			logger.info(e.getMessage());
 			throw new JMSException(e.getMessage());
 
 		}
 	}
-
 
 	/**
 	 * Initialise particiapnt match scheduler.
@@ -141,8 +143,6 @@ public class ParticipantManagerUtility
 		String delay = "120000";
 		scheduleTime.schedule(timerTask, 0x1d4c0L, Long.parseLong(delay));
 	}
-
-
 
 	/**
 	 * Gets the participant medical identifier obj.
@@ -564,19 +564,41 @@ public class ParticipantManagerUtility
 	 *
 	 * @throws DAOException the DAO exception
 	 */
-	public static boolean csEMPIStatus(long participantId) throws DAOException
+	public static boolean isEMPIEnable(long participantId) throws DAOException
 	{
 		boolean status;
 
 		JDBCDAO dao = null;
 		status = false;
-
-		dao = getJDBCDAO();
+		String application = null;
+		String query = null;
 		try
 		{
-			String query = " SELECT SP.IS_EMPI_ENABLE FROM  CATISSUE_SPECIMEN_PROTOCOL SP JOIN  CATISSUE_CLINICAL_STUDY_REG CSR  "
-					+ " ON SP.IDENTIFIER = CSR.CLINICAL_STUDY_ID  WHERE CSR.PARTICIPANT_id='"
-					+ participantId + "'";
+			application = PropertyHandler.getValue("application");
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+			throw new DAOException(null, e,
+					"Error while get value from PatientInfoLookUpService.properties");
+		}
+
+		dao = getJDBCDAO();
+
+		try
+		{
+			if (Constants.CLINPORTAL_APPLICATION_NAME.equals(application))
+			{
+				query = " SELECT SP.IS_EMPI_ENABLE FROM  CATISSUE_SPECIMEN_PROTOCOL SP JOIN  CATISSUE_CLINICAL_STUDY_REG CSR  "
+						+ " ON SP.IDENTIFIER = CSR.CLINICAL_STUDY_ID  WHERE CSR.PARTICIPANT_id='"
+						+ participantId + "'";
+			}
+			else
+			{
+				query = " SELECT SP.IS_EMPI_ENABLE FROM  CATISSUE_SPECIMEN_PROTOCOL SP JOIN  CATISSUE_CLINICAL_STUDY_REG CSR  "
+						+ " ON SP.IDENTIFIER = CSR.CLINICAL_STUDY_ID  WHERE CSR.PARTICIPANT_id='"
+						+ participantId + "'";
+			}
 			List statusList = dao.executeQuery(query);
 			if (!statusList.isEmpty() && statusList.get(0) != "")
 			{
@@ -988,6 +1010,28 @@ public class ParticipantManagerUtility
 		}
 
 		return status;
+	}
+
+	/**
+	 * @param dao
+	 * @param identifier
+	 * @return
+	 * @throws BizLogicException
+	 */
+	public static IParticipant getOldParticipant(DAO dao, Long identifier) throws BizLogicException
+	{
+		IParticipant oldParticipant;
+		try
+		{
+			oldParticipant = (IParticipant) dao.retrieveById(
+					"edu.wustl.clinportal.domain.Participant", identifier);
+		}
+		catch (DAOException e)
+		{
+			logger.debug(e.getMessage(), e);
+			throw new BizLogicException(e.getErrorKey(), e, e.getMsgValues());
+		}
+		return oldParticipant;
 	}
 
 }
