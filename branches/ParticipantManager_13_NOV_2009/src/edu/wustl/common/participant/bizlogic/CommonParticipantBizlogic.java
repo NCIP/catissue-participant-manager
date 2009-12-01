@@ -385,12 +385,8 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 		DAO cleanDAO = null;
 		try
 		{
-			//String applicationName = CommonServiceLocator.getInstance().getAppName();
-			//cleanDAO = DAOConfigFactory.getInstance().getDAOFactory(applicationName).getDAO();
-			//cleanDAO.openSession(sessionDataBean);
-
 			cleanDAO=ParticipantManagerUtility.getDAO();
-			oldParticipant = getOldParticipant(cleanDAO, participant.getId());
+			oldParticipant = ParticipantManagerUtility.getOldParticipant(cleanDAO, participant.getId());
 			final AuditManager auditManager = updateParticipant(dao, sessionDataBean, participant,
 					oldParticipant);
 			pmiUpdate(dao, participant, auditManager, oldParticipant);
@@ -519,26 +515,5 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 	}
 
 
-	/**
-	 * @param dao
-	 * @param identifier
-	 * @return
-	 * @throws BizLogicException
-	 */
-	public IParticipant getOldParticipant(DAO dao, Long identifier) throws BizLogicException
-	{
-		IParticipant oldParticipant;
-		try
-		{
-			oldParticipant = (IParticipant) dao
-					.retrieveById("edu.wustl.clinportal.domain.Participant", identifier);
-		}
-		catch (DAOException e)
-		{
-			logger.debug(e.getMessage(), e);
-			throw new BizLogicException(e.getErrorKey(), e, e.getMsgValues());
-		}
-		return oldParticipant;
-	}
 
 }
