@@ -54,7 +54,7 @@ public class ParticipantAddAction extends CommonAddEditAction
 			if (!forward.getName().equals(Constants.FAILURE))
 			{
 				// if for CS eMPI is enable then set the eMPI status as pending if its eligible
-				if (ParticipantManagerUtility.csEMPIStatus(participantForm.getId()))
+				if (ParticipantManagerUtility.isEMPIEnable(participantForm.getId()))
 				{
 					if (ParticipantManagerUtility.isParticipantValidForEMPI(participantForm
 							.getLastName(), participantForm.getFirstName(), Utility
