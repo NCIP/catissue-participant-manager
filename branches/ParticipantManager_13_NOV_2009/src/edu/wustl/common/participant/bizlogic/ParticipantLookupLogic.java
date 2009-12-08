@@ -8,6 +8,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 
 import edu.wustl.common.exception.ApplicationException;
+import edu.wustl.common.exception.BizLogicException;
 import edu.wustl.common.lookup.DefaultLookupParameters;
 import edu.wustl.common.lookup.DefaultLookupResult;
 import edu.wustl.common.lookup.LookupLogic;
@@ -18,10 +19,8 @@ import edu.wustl.common.participant.domain.ISite;
 import edu.wustl.common.participant.utility.Constants;
 import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.util.XMLPropertyHandler;
-import edu.wustl.common.util.global.CommonServiceLocator;
+import edu.wustl.common.util.logger.Logger;
 import edu.wustl.dao.JDBCDAO;
-import edu.wustl.dao.daofactory.DAOConfigFactory;
-import edu.wustl.dao.daofactory.IDAOFactory;
 import edu.wustl.dao.exception.DAOException;
 import edu.wustl.patientLookUp.domain.PatientInformation;
 import edu.wustl.patientLookUp.lookUpServiceBizLogic.PatientInfoLookUpService;
@@ -30,39 +29,44 @@ import edu.wustl.patientLookUp.util.PatientLookupException;
 
 // TODO: Auto-generated Javadoc
 /**
- * @author geeta_jaggal.
- *
  * The Class ParticipantLookupLogic.
- *
- * 		This class is for finding out the matching participant with respect
- * 		to given participant. It implements the lookUp method of LookupLogic
- * 		interface which returns the list of all matching participants to the
- * 		given participant.
+ * 
+ * @author geeta_jaggal.
+ * 
+ * The Class ParticipantLookupLogic.
+ * 
+ * This class is for finding out the matching participant with respect
+ * to given participant. It implements the lookUp method of LookupLogic
+ * interface which returns the list of all matching participants to the
+ * given participant.
  */
 public class ParticipantLookupLogic implements LookupLogic
 {
 
 	/** The CUTOFFPOINTSFROMPROPERTIES. */
-	protected static int CUTOFFPOINTSFROMPROPERTIES;
+	protected static transient int CUTOFFPOINTSFROMPROPERTIES;
 
 	/** The TOTALPOINTSFROMPROPERTIES. */
-	protected static int TOTALPOINTSFROMPROPERTIES;
+	protected static transient int TOTALPOINTSFROMPROPERTIES;
 
 	/** The is ssn or pmi. */
-	protected boolean isSSNOrPMI;
+	protected  static transient boolean isSSNOrPMI;
 
 	/** The exact match. */
-	protected boolean exactMatch;
+	protected static transient boolean  exactMatch;
 
 	/** The cutoff points. */
-	protected int cutoffPoints;
+	protected static transient int cutoffPoints;
 
 	/** The total points. */
-	protected int totalPoints;
+	protected static transient int totalPoints;
 
 	/** The max no of participants to return. */
-	protected int maxNoOfParticipantsToReturn;
+	protected static transient int maxNoOfParticipantsToReturn;
 
+	/** The Constant logger. */
+	private static final Logger logger = Logger.getCommonLogger(ParticipantLookupLogic.class);
+	
 	/**
 	 * Instantiates a new participant lookup logic.
 	 */
@@ -75,11 +79,12 @@ public class ParticipantLookupLogic implements LookupLogic
 	/* (non-Javadoc)
 	 * @see edu.wustl.common.lookup.LookupLogic#lookup(edu.wustl.common.lookup.LookupParameters)
 	 */
-	public List lookup(LookupParameters params) throws Exception
+	public List lookup(LookupParameters params) throws PatientLookupException
 	{
+
 		if (params == null)
 		{
-			throw new Exception("Params can not be null");
+			throw new PatientLookupException("Params can not be null",null);
 		}
 		else
 		{
@@ -91,27 +96,28 @@ public class ParticipantLookupLogic implements LookupLogic
 					.intValue();
 			maxNoOfParticipantsToReturn = Integer.valueOf(
 					XMLPropertyHandler.getValue(Constants.EMPIMAXNOOFPATIENS)).intValue();
-			List matchingParticipantsList = searchMatchingParticipant(patientInformation);
+			List<DefaultLookupResult> matchingParticipantsList = searchMatchingParticipant(patientInformation);
 			return matchingParticipantsList;
 		}
+
 	}
 
 	/**
 	 * Search matching participant.
-	 *
+	 * 
 	 * @param patientInformation the patient information
-	 *
+	 * 
 	 * @return the list
-	 *
+	 * 
 	 * @throws PatientLookupException the patient lookup exception
 	 * @throws ApplicationException the application exception
 	 */
-	protected List searchMatchingParticipant(PatientInformation patientInformation)
-			throws PatientLookupException, ApplicationException
+	protected List<DefaultLookupResult> searchMatchingParticipant(PatientInformation patientInformation)
+			throws PatientLookupException
 	{
-		List matchingParticipantsList = new ArrayList();
+		List<DefaultLookupResult> matchingParticipantsList = new ArrayList<DefaultLookupResult>();
 		PatientInfoLookUpService patientLookupObj = new PatientInfoLookUpService();
-		JDBCDAO jdbcDAO =  null;
+		JDBCDAO jdbcDAO = null;
 		try
 		{
 			jdbcDAO = ParticipantManagerUtility.getJDBCDAO();
@@ -174,11 +180,25 @@ public class ParticipantLookupLogic implements LookupLogic
 			}
 
 		}
+		catch (BizLogicException e)
+		{
+			throw new PatientLookupException(e.getMessage(),e);
+		}
 		catch (DAOException daoExp)
 		{
-			throw new ApplicationException(daoExp.getErrorKey(), daoExp, daoExp.getMsgValues());
-		}finally {
-			jdbcDAO.closeSession();
+			throw new PatientLookupException(daoExp.getMsgValues(),daoExp);
+		}
+		finally
+		{
+			try
+			{
+				jdbcDAO.closeSession();
+			}
+			catch (DAOException daoExp)
+			{
+				// TODO Auto-generated catch block
+				throw new PatientLookupException(daoExp.getMsgValues(),daoExp);
+			}
 		}
 		return matchingParticipantsList;
 	}

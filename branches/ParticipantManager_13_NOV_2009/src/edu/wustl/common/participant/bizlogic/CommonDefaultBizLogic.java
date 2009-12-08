@@ -15,7 +15,10 @@ import edu.wustl.security.privilege.PrivilegeCache;
 import edu.wustl.security.privilege.PrivilegeManager;
 
 
+// TODO: Auto-generated Javadoc
 /**
+ * The Class CommonDefaultBizLogic.
+ *
  * @author geeta_jaggal
  * @created-on Nov 20, 2009
  */
@@ -24,14 +27,15 @@ public class CommonDefaultBizLogic extends DefaultBizLogic
 
 
 	/**
-	 *
 	 * This method return true if authorized user.
+	 *
 	 * @param dao DAO object.
 	 * @param domainObject Domain object.
 	 * @param sessionDataBean  SessionDataBean object.
-	 * @throws BizLogicException generic BizLogic Exception
+	 *
 	 * @return true if authorized user.
 	 *
+	 * @throws BizLogicException generic BizLogic Exception
 	 */
 
 	//@see edu.wustl.common.bizlogic.IBizLogic#
@@ -80,8 +84,10 @@ public class CommonDefaultBizLogic extends DefaultBizLogic
 	/**
 	 * Returns the object id of the protection element that represents
 	 * the Action that is being requested for invocation.
-	 * @param clazz
-	 * @return
+	 *
+	 * @param domainObject the domain object
+	 *
+	 * @return the object id for secure method access
 	 */
 	protected String getObjectIdForSecureMethodAccess(Object domainObject)
 	{
@@ -89,16 +95,20 @@ public class CommonDefaultBizLogic extends DefaultBizLogic
 	}
 
 	/**
-	 * @param e
-	 * @return
+	 * Handle sm exception.
+	 *
+	 * @param exp the exp
+	 *
+	 * @return the biz logic exception
 	 */
-	protected BizLogicException handleSMException(SMException e)
+	protected BizLogicException handleSMException(SMException exp)
 	{
 
-		String message = "Security Exception: " + e.getMessage();
-		if (e.getCause() != null)
-			message = message + " : " + e.getCause().getMessage();
-		return new BizLogicException(ErrorKey.getErrorKey("error.security"), e,
+		StringBuffer message = new StringBuffer("Security Exception: " + exp.getMessage());
+		if (exp.getCause() != null){
+			message.append( " : " ).append( exp.getCause().getMessage());
+		}
+		return new BizLogicException(ErrorKey.getErrorKey("error.security"), exp,
 				"Security Exception");
 	}
 }

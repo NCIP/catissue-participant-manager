@@ -3,7 +3,6 @@ package edu.wustl.common.participant.bizlogic;
 
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -12,14 +11,10 @@ import edu.wustl.common.exception.ApplicationException;
 import edu.wustl.common.participant.domain.IParticipant;
 import edu.wustl.common.participant.utility.Constants;
 import edu.wustl.common.participant.utility.ParticipantManagerUtility;
-import edu.wustl.common.util.global.CommonServiceLocator;
 import edu.wustl.common.util.logger.Logger;
 import edu.wustl.dao.JDBCDAO;
-import edu.wustl.dao.daofactory.DAOConfigFactory;
-import edu.wustl.dao.daofactory.IDAOFactory;
 import edu.wustl.dao.exception.DAOException;
 import edu.wustl.dao.query.generator.ColumnValueBean;
-import edu.wustl.dao.query.generator.DBTypes;
 import edu.wustl.patientLookUp.domain.PatientInformation;
 
 // TODO: Auto-generated Javadoc
@@ -29,16 +24,22 @@ import edu.wustl.patientLookUp.domain.PatientInformation;
 public class ParticipantMatchingBizLogic
 {
 
+	/** The Constant logger. */
 	private static final Logger logger = Logger.getCommonLogger(ParticipantMatchingBizLogic.class);
 
-	public ParticipantMatchingBizLogic()
-	{
-	}
 
+	/**
+	 * Per form participant match.
+	 * 
+	 * @param ParticipantIdLst the participant id lst
+	 * 
+	 * @throws ApplicationException the application exception
+	 */
 	public void perFormParticipantMatch(List ParticipantIdLst) throws ApplicationException
 	{
 		try
 		{
+			EMPIParticipantRegistrationBizLogic bizLogic = new EMPIParticipantRegistrationBizLogic();
 			for (int i = 0; i < ParticipantIdLst.size(); i++)
 			{
 				List idsList = (List) ParticipantIdLst.get(i);
@@ -61,7 +62,6 @@ public class ParticipantMatchingBizLogic
 						{
 							ParticipantManagerUtility.setEMPIIdStatus(participant.getId(),
 									Constants.EMPI_ID_PENDING);
-							EMPIParticipantRegistrationBizLogic bizLogic = new EMPIParticipantRegistrationBizLogic();
 							bizLogic.registerPatientToeMPI(participant);
 						}
 						storeMatchedParticipant(participant, matchPartpantLst);
@@ -77,6 +77,14 @@ public class ParticipantMatchingBizLogic
 		}
 	}
 
+	/**
+	 * Store matched participant.
+	 * 
+	 * @param participant the participant
+	 * @param matchPartpantLst the match partpant lst
+	 * 
+	 * @throws DAOException the DAO exception
+	 */
 	private void storeMatchedParticipant(IParticipant participant, List matchPartpantLst)
 			throws DAOException
 	{
@@ -170,11 +178,22 @@ public class ParticipantMatchingBizLogic
 		{
 			dao.rollback();
 			throw new DAOException(e.getErrorKey(), e, e.getMessage());
-		}finally{
+		}
+		finally
+		{
 			dao.closeSession();
 		}
 	}
 
+	/**
+	 * Update matched parti mapping.
+	 * 
+	 * @param jdbcdao the jdbcdao
+	 * @param searchPartiId the search parti id
+	 * @param noOfMathcedPaticipants the no of mathced paticipants
+	 * 
+	 * @throws DAOException the DAO exception
+	 */
 	private void updateMatchedPartiMapping(JDBCDAO jdbcdao, long searchPartiId,
 			int noOfMathcedPaticipants) throws DAOException
 	{
@@ -196,6 +215,13 @@ public class ParticipantMatchingBizLogic
 		}
 	}
 
+	/**
+	 * Gets the race values.
+	 * 
+	 * @param raceCollection the race collection
+	 * 
+	 * @return the race values
+	 */
 	private String getRaceValues(Collection raceCollection)
 	{
 		StringBuffer raceValues = new StringBuffer();
@@ -218,6 +244,13 @@ public class ParticipantMatchingBizLogic
 		return raceValues.toString();
 	}
 
+	/**
+	 * Gets the mRN values.
+	 * 
+	 * @param patientMedicalIdentifierColl the patient medical identifier coll
+	 * 
+	 * @return the mRN values
+	 */
 	private String getMRNValues(Collection patientMedicalIdentifierColl)
 	{
 		StringBuffer mrnValue = new StringBuffer();
@@ -232,22 +265,28 @@ public class ParticipantMatchingBizLogic
 				mrnId = (String) iterator.next();
 				siteId = (String) iterator.next();
 				siteName = (String) iterator.next();
-				mrn = (new StringBuilder()).append(mrnId).append(":").append(siteId).append(":")
-						.append(siteName).toString();
+				mrn = mrnId+":"+siteId+":"+siteName;
 				if (mrnValue.length() == 0)
 				{
 					mrnValue.append(mrn);
 				}
 				else
 				{
-					mrnValue.append((new StringBuilder()).append(",").append(mrn).toString());
+					mrnValue.append(",").append(mrn).toString();
 				}
 			}
-
 		}
 		return mrnValue.toString();
 	}
 
+	/**
+	 * Populate list with cs name.
+	 * 
+	 * @param list the list
+	 * @param dao the dao
+	 * 
+	 * @throws DAOException the DAO exception
+	 */
 	private void populateListWithCSName(List list, JDBCDAO dao) throws DAOException
 	{
 		if (list != null && !list.isEmpty())
@@ -267,6 +306,16 @@ public class ParticipantMatchingBizLogic
 		}
 	}
 
+	/**
+	 * Gets the clinical study names.
+	 * 
+	 * @param participantId the participant id
+	 * @param dao the dao
+	 * 
+	 * @return the clinical study names
+	 * 
+	 * @throws DAOException the DAO exception
+	 */
 	private String getClinicalStudyNames(Long participantId, JDBCDAO dao) throws DAOException
 	{
 		String query = (new StringBuilder())
@@ -300,6 +349,15 @@ public class ParticipantMatchingBizLogic
 		return csNames.toString();
 	}
 
+	/**
+	 * Gets the processed matched participants.
+	 * 
+	 * @param userId the user id
+	 * 
+	 * @return the processed matched participants
+	 * 
+	 * @throws DAOException the DAO exception
+	 */
 	public List getProcessedMatchedParticipants(Long userId) throws DAOException
 	{
 
@@ -308,10 +366,12 @@ public class ParticipantMatchingBizLogic
 		try
 		{
 			dao = ParticipantManagerUtility.getJDBCDAO();
-			String query =  "SELECT SEARCHED_PARTICIPANT_ID,LAST_NAME,FIRST_NAME,CREATION_DATE,NO_OF_MATCHED_"
-									+ "PARTICIPANTS FROM MATCHED_PARTICIPANT_MAPPING  PARTIMAPPING JOIN CATISSUE_PARTIC"
-									+ "IPANT PARTI ON PARTI.IDENTIFIER=PARTIMAPPING.SEARCHED_PARTICIPANT_ID WHERE PARTI"
-									+ "MAPPING.USER_ID='"+userId+"' AND PARTIMAPPING.NO_OF_MATCHED_PARTICIPANTS!='-1'";
+			String query = "SELECT SEARCHED_PARTICIPANT_ID,LAST_NAME,FIRST_NAME,CREATION_DATE,NO_OF_MATCHED_"
+					+ "PARTICIPANTS FROM MATCHED_PARTICIPANT_MAPPING  PARTIMAPPING JOIN CATISSUE_PARTIC"
+					+ "IPANT PARTI ON PARTI.IDENTIFIER=PARTIMAPPING.SEARCHED_PARTICIPANT_ID WHERE PARTI"
+					+ "MAPPING.USER_ID='"
+					+ userId
+					+ "' AND PARTIMAPPING.NO_OF_MATCHED_PARTICIPANTS!='-1'";
 			list = dao.executeQuery(query);
 			populateListWithCSName(list, dao);
 		}
