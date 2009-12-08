@@ -22,11 +22,13 @@ import edu.wustl.common.participant.utility.Constants;
 import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.util.XMLPropertyHandler;
 import edu.wustl.common.util.global.QuerySessionData;
+import edu.wustl.common.util.logger.Logger;
 
 
+// TODO: Auto-generated Javadoc
 /**
  * The Class ProcessMatchedParticipantsAction.
- *
+ * 
  * @author geeta_jaggal
  * @created-on Nov 16, 2009
  * The Class ProcessMatchedParticipantsAction :
@@ -35,14 +37,9 @@ import edu.wustl.common.util.global.QuerySessionData;
 public class ProcessMatchedParticipantsAction extends Action
 {
 
-	/**
-	 * Instantiates a new process matched participants
-	 * action.
-	 */
-	public ProcessMatchedParticipantsAction()
-	{
-	}
 
+	/** The Constant logger. */
+	private static final  Logger logger = Logger.getCommonLogger(ProcessMatchedParticipantsAction.class);
 	/* (non-Javadoc)
 	 * @see org.apache.struts.action.Action#execute(org.apache.struts.action.ActionMapping, org.apache.struts.action.ActionForm, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
 	 */
@@ -66,7 +63,7 @@ public class ProcessMatchedParticipantsAction extends Action
 			{
 				recordsPerPage = (Integer.valueOf((recordsPerPageSessionValue))).intValue();
 			}
-			String isDelete = request.getParameter("isDelete");
+			String isDelete = request.getParameter(Constants.IS_DELETE_PARTICIPANT);
 			String particicipantId = request.getParameter("participantId");
 			ParticipantMatchingBizLogic bizLogic = new ParticipantMatchingBizLogic();
 			List<String> columnNames = new ArrayList<String>();
@@ -100,14 +97,14 @@ public class ProcessMatchedParticipantsAction extends Action
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
+			logger.info(e.getMessage());
 			throw new ApplicationException(null, e, e.getMessage());
 		}
 	}
 
 	/**
 	 * Sets the status message.
-	 *
+	 * 
 	 * @param request the request
 	 * @param delStatus the del status
 	 */
