@@ -1,7 +1,10 @@
 
 package edu.wustl.common.participant.utility;
 
+// TODO: Auto-generated Javadoc
 /**
+ * The Class Constants.
+ *
  * @author geeta_jaggal
  * @created-on Nov 16, 2009
  * The Class Constants.
@@ -229,8 +232,10 @@ public class Constants
 	/** The Constant PARTICIPANT_EMPI_GENERATION_ACTION. */
 	public static final String PARTICIPANT_EMPI_GENERATION_ACTION = "ParticipantEMPIGeneration.do";
 
+	/** The Constant TIMESTAMP_PATTERN. */
 	public static final String TIMESTAMP_PATTERN = "MM-dd-yyyy HH:mm";
 
+	/** The Constant HL7_LISTENER_ADMIN_USER. */
 	public static final String HL7_LISTENER_ADMIN_USER = "HL7ListenerAdminUser";
 
 	/** The Constant CSM. */
@@ -239,20 +244,25 @@ public class Constants
 	/** The Constant YES. */
 	public static final String YES = "yes";
 
+	/** The Constant UNDEFINED. */
 	public static final String UNDEFINED = "Undefined";
+
+	/** The Constant UNKNOWN. */
 	public static final String UNKNOWN = "Unknown";
+
+	/** The Constant UNSPECIFIED. */
 	public static final String UNSPECIFIED = "Unspecified";
+
+	/** The Constant NOTSPECIFIED. */
 	public static final String NOTSPECIFIED = "Not Specified";
 
+	/** The Constant CLINPORTAL_APPLICATION_NAME. */
 	public static final String CLINPORTAL_APPLICATION_NAME = "clinportal";
 
+	/** The Constant CATISSUE_APPLICATION_NAME. */
 	public static final String CATISSUE_APPLICATION_NAME = "catissue";
 
-	/**
-	 * Instantiates a new constants.
-	 */
-	public Constants()
-	{
-	}
+	/** The Constant IS_DELETE_PARTICIPANT. */
+	public static final String IS_DELETE_PARTICIPANT = "isDelete";
 
 }

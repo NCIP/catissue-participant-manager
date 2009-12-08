@@ -12,6 +12,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import edu.wustl.common.exception.ApplicationException;
+import edu.wustl.common.util.logger.Logger;
 
 /**
  * @author geeta_jaggal.
@@ -25,13 +27,8 @@ public class RaceGenderCodesProperyHandler
 
 	/** The document. */
 	private static Document document = null;
-
-	/**
-	 * Instantiates a new race gender codes propery handler.
-	 */
-	public RaceGenderCodesProperyHandler()
-	{
-	}
+	private static final Logger logger = Logger
+			.getCommonLogger(RaceGenderCodesProperyHandler.class);
 
 	/**
 	 * Inits the.
@@ -40,7 +37,7 @@ public class RaceGenderCodesProperyHandler
 	 *
 	 * @throws Exception the exception
 	 */
-	public static void init(String path) throws Exception
+	public static void init(String path) throws ApplicationException
 	{
 		try
 		{
@@ -61,9 +58,16 @@ public class RaceGenderCodesProperyHandler
 		}
 		catch (FileNotFoundException e)
 		{
-			e.printStackTrace();
-			throw new FileNotFoundException();
+			logger.info(e.getMessage());
+			throw new ApplicationException(null, e, " HL7MesRaceGenderCodes.xml fiel not found \n");
 		}
+		catch (Exception e)
+		{
+			logger.info(e.getMessage());
+			throw new ApplicationException(null, e,
+					" Error in initialising RaceGenderCodesProperyHandler class");
+		}
+
 	}
 
 	/**
@@ -83,17 +87,16 @@ public class RaceGenderCodesProperyHandler
 				continue;
 			}
 			NodeList subChildNodes = child.getChildNodes();
-			boolean isNameFound = false;
 			String pName = null;
 			for (int j = 0; j < subChildNodes.getLength(); j++)
 			{
 				Node subchildNode = subChildNodes.item(j);
 				String subNodeName = subchildNode.getNodeName();
-				if (subNodeName.equals("name"))
+				if ("name".equals(subNodeName))
 				{
 					pName = subchildNode.getFirstChild().getNodeValue();
 				}
-				if (!subNodeName.equals("value"))
+				if (!("value".equals(subNodeName)))
 				{
 					continue;
 				}
@@ -118,21 +121,15 @@ public class RaceGenderCodesProperyHandler
 	 *
 	 * @throws Exception the exception
 	 */
-	public static String getValue(String propertyName) throws Exception
+	public static String getValue(String propertyName) throws ApplicationException
 	{
 		String value = null;
-		try
+
+		if (raceGenderCodesProp == null)
 		{
-			if (raceGenderCodesProp == null)
-			{
-				init("HL7MesRaceGenderCodes.xml");
-			}
+			init("HL7MesRaceGenderCodes.xml");
 		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-			throw new Exception(e.getMessage(), e);
-		}
+
 		if (propertyName != null)
 		{
 			value = raceGenderCodesProp.getProperty(propertyName);

@@ -5,10 +5,8 @@ import java.util.List;
 import java.util.TimerTask;
 
 import edu.wustl.common.participant.bizlogic.ParticipantMatchingBizLogic;
-import edu.wustl.common.util.global.CommonServiceLocator;
+import edu.wustl.common.util.logger.Logger;
 import edu.wustl.dao.JDBCDAO;
-import edu.wustl.dao.daofactory.DAOConfigFactory;
-import edu.wustl.dao.daofactory.IDAOFactory;
 import edu.wustl.dao.exception.DAOException;
 
 /**
@@ -18,6 +16,8 @@ import edu.wustl.dao.exception.DAOException;
  */
 public class ParticipantMatchingTimerTask extends TimerTask
 {
+
+	private static final Logger logger = Logger.getCommonLogger(ParticipantMatchingTimerTask.class);
 
 	/* (non-Javadoc)
 	 * @see java.util.TimerTask#run()
@@ -31,7 +31,7 @@ public class ParticipantMatchingTimerTask extends TimerTask
 		catch (Exception e)
 		{
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.info(e.getMessage());
 		}
 	}
 

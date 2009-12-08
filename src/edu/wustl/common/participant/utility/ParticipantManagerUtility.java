@@ -37,7 +37,6 @@ import edu.wustl.common.participant.domain.IParticipant;
 import edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
 import edu.wustl.common.participant.domain.IRace;
 import edu.wustl.common.participant.domain.ISite;
-import edu.wustl.common.participant.domain.IUser;
 import edu.wustl.common.participant.listener.EMPIParticipantListener;
 import edu.wustl.common.participant.listener.EMPIParticipantMergeMessageListener;
 import edu.wustl.common.util.Utility;
@@ -63,18 +62,13 @@ public class ParticipantManagerUtility
 	/** The logger. */
 	private static final Logger logger = Logger.getCommonLogger(ParticipantManagerUtility.class);
 
-	/**
-	 * Instantiates a new participant manager utility.
-	 */
-	public ParticipantManagerUtility()
-	{
-	}
+
 
 	/**
 	 * Register wmq listener.
 	 *
 	 * @throws JMSException the JMS exception
-	 * @throws BizLogicException
+	 * @throws BizLogicException the biz logic exception
 	 */
 	public static void registerWMQListener() throws JMSException, BizLogicException
 	{
@@ -140,7 +134,7 @@ public class ParticipantManagerUtility
 	{
 		ParticipantMatchingTimerTask timerTask = new ParticipantMatchingTimerTask();
 		Timer scheduleTime = new Timer();
-		String delay = "120000";
+		String delay = XMLPropertyHandler.getValue(Constants.PARTICIPANT_MATCHING_SCHEDULAR_DELAY);
 		scheduleTime.schedule(timerTask, 0x1d4c0L, Long.parseLong(delay));
 	}
 
@@ -151,7 +145,8 @@ public class ParticipantManagerUtility
 	 * @param facilityId the facility id
 	 *
 	 * @return the participant medical identifier obj
-	 * @throws Exception
+	 *
+	 * @throws Exception the exception
 	 */
 	public static IParticipantMedicalIdentifier getParticipantMedicalIdentifierObj(String mrn,
 			String facilityId) throws Exception
@@ -172,15 +167,14 @@ public class ParticipantManagerUtility
 	/**
 	 * Gets the site object.
 	 *
-	 * @param facilityId
-	 *            the facility id
+	 * @param facilityId the facility id
 	 *
 	 * @return the site object
 	 *
-	 * @throws Exception
-	 *             the exception
+	 * @throws BizLogicException the biz logic exception
+	 * @throws Exception the exception
 	 */
-	public static ISite getSiteObject(String facilityId) throws Exception
+	public static ISite getSiteObject(String facilityId) throws BizLogicException
 	{
 		String sourceObjectName = ISite.class.getName();
 		String selectColumnNames[] = {"id", "name"};
@@ -222,19 +216,19 @@ public class ParticipantManagerUtility
 		}
 		catch (IllegalAccessException e)
 		{
-			e.printStackTrace();
+			logger.info(e.getMessage());
 			throw new BizLogicException(null, null, "IllegalAccessException",
 					"IllegalAccessException");
 		}
 		catch (InstantiationException e)
 		{
-			e.printStackTrace();
+			logger.info(e.getMessage());
 			throw new BizLogicException(null, null, "InstantiationException",
 					"InstantiationException");
 		}
 		catch (ClassNotFoundException e)
 		{
-			e.printStackTrace();
+			logger.info(e.getMessage());
 			throw new BizLogicException(null, null, "ClassNotFoundException",
 					"ClassNotFoundException");
 		}
@@ -334,7 +328,7 @@ public class ParticipantManagerUtility
 	{
 		String application = applicationType();
 		Object raceInstance = null;
-		if ("clinportal".equals(application))
+		if (Constants.CLINPORTAL_APPLICATION_NAME.equals(application))
 		{
 			raceInstance = getObject("edu.wustl.clinportal.domain.Race");
 		}
@@ -356,7 +350,7 @@ public class ParticipantManagerUtility
 	{
 		String application = applicationType();
 		Object siteInstance = null;
-		if ("clinportal".equals(application))
+		if (Constants.CLINPORTAL_APPLICATION_NAME.equals(application))
 		{
 			siteInstance = getObject("edu.wustl.clinportal.domain.Site");
 		}
@@ -378,7 +372,7 @@ public class ParticipantManagerUtility
 	{
 		String application = applicationType();
 		Object partiicpantInstance = null;
-		if ("clinportal".equals(application))
+		if (Constants.CLINPORTAL_APPLICATION_NAME.equals(application))
 		{
 			partiicpantInstance = getObject("edu.wustl.clinportal.domain.Participant");
 		}
@@ -400,7 +394,7 @@ public class ParticipantManagerUtility
 	{
 		String application = applicationType();
 		Object PMIInstance = null;
-		if ("clinportal".equals(application))
+		if (Constants.CLINPORTAL_APPLICATION_NAME.equals(application))
 		{
 			PMIInstance = getObject("edu.wustl.clinportal.domain.ParticipantMedicalIdentifier");
 		}
@@ -578,7 +572,7 @@ public class ParticipantManagerUtility
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
+			logger.info(e.getMessage());
 			throw new DAOException(null, e,
 					"Error while get value from PatientInfoLookUpService.properties");
 		}
@@ -824,6 +818,13 @@ public class ParticipantManagerUtility
 		return mrn.toString();
 	}
 
+	/**
+	 * Gets the jDBCDAO.
+	 *
+	 * @return the jDBCDAO
+	 *
+	 * @throws DAOException the DAO exception
+	 */
 	public static JDBCDAO getJDBCDAO() throws DAOException
 	{
 		String appName = CommonServiceLocator.getInstance().getAppName();
@@ -834,6 +835,13 @@ public class ParticipantManagerUtility
 		return jdbcdao;
 	}
 
+	/**
+	 * Gets the dAO.
+	 *
+	 * @return the dAO
+	 *
+	 * @throws DAOException the DAO exception
+	 */
 	public static DAO getDAO() throws DAOException
 	{
 		DAO dao = null;
@@ -1013,10 +1021,14 @@ public class ParticipantManagerUtility
 	}
 
 	/**
-	 * @param dao
-	 * @param identifier
-	 * @return
-	 * @throws BizLogicException
+	 * Gets the old participant.
+	 *
+	 * @param dao the dao
+	 * @param identifier the identifier
+	 *
+	 * @return the old participant
+	 *
+	 * @throws BizLogicException the biz logic exception
 	 */
 	public static IParticipant getOldParticipant(DAO dao, Long identifier) throws BizLogicException
 	{
