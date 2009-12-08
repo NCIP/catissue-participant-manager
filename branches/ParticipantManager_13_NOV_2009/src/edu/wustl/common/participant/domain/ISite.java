@@ -13,30 +13,40 @@ public interface ISite
 	 *
 	 * @return the id
 	 */
-	public Long getId();
+	Long getId();
 
 	/**
 	 * Sets the id.
 	 *
 	 * @param identifier the new id
 	 */
-	public void setId(Long identifier);
+	void setId(Long identifier);
 
 	/**
 	 * Gets the name.
 	 *
 	 * @return the name
 	 */
-	public String getName();
+	String getName();
 
 	/**
 	 * Sets the name.
 	 *
 	 * @param name the new name
 	 */
-	public void setName(String name);
+	void setName(String name);
 
-	public String getFacilityId();
+	/**
+	 * Gets the facility id.
+	 *
+	 * @return the facility id
+	 */
+	String getFacilityId();
 
-	public void setFacilityId(String facilityId);
+	/**
+	 * Sets the facility id.
+	 *
+	 * @param facilityId the new facility id
+	 */
+	void setFacilityId(String facilityId);
 }

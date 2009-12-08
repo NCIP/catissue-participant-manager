@@ -13,33 +13,33 @@ public interface IRace<T>
 	 *
 	 * @return the id
 	 */
-	public Long getId();
+	Long getId();
 
 	/**
 	 * Sets the id.
 	 *
 	 * @param identifier the new id
 	 */
-	public void setId(Long identifier);
+	void setId(Long identifier);
 
 	/**
 	 * Gets the race name.
 	 *
 	 * @return the race name
 	 */
-	public String getRaceName();
+	String getRaceName();
 
 	/**
 	 * Sets the race name.
 	 *
 	 * @param raceName the new race name
 	 */
-	public void setRaceName(String raceName);
+	void setRaceName(String raceName);
 
 	/**
 	 * Sets the participant.
 	 *
 	 * @param participant the new participant
 	 */
-	public void setParticipant(T participant);
+	void setParticipant(T participant);
 }
