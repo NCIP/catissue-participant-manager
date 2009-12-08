@@ -13,23 +13,30 @@ import javax.jms.TextMessage;
 
 import edu.wustl.common.participant.utility.Constants;
 import edu.wustl.common.participant.utility.ParticipantManagerUtility;
-import edu.wustl.common.util.global.CommonServiceLocator;
 import edu.wustl.common.util.logger.Logger;
 import edu.wustl.dao.JDBCDAO;
-import edu.wustl.dao.daofactory.DAOConfigFactory;
-import edu.wustl.dao.daofactory.IDAOFactory;
 import edu.wustl.dao.exception.DAOException;
 import edu.wustl.dao.query.generator.ColumnValueBean;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The listener interface for receiving EMPIParticipantMergeMessage events.
+ * The class that is interested in processing a EMPIParticipantMergeMessage
+ * event implements this interface, and the object created
+ * with that class is registered with a component using the
+ * component's <code>addEMPIParticipantMergeMessageListener<code> method. When
+ * the EMPIParticipantMergeMessage event occurs, that object's appropriate
+ * method is invoked.
+ *
+ * @see EMPIParticipantMergeMessageEvent
+ */
 public class EMPIParticipantMergeMessageListener implements MessageListener
 {
 
+	/** The Constant logger. */
 	private static final Logger logger = Logger
 			.getCommonLogger(EMPIParticipantMergeMessageListener.class);
 
-	public EMPIParticipantMergeMessageListener()
-	{
-	}
 
 	/*
 	 * (non-Javadoc)
@@ -84,7 +91,7 @@ public class EMPIParticipantMergeMessageListener implements MessageListener
 					try
 					{
 
-						jdbcdao =ParticipantManagerUtility.getJDBCDAO();
+						jdbcdao = ParticipantManagerUtility.getJDBCDAO();
 						if (isEMPIIdExists(jdbcdao, pidEmpiId, mrgEmpiId))
 						{
 							storeMergeMessage(jdbcdao, mergeMessage, hl7EventType, pidEmpiId,
@@ -112,6 +119,17 @@ public class EMPIParticipantMergeMessageListener implements MessageListener
 		}
 	}
 
+	/**
+	 * Checks if is eMPI id exists.
+	 *
+	 * @param jdbcdao the jdbcdao
+	 * @param pidEmpiId the pid empi id
+	 * @param mrgEmpiId the mrg empi id
+	 *
+	 * @return true, if is eMPI id exists
+	 *
+	 * @throws DAOException the DAO exception
+	 */
 	private boolean isEMPIIdExists(JDBCDAO jdbcdao, String pidEmpiId, String mrgEmpiId)
 			throws DAOException
 	{
@@ -136,6 +154,13 @@ public class EMPIParticipantMergeMessageListener implements MessageListener
 		return isIdExists;
 	}
 
+	/**
+	 * Gets the eMPI id.
+	 *
+	 * @param id the id
+	 *
+	 * @return the eMPI id
+	 */
 	private String getEMPIId(String id)
 	{
 		String empiId = "";
@@ -145,6 +170,13 @@ public class EMPIParticipantMergeMessageListener implements MessageListener
 		return empiId;
 	}
 
+	/**
+	 * Removes the pre app zeroes.
+	 *
+	 * @param id the id
+	 *
+	 * @return the string
+	 */
 	private String removePreAppZeroes(String id)
 	{
 		String empiId;
@@ -155,6 +187,17 @@ public class EMPIParticipantMergeMessageListener implements MessageListener
 		return empiId;
 	}
 
+	/**
+	 * Store merge message.
+	 *
+	 * @param jdbcdao the jdbcdao
+	 * @param hl7Message the hl7 message
+	 * @param messageType the message type
+	 * @param pidEmpiId the pid empi id
+	 * @param mrgEmpiId the mrg empi id
+	 *
+	 * @throws DAOException the DAO exception
+	 */
 	private void storeMergeMessage(JDBCDAO jdbcdao, String hl7Message, String messageType,
 			String pidEmpiId, String mrgEmpiId) throws DAOException
 	{
@@ -189,13 +232,14 @@ public class EMPIParticipantMergeMessageListener implements MessageListener
 			columnValueBeanList.add(new ColumnValueBean("MESSAGE_STATUS", "false", 21));
 			jdbcdao.executeUpdate(insQuery, columnValueBeanList);
 			jdbcdao.commit();
-			logger.info((new StringBuilder()).append("\n \n  ----------- STORED MERGE MESSAGE ----------  \n\n")
-					.toString());
+			logger.info((new StringBuilder()).append(
+					"\n \n  ----------- STORED MERGE MESSAGE ----------  \n\n").toString());
 			logger.info(hl7Message);
 		}
 		catch (DAOException e)
 		{
-			logger.info("\n \n --------  ERROR WHILE STORING THE FOLLOWING MERGE MESSAGE ----------\n\n\n");
+			logger
+					.info("\n \n --------  ERROR WHILE STORING THE FOLLOWING MERGE MESSAGE ----------\n\n\n");
 			logger.info(hl7Message);
 			logger.info(e.getMessage());
 			throw new DAOException(e.getErrorKey(), e, e.getMessage());

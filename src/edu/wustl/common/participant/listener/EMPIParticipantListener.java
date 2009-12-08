@@ -63,26 +63,9 @@ public class EMPIParticipantListener implements MessageListener
 
 	/** The logger. */
 	private static final Logger logger = Logger.getCommonLogger(EMPIParticipantListener.class);
+
 	/** The document. */
 	private Document document;
-
-	//public static SessionDataBean sessionData = null;
-
-	/**
-	 * @return the sessionData
-	 */
-	//public static SessionDataBean getSessionData()
-	//{
-	//return sessionData;
-	//}
-
-	/**
-	 * @param sessionData the sessionData to set
-	 */
-	//public static void setSessionData(SessionDataBean sessionData)
-	//{
-	//EMPIParticipantListener.sessionData = sessionData;
-	//}
 
 	/** The parti med id coll. */
 	private Collection partiMedIdColl;
@@ -163,76 +146,88 @@ public class EMPIParticipantListener implements MessageListener
 	 */
 	public void onMessage(Message message)
 	{
+		String personDemoGraphics = null;
 		try
 		{
-
-			String clinPortalId = null;
-			String sourceObjectName = null;
-			Element docEle = null;
-			IUser validUser = null;
-			String loginName = null;
-			IParticipant partcipantObj = null;
-			String personDemoGraphics = null;
-			String oldParticipantId = null;
-			String oldEMPIID = null;
-			SessionDataBean sessionData = null;
-			boolean isGenerateMgrMessage = false;
 			if (message instanceof TextMessage)
 			{
 				personDemoGraphics = ((TextMessage) message).getText();
 				logger.info(" Received demographics message \n \n");
 				logger.info(personDemoGraphics);
+				processDomographicXML(personDemoGraphics);
 
-				if ("clinportal".equals(ParticipantManagerUtility.applicationType()))
-				{
-					sourceObjectName = "edu.wustl.clinportal.domain.Participant";
-				}
-				else
-				{
-					sourceObjectName = "edu.wustl.catissue.domain.Participant";
-				}
-
-				document = getDocument(personDemoGraphics);
-				docEle = document.getDocumentElement();
-				processDomographicXML(docEle);
-				clinPortalId = getParticipantId();
-				String permanentId = getPermanentId(clinPortalId);
-				oldParticipantId = clinPortalId;
-				if (permanentId != null && permanentId != "")
-				{
-					isGenerateMgrMessage = true;
-					clinPortalId = permanentId;
-				}
-				DefaultBizLogic bizlogic = new DefaultBizLogic();
-				partcipantObj = (IParticipant) bizlogic.retrieve(sourceObjectName, Long
-						.valueOf(Long.parseLong(clinPortalId)));
-				oldEMPIID = String.valueOf(partcipantObj.getEmpiId());
-
-				loginName = XMLPropertyHandler.getValue(Constants.HL7_LISTENER_ADMIN_USER);
-				//loginName = Constants.CLINPORTAL_EMPI_ADMIN_LOGIN_ID;
-				validUser = getUser(loginName, Constants.ACTIVITY_STATUS_ACTIVE);
-
-				if (validUser != null)
-				{
-					sessionData = getSessionDataBean(validUser);
-					updateParticipant(docEle, partcipantObj, sessionData);
-					if (isGenerateMgrMessage)
-					{
-						EMPIParticipantRegistrationBizLogic eMPIPartiReg = new EMPIParticipantRegistrationBizLogic();
-						eMPIPartiReg.sendMergeMessage(partcipantObj, oldParticipantId, oldEMPIID);
-					}
-				}
-				else
-				{
-					checkUserAccount(loginName);
-				}
 			}
-
 		}
 		catch (Exception e)
 		{
 			logger.info(e.getCause());
 			logger.info(e.getMessage());
+		}
+	}
+
+	/**
+	 * Process domographic xml.
+	 *
+	 * @param personDemoGraphics the person demo graphics
+	 *
+	 * @throws Exception the exception
+	 */
+	public void processDomographicXML(String personDemoGraphics) throws Exception
+	{
+
+		String clinPortalId = null;
+		String sourceObjectName = null;
+		Element docEle = null;
+		IUser validUser = null;
+		String loginName = null;
+		IParticipant partcipantObj = null;
+
+		String oldParticipantId = null;
+		String oldEMPIID = null;
+		SessionDataBean sessionData = null;
+		boolean isGenerateMgrMessage = false;
+		if ("clinportal".equals(ParticipantManagerUtility.applicationType()))
+		{
+			sourceObjectName = "edu.wustl.clinportal.domain.Participant";
+		}
+		else
+		{
+			sourceObjectName = "edu.wustl.catissue.domain.Participant";
+		}
+
+		document = getDocument(personDemoGraphics);
+		docEle = document.getDocumentElement();
+		parseDomographicXML(docEle);
+		clinPortalId = getParticipantId();
+		String permanentId = getPermanentId(clinPortalId);
+		oldParticipantId = clinPortalId;
+		if (permanentId != null && permanentId != "")
+		{
+			isGenerateMgrMessage = true;
+			clinPortalId = permanentId;
+		}
+		DefaultBizLogic bizlogic = new DefaultBizLogic();
+		partcipantObj = (IParticipant) bizlogic.retrieve(sourceObjectName, Long.valueOf(Long
+				.parseLong(clinPortalId)));
+		oldEMPIID = String.valueOf(partcipantObj.getEmpiId());
+
+		loginName = XMLPropertyHandler.getValue(Constants.HL7_LISTENER_ADMIN_USER);
+		//loginName = Constants.CLINPORTAL_EMPI_ADMIN_LOGIN_ID;
+		validUser = getUser(loginName, Constants.ACTIVITY_STATUS_ACTIVE);
+
+		if (validUser != null)
+		{
+			sessionData = getSessionDataBean(validUser);
+			updateParticipant(docEle, partcipantObj, sessionData);
+			if (isGenerateMgrMessage)
+			{
+				EMPIParticipantRegistrationBizLogic eMPIPartiReg = new EMPIParticipantRegistrationBizLogic();
+				eMPIPartiReg.sendMergeMessage(partcipantObj, oldParticipantId, oldEMPIID);
+			}
+		}
+		else
+		{
+			checkUserAccount(loginName);
 		}
 	}
 
@@ -251,24 +246,27 @@ public class EMPIParticipantListener implements MessageListener
 		String permanentId = null;
 
 		JDBCDAO jdbcdao = null;
+		ResultSet result = null;
 		try
 		{
 			jdbcdao = ParticipantManagerUtility.getJDBCDAO();
-			ResultSet rs = jdbcdao
+			result = jdbcdao
 					.getQueryResultSet((new StringBuilder())
 							.append(
 									"SELECT PERMANENT_PARTICIPANT_ID FROM PARTICIPANT_EMPI_ID_MAPPING WHERE TEMPARARY_PARTICIPANT_ID='")
 							.append(clinPortalId).append("'").toString());
-			if (rs != null)
+			if (result != null)
 			{
-				while (rs.next())
+				while (result.next())
 				{
-					permanentId = rs.getString("permanent_participant_id");
+					permanentId = result.getString("permanent_participant_id");
 				}
 			}
+
 		}
 		finally
 		{
+			result.close();
 			jdbcdao.closeSession();
 		}
 		return permanentId;
@@ -283,7 +281,7 @@ public class EMPIParticipantListener implements MessageListener
 	 *
 	 * @throws PatientLookupException the patient lookup exception
 	 * @throws BizLogicException the biz logic exception
-	 * @throws DAOException
+	 * @throws DAOException the DAO exception
 	 */
 	private void updateParticipant(Element docEle, IParticipant partcipantObj,
 			SessionDataBean sessionData) throws PatientLookupException, BizLogicException,
@@ -448,7 +446,7 @@ public class EMPIParticipantListener implements MessageListener
 		IParticipantMedicalIdentifier partMedIdOld = null;
 		Iterator itreratorNew = null;
 		boolean MRNNotFound = false;
-		int i = 0;
+		int count = 0;
 		ArrayList oldMrnIdList = new ArrayList();
 		if (partiMedIdColl != null && !partiMedIdColl.isEmpty())
 		{
@@ -493,14 +491,14 @@ public class EMPIParticipantListener implements MessageListener
 					}
 					if (!MRNNotFound)
 					{
-						oldMrnIdList.add(i, new Long(partMedIdOld.getId().longValue()));
-						i++;
+						oldMrnIdList.add(count, new Long(partMedIdOld.getId().longValue()));
+						count++;
 					}
 				}
 				while (true);
 			}
 		}
-		i = 0;
+		count = 0;
 		if (partiMedIdColl != null)
 		{
 			Iterator iterator1 = partiMedIdColl.iterator();
@@ -510,16 +508,16 @@ public class EMPIParticipantListener implements MessageListener
 				{
 					break;
 				}
-				IParticipantMedicalIdentifier participantMedicalIdentifierNew = (IParticipantMedicalIdentifier) iterator1
+				IParticipantMedicalIdentifier partiMediIdNew = (IParticipantMedicalIdentifier) iterator1
 						.next();
-				if (participantMedicalIdentifierNew.getId() == null)
+				if (partiMediIdNew.getId() == null)
 				{
-					if (i < oldMrnIdList.size())
+					if (count < oldMrnIdList.size())
 					{
-						participantMedicalIdentifierNew.setId(Long.valueOf(((Long) oldMrnIdList
-								.get(i)).longValue()));
+						partiMediIdNew.setId(Long.valueOf(((Long) oldMrnIdList
+								.get(count)).longValue()));
 					}
-					i++;
+					count++;
 				}
 			}
 			while (true);
@@ -530,9 +528,10 @@ public class EMPIParticipantListener implements MessageListener
 	 * Process domographic xml.
 	 *
 	 * @param docEle the doc ele
-	 * @throws Exception
+	 *
+	 * @throws Exception the exception
 	 */
-	private void processDomographicXML(Element docEle) throws Exception
+	private void parseDomographicXML(Element docEle) throws Exception
 	{
 		IParticipantMedicalIdentifier participantMedicalIdentifier = null;
 		partiMedIdColl = new LinkedHashSet();
@@ -587,7 +586,6 @@ public class EMPIParticipantListener implements MessageListener
 	 * Gets the session data bean.
 	 *
 	 * @param validUser the valid user
-	 * @param loginName the login name
 	 *
 	 * @return the session data bean
 	 */
