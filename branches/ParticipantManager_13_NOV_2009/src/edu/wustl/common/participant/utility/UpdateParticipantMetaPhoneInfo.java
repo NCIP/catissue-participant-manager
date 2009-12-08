@@ -8,10 +8,7 @@ import java.util.List;
 import org.apache.commons.codec.language.Metaphone;
 
 import edu.wustl.common.exception.ApplicationException;
-import edu.wustl.common.util.global.CommonServiceLocator;
 import edu.wustl.dao.JDBCDAO;
-import edu.wustl.dao.daofactory.DAOConfigFactory;
-import edu.wustl.dao.daofactory.IDAOFactory;
 import edu.wustl.dao.exception.DAOException;
 
 /**
@@ -22,6 +19,10 @@ import edu.wustl.dao.exception.DAOException;
  */
 public class UpdateParticipantMetaPhoneInfo
 {
+
+	private UpdateParticipantMetaPhoneInfo(){
+
+	}
 
 	/**
 	 * The main method.

@@ -9,6 +9,7 @@ import com.ibm.mq.MQException;
 import com.ibm.mq.MQMessage;
 import com.ibm.mq.MQQueue;
 import com.ibm.mq.MQQueueManager;
+import edu.wustl.common.util.logger.Logger;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -31,6 +32,10 @@ public class MQMessageWriter
 
 	/** The q name. */
 	private String qName;
+
+	/** The Constant logger. */
+	private static final Logger logger = Logger
+			.getCommonLogger(MQMessageWriter.class);
 
 	/**
 	 * Sets the host name.
@@ -172,7 +177,7 @@ public class MQMessageWriter
 		catch (MQException e)
 		{
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.info(e.getMessage());
 		}
 	}
 
