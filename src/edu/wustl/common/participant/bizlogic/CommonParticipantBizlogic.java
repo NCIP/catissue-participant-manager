@@ -14,7 +14,6 @@ import edu.wustl.common.cde.CDEManager;
 import edu.wustl.common.domain.AbstractDomainObject;
 import edu.wustl.common.exception.AuditException;
 import edu.wustl.common.exception.BizLogicException;
-import edu.wustl.common.participant.action.ParticipantAddAction;
 import edu.wustl.common.participant.domain.IParticipant;
 import edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
 import edu.wustl.common.participant.domain.IRace;
@@ -28,7 +27,7 @@ import edu.wustl.common.util.global.Status;
 import edu.wustl.common.util.global.Validator;
 import edu.wustl.common.util.logger.Logger;
 import edu.wustl.dao.DAO;
-import edu.wustl.dao.daofactory.DAOConfigFactory;
+import edu.wustl.dao.JDBCDAO;
 import edu.wustl.dao.exception.DAOException;
 
 // TODO: Auto-generated Javadoc
@@ -38,18 +37,19 @@ import edu.wustl.dao.exception.DAOException;
 public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 {
 
+	/** The Constant logger. */
+	private static final Logger logger = Logger.getCommonLogger(CommonParticipantBizlogic.class);
 
-	private static final Logger logger = Logger.getCommonLogger(ParticipantAddAction.class);
 	/**
 	 * Insert.
-	 *
+	 * 
 	 * @param obj the obj
 	 * @param dao the dao
 	 * @param auditManager the audit manager
 	 * @param pmi the pmi
-	 *
+	 * 
 	 * @return the i participant
-	 *
+	 * 
 	 * @throws BizLogicException the biz logic exception
 	 * @throws DAOException the DAO exception
 	 * @throws AuditException the audit exception
@@ -92,12 +92,12 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 
 	/**
 	 * Updates the persistent object in the database.
-	 *
+	 * 
 	 * @param dao - DAO object
 	 * @param participant the participant
 	 * @param oldParticipant the old participant
 	 * @param auditManager the audit manager
-	 *
+	 * 
 	 * @throws BizLogicException throws BizLogicException
 	 * @throws DAOException the DAO exception
 	 * @throws AuditException the audit exception
@@ -111,6 +111,11 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 		auditManager.updateAudit(dao, participant, oldParticipant);
 	}
 
+	/**
+	 * Sets the meta phone code.
+	 * 
+	 * @param participant the new meta phone code
+	 */
 	private static void setMetaPhoneCode(IParticipant participant)
 	{
 		final Metaphone metaPhoneObj = new Metaphone();
@@ -120,17 +125,17 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 
 	/**
 	 * Update pmi.
-	 *
+	 * 
 	 * @param dao the dao
 	 * @param auditManager the audit manager
-	 * @param oldParticipantMedicalIdentifierCollection the old participant medical identifier collection
 	 * @param pmIdentifier the pm identifier
-	 *
+	 * @param oldPartiMedIdCollection the old parti med id collection
+	 * 
 	 * @throws DAOException the DAO exception
 	 * @throws AuditException the audit exception
 	 */
 	public static void updatePMI(DAO dao, final AuditManager auditManager,
-			final Collection oldParticipantMedicalIdentifierCollection,
+			final Collection oldPartiMedIdCollection,
 			final IParticipantMedicalIdentifier pmIdentifier) throws DAOException, AuditException
 	{
 		if (pmIdentifier.getId() != null)
@@ -145,16 +150,17 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 
 		// Audit of ParticipantMedicalIdentifier.
 		final IParticipantMedicalIdentifier oldPmIdentifier = (IParticipantMedicalIdentifier) getCorrespondingOldObj(
-				oldParticipantMedicalIdentifierCollection, pmIdentifier.getId());
+				oldPartiMedIdCollection, pmIdentifier.getId());
 
 		auditManager.updateAudit(dao, pmIdentifier, oldPmIdentifier);
 	}
 
-
 	/**
 	 * This method gets Corresponding Old Object.
+	 * 
 	 * @param objectCollection object Collection
 	 * @param identifier id.
+	 * 
 	 * @return Object.
 	 */
 	public static Object getCorrespondingOldObj(Collection objectCollection, Long identifier)
@@ -176,15 +182,15 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 
 	/**
 	 * Validate.
-	 *
+	 * 
 	 * @param dao : DAO object. Overriding the parent class's method to validate
 	 * the enumerated attribute values.
 	 * @param participant the participant
 	 * @param operation the operation
 	 * @param validator the validator
-	 *
+	 * 
 	 * @return true, if validate
-	 *
+	 * 
 	 * @throws BizLogicException the biz logic exception
 	 */
 	public static boolean validate(IParticipant participant, DAO dao, String operation,
@@ -355,10 +361,6 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 		return true;
 	}
 
-
-
-
-
 	/* (non-Javadoc)
 	 * @see edu.wustl.common.bizlogic.AbstractBizLogic#update(edu.wustl.dao.DAO, java.lang.Object, java.lang.Object, edu.wustl.common.beans.SessionDataBean)
 	 */
@@ -371,12 +373,14 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 
 	}
 
-
 	/**
-	 * @param dao
-	 * @param sessionDataBean
-	 * @param participant
-	 * @throws BizLogicException
+	 * Modify participant object.
+	 * 
+	 * @param dao the dao
+	 * @param sessionDataBean the session data bean
+	 * @param participant the participant
+	 * 
+	 * @throws BizLogicException the biz logic exception
 	 */
 	public void modifyParticipantObject(DAO dao, SessionDataBean sessionDataBean,
 			IParticipant participant) throws BizLogicException
@@ -385,8 +389,9 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 		DAO cleanDAO = null;
 		try
 		{
-			cleanDAO=ParticipantManagerUtility.getDAO();
-			oldParticipant = ParticipantManagerUtility.getOldParticipant(cleanDAO, participant.getId());
+			cleanDAO = ParticipantManagerUtility.getDAO();
+			oldParticipant = ParticipantManagerUtility.getOldParticipant(cleanDAO, participant
+					.getId());
 			final AuditManager auditManager = updateParticipant(dao, sessionDataBean, participant,
 					oldParticipant);
 			pmiUpdate(dao, participant, auditManager, oldParticipant);
@@ -424,13 +429,16 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 
 	/**
 	 * This method will update and audit Participant Object.
+	 * 
 	 * @param participant Participant object
 	 * @param oldParticipant Persistent participant object
 	 * @param dao DAO Object
 	 * @param sessionDataBean SessionDataBean Object
+	 * 
 	 * @return AuditManager
+	 * 
 	 * @throws BizLogicException BizLogicException Exception
-	 * @throws DAOException	DAOException Exception
+	 * @throws DAOException DAOException Exception
 	 * @throws AuditException AuditException Exception
 	 */
 	private AuditManager updateParticipant(DAO dao, SessionDataBean sessionDataBean,
@@ -442,6 +450,18 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 		return auditManager;
 	}
 
+	/**
+	 * Pmi update.
+	 * 
+	 * @param dao the dao
+	 * @param participant the participant
+	 * @param auditManager the audit manager
+	 * @param oldParticipant the old participant
+	 * 
+	 * @throws DAOException the DAO exception
+	 * @throws AuditException the audit exception
+	 * @throws BizLogicException the biz logic exception
+	 */
 	private void pmiUpdate(DAO dao, IParticipant participant, AuditManager auditManager,
 			IParticipant oldParticipant) throws DAOException, AuditException, BizLogicException
 	{
@@ -459,10 +479,11 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 		}
 	}
 
-
 	/**
-	 * check not null
+	 * check not null.
+	 * 
 	 * @param object object
+	 * 
 	 * @return boolean
 	 */
 
@@ -477,8 +498,11 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 	}
 
 	/**
-	 * @param partMedIdentifier
-	 * @throws BizLogicException
+	 * Sets the participant medical identifier default.
+	 * 
+	 * @param partMedIdentifier the part med identifier
+	 * 
+	 * @throws BizLogicException the biz logic exception
 	 */
 	public static void setParticipantMedicalIdentifierDefault(
 			IParticipantMedicalIdentifier partMedIdentifier) throws BizLogicException
@@ -490,12 +514,12 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 		}
 	}
 
-
-
 	/**
 	 * This method will be called to return the Audit manager.
-	 * @param sessionDataBean
-	 * @return
+	 * 
+	 * @param sessionDataBean the session data bean
+	 * 
+	 * @return the audit manager
 	 */
 	public AuditManager getAuditManager(SessionDataBean sessionDataBean)
 	{
@@ -514,6 +538,172 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 
 	}
 
+	/**
+	 * Post insert.
+	 * 
+	 * @param obj the obj
+	 * @param sessionDataBean the session data bean
+	 * 
+	 * @throws DAOException the DAO exception
+	 */
+	public static void postInsert(Object obj, SessionDataBean sessionDataBean) throws DAOException
+	{
+		final IParticipant participant = (IParticipant) obj;
+		// if for CS eMPI is enable then set the eMPI status as pending if its eligible
+		if (ParticipantManagerUtility.isEMPIEnable(participant.getId()))
+		{
+			if (ParticipantManagerUtility.isParticipantValidForEMPI(participant.getLastName(),
+					participant.getFirstName(), participant.getBirthDate()))
+			{
+				// Process participant for CIDER participant matching.
+				ParticipantManagerUtility.addParticipantToProcessMessageQueue(sessionDataBean
+						.getUserId(), participant.getId());
+			}
+		}
 
+	}
+
+	/**
+	 * Pre update.
+	 * 
+	 * @param obj the obj
+	 * @param sessionDataBean the session data bean
+	 * 
+	 * @throws BizLogicException the biz logic exception
+	 */
+	public static void preUpdate(Object obj, SessionDataBean sessionDataBean)
+			throws BizLogicException
+	{
+		final IParticipant participant = (IParticipant) obj;
+		try
+		{
+			if (ParticipantManagerUtility.isEMPIEnable(participant.getId()))
+			{
+				// if the
+				if (Constants.EMPI_ID_CREATED.equals(participant.getEmpiIdStatus()))
+				{
+					participant.setEmpiIdStatus(Constants.EMPI_ID_PENDING);
+				}
+			}
+		}
+		catch (DAOException e)
+		{
+			throw new BizLogicException(e);
+		}
+	}
+
+	/**
+	 * Post update.
+	 * 
+	 * @param obj the obj
+	 * @param sessionDataBean the session data bean
+	 * 
+	 * @throws BizLogicException the biz logic exception
+	 */
+	public static void postUpdate(Object obj, SessionDataBean sessionDataBean)
+			throws BizLogicException
+	{
+		final IParticipant participant = (IParticipant) obj;
+		try
+		{
+			if (ParticipantManagerUtility.isEMPIEnable(participant.getId()))
+			{
+				// if the
+				if (Constants.EMPI_ID_CREATED.equals(participant.getEmpiIdStatus()))
+				{
+					regNewPatientToEMPI(participant);
+				}
+			}
+		}
+		catch (Exception e)
+		{
+			logger.info("ERROR WHILE REGISTERING NEW PATIENT TO EMPI  ##############  \n");
+		}
+	}
+
+	/**
+	 * Reg new patient to empi.
+	 * 
+	 * @param participant the participant
+	 * 
+	 * @throws BizLogicException the biz logic exception
+	 * @throws Exception the exception
+	 */
+	private static void regNewPatientToEMPI(IParticipant participant) throws BizLogicException,
+			Exception
+	{
+		String permanentPartiId = null;
+		String tempararyPartiId = null;
+		String oldeMPIId = null;
+		oldeMPIId = participant.getEmpiId();
+		tempararyPartiId = participant.getId() + "T";
+		if (ParticipantManagerUtility.isParticipantValidForEMPI(participant.getLastName(),
+				participant.getFirstName(), participant.getBirthDate()))
+		{
+			if (oldeMPIId != null && oldeMPIId != "")
+			{
+				permanentPartiId = String.valueOf(participant.getId());
+				mapParticipantId(oldeMPIId, permanentPartiId, tempararyPartiId);
+			}
+			if (!participant.getEmpiIdStatus().equals(Constants.EMPI_ID_CREATED))
+			{
+				sendHL7RegMes(participant, tempararyPartiId);
+			}
+		}
+	}
+
+	/**
+	 * Map participant id.
+	 * 
+	 * @param oldeMPIId the olde mpi id
+	 * @param permanentPartiId the permanent parti id
+	 * @param tempararyPartiId the temparary parti id
+	 * 
+	 * @throws DAOException the DAO exception
+	 */
+	private static void mapParticipantId(String oldeMPIId, String permanentPartiId,
+			String tempararyPartiId) throws DAOException
+	{
+		JDBCDAO jdbcDao = null;
+		try
+		{
+			jdbcDao = ParticipantManagerUtility.getJDBCDAO();
+			String sql = "INSERT INTO PARTICIPANT_EMPI_ID_MAPPING VALUES('" + permanentPartiId
+					+ "','" + tempararyPartiId + "','" + oldeMPIId + "')";
+			jdbcDao.executeUpdate(sql);
+			jdbcDao.commit();
+		}
+		catch (DAOException e)
+		{
+			logger.info("ERROE WHILE UPDATING THE PARTICIPANT EMPI STATUS");
+			throw new DAOException(e.getErrorKey(), e, e.getMsgValues());
+		}
+		finally
+		{
+			jdbcDao.closeSession();
+		}
+	}
+
+	/**
+	 * Send h l7 reg mes.
+	 * 
+	 * @param participant the participant
+	 * @param tempararyPartiId the temparary parti id
+	 * 
+	 * @throws BizLogicException the biz logic exception
+	 * @throws Exception the exception
+	 */
+	private static void sendHL7RegMes(IParticipant participant, String tempararyPartiId)
+			throws BizLogicException, Exception
+	{
+
+		//IParticipant participant = (IParticipant) ParticipantManagerUtility.getParticipantInstance();
+		//((AbstractDomainObject) participant).setAllValues((AbstractActionForm) participantForm);
+		//participant.setId(participantForm.getId());
+
+		EMPIParticipantRegistrationBizLogic eMPIPartiReg = new EMPIParticipantRegistrationBizLogic();
+		eMPIPartiReg.setTempMrnId(tempararyPartiId);
+		eMPIPartiReg.registerPatientToeMPI(participant);
+	}
 
 }

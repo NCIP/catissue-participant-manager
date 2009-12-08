@@ -12,6 +12,7 @@ import edu.wustl.common.participant.domain.IParticipant;
 import edu.wustl.common.participant.utility.Constants;
 import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.util.XMLPropertyHandler;
+import edu.wustl.common.util.logger.Logger;
 import edu.wustl.patientLookUp.domain.PatientInformation;
 import edu.wustl.patientLookUp.lookUpServiceBizLogic.PatientInfoLookUpService;
 import edu.wustl.patientLookUp.util.PatientLookUpFactory;
@@ -25,43 +26,50 @@ public class ParticipantLookUpLogicEMPI implements LookupLogic
 {
 
 	/** The cutoff points. */
-	protected int cutoffPoints;
+	protected static transient int cutoffPoints;
 
 	/** The total points. */
-	protected int totalPoints;
+	protected static transient int totalPoints;
 
 	/** The max no of participants to return. */
-	protected int maxNoOfParticipantsToReturn;
+	protected static transient int maxNoOfParticipantsToReturn;
 
-	/**
-	 * Instantiates a new participant look up logic empi.
-	 */
-	public ParticipantLookUpLogicEMPI()
-	{
-	}
+	/** The Constant logger. */
+	private static final Logger logger = Logger.getCommonLogger(ParticipantLookUpLogicEMPI.class);
 
 	/* (non-Javadoc)
 	 * @see edu.wustl.common.lookup.LookupLogic#lookup(edu.wustl.common.lookup.LookupParameters)
 	 */
-	public List lookup(LookupParameters params) throws Exception
+	public List lookup(LookupParameters params) throws PatientLookupException
 	{
-		if (params == null)
+		List empiParticipantsList = null;
+		try
 		{
-			throw new Exception("Params can not be null");
+			if (params == null)
+			{
+				throw new PatientLookupException("Params can not be null", null);
+			}
+			else
+			{
+				DefaultLookupParameters participantParams = (DefaultLookupParameters) params;
+				IParticipant participant = (IParticipant) participantParams.getObject();
+				PatientInformation patientInformation = ParticipantManagerUtility
+						.populatePatientObject(participant);
+				cutoffPoints = Integer
+						.valueOf(XMLPropertyHandler.getValue(Constants.EMPITHRESHOLD));
+				maxNoOfParticipantsToReturn = Integer.valueOf(XMLPropertyHandler
+						.getValue(Constants.EMPIMAXNOOFPATIENS));
+				empiParticipantsList = searchMatchingParticipantFromEMPI(participant,
+						patientInformation);
+
+			}
 		}
-		else
+		catch (Exception e)
 		{
-			DefaultLookupParameters participantParams = (DefaultLookupParameters) params;
-			IParticipant participant = (IParticipant) participantParams.getObject();
-			PatientInformation patientInformation = ParticipantManagerUtility
-					.populatePatientObject(participant);
-			cutoffPoints = Integer.valueOf(XMLPropertyHandler.getValue(Constants.EMPITHRESHOLD));
-			maxNoOfParticipantsToReturn = Integer.valueOf(XMLPropertyHandler
-					.getValue(Constants.EMPIMAXNOOFPATIENS));
-			List empiParticipantsList = searchMatchingParticipantFromEMPI(participant,
-					patientInformation);
-			return empiParticipantsList;
+			logger.info(e.getMessage());
+			throw new PatientLookupException(e.getMessage(), e);
 		}
+		return empiParticipantsList;
 	}
 
 	/**
@@ -75,20 +83,19 @@ public class ParticipantLookUpLogicEMPI implements LookupLogic
 	 * @throws BizLogicException the biz logic exception
 	 * @throws PatientLookupException the patient lookup exception
 	 */
-	protected List searchMatchingParticipantFromEMPI(IParticipant participant,
+	protected List<PatientInformation> searchMatchingParticipantFromEMPI(IParticipant participant,
 			PatientInformation patientInformation) throws BizLogicException, PatientLookupException
 	{
-		List matchingParticipantsList = new ArrayList();
+		List<PatientInformation> matchingParticipantsList = new ArrayList<PatientInformation>();
 		String dbURL = XMLPropertyHandler.getValue(Constants.EMPIDBURL);
 		String dbUser = XMLPropertyHandler.getValue(Constants.EMPIDBUSERNAME);
 		String dbPassword = XMLPropertyHandler.getValue(Constants.EMPIDBUSERPASSWORD);
 		String dbDriver = XMLPropertyHandler.getValue(Constants.EMPIDBDRIVERNAME);
 		String dbSchema = XMLPropertyHandler.getValue(Constants.EMPIDBSCHEMA);
 
-
-		List participantsEMPI;
-		String lastName=null;
-		String firstName=null;
+		List<PatientInformation> participantsEMPI = null;
+		String lastName = null;
+		String firstName = null;
 		try
 		{
 			PatientInfoLookUpService lookUpEMPI = new PatientInfoLookUpService();
@@ -102,8 +109,8 @@ public class ParticipantLookUpLogicEMPI implements LookupLogic
 				{
 					PatientInformation empiPatientInformation = (PatientInformation) participantsEMPI
 							.get(i);
-					lastName =empiPatientInformation.getLastName();
-					firstName=empiPatientInformation.getFirstName();
+					lastName = empiPatientInformation.getLastName();
+					firstName = empiPatientInformation.getFirstName();
 					empiPatientInformation.setLastName(lastName.toLowerCase());
 					empiPatientInformation.setFirstName(firstName.toLowerCase());
 					empiPatientInformation.setActivityStatus("Active");
@@ -130,7 +137,7 @@ public class ParticipantLookUpLogicEMPI implements LookupLogic
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
+			logger.info(e.getMessage());
 			throw new PatientLookupException(e.getMessage(), e);
 		}
 
