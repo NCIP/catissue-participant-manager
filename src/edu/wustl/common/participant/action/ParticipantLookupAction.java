@@ -23,21 +23,18 @@ import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.util.logger.Logger;
 import edu.wustl.dao.exception.DAOException;
 
+// TODO: Auto-generated Javadoc
 /**
+ * The Class ParticipantLookupAction.
+ *
  * @author geeta_jaggal
  * @created-on Nov 16, 2009
  * The Class ParticipantLookupAction. :
- * 		Used for finding the matched participants from local db.
+ * Used for finding the matched participants from local db.
  */
 public class ParticipantLookupAction extends BaseAction
 {
 
-	/**
-	 * Instantiates a new participant lookup action.
-	 */
-	public ParticipantLookupAction()
-	{
-	}
 
 	/* (non-Javadoc)
 	 * @see edu.wustl.common.action.BaseAction#executeAction(org.apache.struts.action.ActionMapping, org.apache.struts.action.ActionForm, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
@@ -98,8 +95,6 @@ public class ParticipantLookupAction extends BaseAction
 	private List getListOfMatchingParticipants(IParticipant participant, HttpServletRequest request)
 			throws Exception
 	{
-		edu.wustl.common.factory.IFactory factory = AbstractFactoryConfig.getInstance()
-				.getBizLogicFactory();
 		edu.wustl.common.beans.SessionDataBean sessionDataBean = getSessionData(request);
 		List matchPartpantLst = ParticipantManagerUtility.getListOfMatchingParticipants(
 				participant, sessionDataBean, null);

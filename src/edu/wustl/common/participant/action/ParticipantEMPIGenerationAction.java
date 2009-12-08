@@ -31,7 +31,10 @@ import edu.wustl.common.util.Utility;
 import edu.wustl.common.util.logger.Logger;
 import edu.wustl.dao.exception.DAOException;
 
+// TODO: Auto-generated Javadoc
 /**
+ * The Class ParticipantEMPIGenerationAction.
+ *
  * @author geeta_jaggal
  * The Class ParticipantEMPIGenerationAction : used for generating eMPI for participant.
  */
@@ -83,10 +86,11 @@ public class ParticipantEMPIGenerationAction extends CommonAddEditAction
 						.getId());
 				if (eMPIStatus.equals(Constants.EMPI_ID_PENDING))
 				{
-					return mapping.findForward(edu.wustl.common.util.global.Constants.SUCCESS);
+					forward= mapping.findForward(edu.wustl.common.util.global.Constants.SUCCESS);
+				}else{
+					generateEMPI(request, participantForm);
+					forward = mapping.findForward(edu.wustl.common.util.global.Constants.SUCCESS);
 				}
-				generateEMPI(request, participantForm);
-				forward = mapping.findForward(edu.wustl.common.util.global.Constants.SUCCESS);
 			}
 		}
 		catch (Exception e)

@@ -1,6 +1,7 @@
 
 package edu.wustl.common.participant.action;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -19,7 +20,6 @@ import org.apache.struts.action.ActionMessages;
 import edu.wustl.common.action.CommonSearchAction;
 import edu.wustl.common.actionForm.AbstractActionForm;
 import edu.wustl.common.beans.SessionDataBean;
-import edu.wustl.common.bizlogic.DefaultBizLogic;
 import edu.wustl.common.exception.ApplicationException;
 import edu.wustl.common.exception.BizLogicException;
 import edu.wustl.common.lookup.DefaultLookupResult;
@@ -30,13 +30,13 @@ import edu.wustl.common.participant.domain.ISite;
 import edu.wustl.common.participant.utility.Constants;
 import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.util.Utility;
-import edu.wustl.common.util.global.CommonServiceLocator;
+import edu.wustl.common.util.logger.Logger;
 import edu.wustl.dao.JDBCDAO;
-import edu.wustl.dao.daofactory.DAOConfigFactory;
-import edu.wustl.dao.daofactory.IDAOFactory;
 import edu.wustl.dao.exception.DAOException;
 
+// TODO: Auto-generated Javadoc
 /**
+ * The Class MatchedParticipantsSearchAction.
  *
  * @author geeta_jaggal
  * The Class MatchedParticipantsSearchAction.
@@ -46,13 +46,8 @@ import edu.wustl.dao.exception.DAOException;
 public class MatchedParticipantsSearchAction extends CommonSearchAction
 {
 
-	/**
-	 * Instantiates a new matched participants search action.
-	 */
-	public MatchedParticipantsSearchAction()
-	{
-	}
-
+	/** The Constant logger. */
+	private static final  Logger logger = Logger.getCommonLogger(MatchedParticipantsSearchAction.class);
 	/*
 	 * (non-Javadoc)
 	 *
@@ -72,11 +67,11 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 			forward = super.execute(mapping, participantForm, request, response);
 			if (!forward.getName().equals(edu.wustl.common.util.global.Constants.FAILURE))
 			{
-				String obj = request.getParameter("id");
+				String obj = request.getParameter(edu.wustl.common.util.global.Constants.SYSTEM_IDENTIFIER);
 				Long identifier = Long.valueOf(Utility.toLong(obj));
 				if (identifier.longValue() == 0L)
 				{
-					identifier = (Long) request.getAttribute("id");
+					identifier = Long.valueOf((edu.wustl.common.util.global.Constants.SYSTEM_IDENTIFIER));
 				}
 				// fetch the stored matched participant for the participant in the message board
 				fetchMatchedParticipantsFromDB(identifier.longValue(), request);
@@ -84,7 +79,7 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
+			logger.info(e.getMessage());
 			throw new ApplicationException(null, e, e.getMessage());
 		}
 		return forward;
@@ -93,29 +88,29 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 	/**
 	 * Gets the session data.
 	 *
-	 * @param request
-	 *            the request
+	 * @param request the request
 	 *
 	 * @return the session data
 	 */
 	protected SessionDataBean getSessionData(HttpServletRequest request)
 	{
-		return (SessionDataBean) request.getSession().getAttribute(edu.wustl.common.util.global.Constants.SESSION_DATA);
+		return (SessionDataBean) request.getSession().getAttribute(
+				edu.wustl.common.util.global.Constants.SESSION_DATA);
 	}
 
 	/**
 	 * Fetch matched participants from db.
 	 *
-	 * @param participantId
-	 *            the participant id
-	 * @param request
-	 *            the request
+	 * @param participantId the participant id
+	 * @param request the request
 	 *
-	 * @throws Exception
-	 *             the exception
+	 * @throws ParseException the parse exception
+	 * @throws BizLogicException the biz logic exception
+	 * @throws Exception the exception
+	 * @throws DAOException the DAO exception
 	 */
 	private void fetchMatchedParticipantsFromDB(long participantId, HttpServletRequest request)
-			throws Exception
+			throws DAOException, BizLogicException, ParseException
 	{
 		JDBCDAO dao = null;
 		List<DefaultLookupResult> matchPartpantLst = null;
@@ -139,9 +134,11 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 		}
 		catch (DAOException e)
 		{
-			e.printStackTrace();
+			logger.info(e.getMessage());
 			throw new DAOException(e.getErrorKey(), e, e.getMsgValues());
-		}finally{
+		}
+		finally
+		{
 			dao.closeSession();
 		}
 	}
@@ -149,11 +146,9 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 	/**
 	 * Sets the status message.
 	 *
-	 * @param request
-	 *            the new status message
+	 * @param request the new status message
 	 *
-	 * @throws DAOException
-	 *             the DAO exception
+	 * @throws DAOException the DAO exception
 	 */
 	private void setStatusMessage(HttpServletRequest request) throws DAOException
 	{
@@ -171,16 +166,16 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 	/**
 	 * Populate participant list.
 	 *
-	 * @param matchPartpantLstTmp
-	 *            the match partpant lst tmp
+	 * @param matchPartpantLstTmp the match partpant lst tmp
 	 *
 	 * @return the list
 	 *
-	 * @throws Exception
-	 *             the exception
+	 * @throws ParseException the parse exception
+	 * @throws BizLogicException the biz logic exception
+	 * @throws Exception the exception
 	 */
-	private List<DefaultLookupResult> populateParticipantList(List matchPartpantLstTmp)
-			throws Exception
+	private List<DefaultLookupResult> populateParticipantList(List matchPartpantLstTmp) throws BizLogicException, ParseException
+
 	{
 		List<DefaultLookupResult> matchPartpantLst = new ArrayList<DefaultLookupResult>();
 		for (int i = 0; i < matchPartpantLstTmp.size(); i++)
@@ -201,15 +196,15 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 	/**
 	 * Gets the participant obj.
 	 *
-	 * @param participantValueList
-	 *            the participant value list
+	 * @param participantValueList the participant value list
 	 *
 	 * @return the participant obj
 	 *
-	 * @throws Exception
-	 *             the exception
+	 * @throws BizLogicException the biz logic exception
+	 * @throws ParseException the parse exception
+	 * @throws Exception the exception
 	 */
-	private IParticipant getParticipantObj(List participantValueList) throws Exception
+	private IParticipant getParticipantObj(List participantValueList) throws BizLogicException, ParseException
 	{
 		IParticipant participant = (IParticipant) ParticipantManagerUtility
 				.getParticipantInstance();
@@ -232,7 +227,7 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 		if (participantValueList.get(9) != null && participantValueList.get(9) != "")
 		{
 			dateStr = (String) participantValueList.get(9);
-			date = Utility.parseDate(dateStr,Constants.DATE_FORMAT);
+			date = Utility.parseDate(dateStr, Constants.DATE_FORMAT);
 			participant.setDeathDate(date);
 		}
 		participant.setVitalStatus((String) participantValueList.get(10));
@@ -255,13 +250,11 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 	/**
 	 * Gets the race collection.
 	 *
-	 * @param raceString
-	 *            the race string
+	 * @param raceString the race string
 	 *
 	 * @return the race collection
 	 *
-	 * @throws BizLogicException
-	 *             the biz logic exception
+	 * @throws BizLogicException the biz logic exception
 	 */
 	private Collection getRaceCollection(String raceString) throws BizLogicException
 	{
@@ -280,15 +273,14 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 	/**
 	 * Gets the parti medi id coln collection.
 	 *
-	 * @param mrnString
-	 *            the mrn string
+	 * @param mrnString the mrn string
 	 *
 	 * @return the parti medi id coln collection
 	 *
-	 * @throws Exception
-	 *             the exception
+	 * @throws BizLogicException the biz logic exception
+	 * @throws Exception the exception
 	 */
-	private Collection getPartiMediIdColnCollection(String mrnString) throws Exception
+	private Collection getPartiMediIdColnCollection(String mrnString) throws BizLogicException
 	{
 		Collection partiMediIdColn = new LinkedHashSet();
 		String values[] = mrnString.split(",");
@@ -305,16 +297,15 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 	/**
 	 * Gets the participant medical identifier obj.
 	 *
-	 * @param value
-	 *            the value
+	 * @param value the value
 	 *
 	 * @return the participant medical identifier obj
 	 *
-	 * @throws Exception
-	 *             the exception
+	 * @throws BizLogicException the biz logic exception
+	 * @throws Exception the exception
 	 */
-	private IParticipantMedicalIdentifier getParticipantMedicalIdentifierObj(String value)
-			throws Exception
+	private IParticipantMedicalIdentifier getParticipantMedicalIdentifierObj(String value) throws BizLogicException
+
 	{
 		IParticipantMedicalIdentifier participantMedicalIdentifier = (IParticipantMedicalIdentifier) ParticipantManagerUtility
 				.getPMIInstance();
@@ -327,41 +318,34 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 		return participantMedicalIdentifier;
 	}
 
-
-
 	/**
 	 * Gets the select query.
 	 *
-	 * @param identifier
-	 *            the identifier
+	 * @param identifier the identifier
 	 *
 	 * @return the select query
 	 */
 	private String getSelectQuery(long identifier)
 	{
-		String query = (new StringBuilder()).append(
-				"SELECT * FROM CATISSUE_MATCHED_PARTICIPANT WHERE SEARCHED_PARTICIPANT_ID='")
-				.append(identifier).append("'").toString();
+		String query = "SELECT * FROM CATISSUE_MATCHED_PARTICIPANT WHERE SEARCHED_PARTICIPANT_ID='"+identifier+"'";
 		return query;
 	}
 
 	/**
 	 * Store lists.
 	 *
-	 * @param request
-	 *            the request
-	 * @param matchPartpantLst
-	 *            the match partpant lst
+	 * @param request the request
+	 * @param matchPartpantLst the match partpant lst
 	 *
-	 * @throws DAOException
-	 *             the DAO exception
+	 * @throws DAOException the DAO exception
 	 */
 	private void storeLists(HttpServletRequest request, List<DefaultLookupResult> matchPartpantLst)
 			throws DAOException
 	{
 		ActionMessages messages = new ActionMessages();
 		List<String> columnList = ParticipantManagerUtility.getColumnHeadingList();
-		request.setAttribute(edu.wustl.common.util.global.Constants.SPREADSHEET_COLUMN_LIST, columnList);
+		request.setAttribute(edu.wustl.common.util.global.Constants.SPREADSHEET_COLUMN_LIST,
+				columnList);
 		List<List<String>> pcpantDisplayLst = ParticipantManagerUtility
 				.getParticipantDisplayList(matchPartpantLst);
 		request.setAttribute(Constants.SPREADSHEET_DATA_LIST, pcpantDisplayLst);
