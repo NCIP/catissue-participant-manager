@@ -15,6 +15,9 @@ import org.apache.struts.action.ActionMessages;
 
 import edu.wustl.common.action.BaseAction;
 import edu.wustl.common.actionForm.AbstractActionForm;
+import edu.wustl.common.exception.ApplicationException;
+import edu.wustl.common.exception.AssignDataException;
+import edu.wustl.common.exception.BizLogicException;
 import edu.wustl.common.factory.AbstractFactoryConfig;
 import edu.wustl.common.factory.IDomainObjectFactory;
 import edu.wustl.common.participant.domain.IParticipant;
@@ -25,26 +28,24 @@ import edu.wustl.dao.exception.DAOException;
 
 // TODO: Auto-generated Javadoc
 /**
- * The Class ParticipantLookupAction.
- *
  * @author geeta_jaggal
- * @created-on Nov 16, 2009
+ *
  * The Class ParticipantLookupAction. :
  * Used for finding the matched participants from local db.
  */
 public class ParticipantLookupAction extends BaseAction
 {
 
-
 	/* (non-Javadoc)
 	 * @see edu.wustl.common.action.BaseAction#executeAction(org.apache.struts.action.ActionMapping, org.apache.struts.action.ActionForm, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
 	 */
 	public ActionForward executeAction(ActionMapping mapping, ActionForm form,
-			HttpServletRequest request, HttpServletResponse response) throws Exception
+			HttpServletRequest request, HttpServletResponse response) throws ApplicationException
 	{
 		AbstractActionForm abstractForm = (AbstractActionForm) form;
-		List matchPartpantLst = null;
 		String target = null;
+		try
+		{
 		boolean isForward = checkForwardToParticipantSelectAction(request, abstractForm
 				.isAddOperation());
 		if (isForward)
@@ -53,8 +54,11 @@ public class ParticipantLookupAction extends BaseAction
 		}
 		else
 		{
-			IDomainObjectFactory domainObjectFactory = AbstractFactoryConfig.getInstance()
-					.getDomainObjectFactory();
+			IDomainObjectFactory domainObjectFactory;
+
+				domainObjectFactory = AbstractFactoryConfig.getInstance()
+						.getDomainObjectFactory();
+
 			edu.wustl.common.domain.AbstractDomainObject abstractDomain = domainObjectFactory
 					.getDomainObject(abstractForm.getFormId(), abstractForm);
 			IParticipant participant = (IParticipant) abstractDomain;
@@ -62,7 +66,7 @@ public class ParticipantLookupAction extends BaseAction
 					.isCallToLookupLogicNeeded(participant);
 			if (isCallToLkupLgic)
 			{
-				matchPartpantLst = getListOfMatchingParticipants(participant, request);
+				List matchPartpantLst = getListOfMatchingParticipants(participant, request);
 				if (matchPartpantLst == null || matchPartpantLst.isEmpty())
 				{
 					target = Constants.PARTICIPANT_ADD_FORWARD;
@@ -78,7 +82,15 @@ public class ParticipantLookupAction extends BaseAction
 				target = Constants.PARTICIPANT_ADD_FORWARD;
 			}
 			setRequestAttributes(request);
+
 		}
+		}
+		catch (Exception e)
+		{
+			// TODO Auto-generated catch block
+			throw new ApplicationException(null,e,e.getMessage());
+		}
+
 		return mapping.findForward(target);
 	}
 
@@ -89,11 +101,12 @@ public class ParticipantLookupAction extends BaseAction
 	 * @param request the request
 	 *
 	 * @return the list of matching participants
+	 * @throws Exception
 	 *
 	 * @throws Exception the exception
 	 */
-	private List getListOfMatchingParticipants(IParticipant participant, HttpServletRequest request)
-			throws Exception
+	private List getListOfMatchingParticipants(IParticipant participant, HttpServletRequest request) throws Exception
+
 	{
 		edu.wustl.common.beans.SessionDataBean sessionDataBean = getSessionData(request);
 		List matchPartpantLst = ParticipantManagerUtility.getListOfMatchingParticipants(

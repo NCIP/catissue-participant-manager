@@ -17,10 +17,10 @@ import edu.wustl.dao.exception.DAOException;
  * paticipants with last name metaphone code.
  * The Class UpdateParticipantMetaPhoneInfo.
  */
-public class UpdateParticipantMetaPhoneInfo
+public final class UpdateParticipantMetaPhoneInfo
 {
 
-	private UpdateParticipantMetaPhoneInfo(){
+	 private UpdateParticipantMetaPhoneInfo(){
 
 	}
 

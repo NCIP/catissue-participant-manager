@@ -86,54 +86,24 @@ public class ParticipantLookUpLogicEMPI implements LookupLogic
 	protected List<PatientInformation> searchMatchingParticipantFromEMPI(IParticipant participant,
 			PatientInformation patientInformation) throws BizLogicException, PatientLookupException
 	{
-		List<PatientInformation> matchingParticipantsList = new ArrayList<PatientInformation>();
+
 		String dbURL = XMLPropertyHandler.getValue(Constants.EMPIDBURL);
 		String dbUser = XMLPropertyHandler.getValue(Constants.EMPIDBUSERNAME);
 		String dbPassword = XMLPropertyHandler.getValue(Constants.EMPIDBUSERPASSWORD);
 		String dbDriver = XMLPropertyHandler.getValue(Constants.EMPIDBDRIVERNAME);
 		String dbSchema = XMLPropertyHandler.getValue(Constants.EMPIDBSCHEMA);
 
-		List<PatientInformation> participantsEMPI = null;
-		String lastName = null;
-		String firstName = null;
 		try
 		{
 			PatientInfoLookUpService lookUpEMPI = new PatientInfoLookUpService();
 			edu.wustl.patientLookUp.queryExecutor.IQueryExecutor xQueyExecutor = PatientLookUpFactory
 					.getQueryExecutorImpl(dbURL, dbUser, dbPassword, dbDriver, dbSchema);
-			participantsEMPI = lookUpEMPI.patientLookupService(patientInformation, xQueyExecutor,
-					cutoffPoints, maxNoOfParticipantsToReturn);
-			if (participantsEMPI != null && participantsEMPI.size() > 0)
-			{
-				for (int i = 0; i < participantsEMPI.size(); i++)
-				{
-					PatientInformation empiPatientInformation = (PatientInformation) participantsEMPI
-							.get(i);
-					lastName = empiPatientInformation.getLastName();
-					firstName = empiPatientInformation.getFirstName();
-					empiPatientInformation.setLastName(lastName.toLowerCase());
-					empiPatientInformation.setFirstName(firstName.toLowerCase());
-					empiPatientInformation.setActivityStatus("Active");
-					empiPatientInformation.setVitalStatus("");
-					empiPatientInformation.setIsFromEMPI("YES");
-					if (empiPatientInformation.getSsn() != null
-							&& empiPatientInformation.getSsn() != "")
-					{
-						String ssn = ParticipantManagerUtility.getSSN(empiPatientInformation
-								.getSsn());
-						empiPatientInformation.setSsn(ssn);
-					}
-					else
-					{
-						empiPatientInformation.setSsn("");
-					}
+			List<PatientInformation> participantsEMPI = lookUpEMPI.patientLookupService(
+					patientInformation, xQueyExecutor, cutoffPoints, maxNoOfParticipantsToReturn);
 
-					empiPatientInformation.setId(Long.valueOf((0 - i)));
-					matchingParticipantsList.add(empiPatientInformation);
-				}
+			List<PatientInformation> matchingParticipantsList = processMatchedList(participantsEMPI);
 
-			}
-			return participantsEMPI;
+			return matchingParticipantsList;
 		}
 		catch (Exception e)
 		{
@@ -141,5 +111,42 @@ public class ParticipantLookUpLogicEMPI implements LookupLogic
 			throw new PatientLookupException(e.getMessage(), e);
 		}
 
+	}
+
+	private List<PatientInformation> processMatchedList(List<PatientInformation> participantsEMPI)
+	{
+		List<PatientInformation> matchingParticipantsList = new ArrayList<PatientInformation>();
+		String lastName = null;
+		String firstName = null;
+		if (participantsEMPI != null && !participantsEMPI.isEmpty())
+		{
+			for (int i = 0; i < participantsEMPI.size(); i++)
+			{
+				PatientInformation empiPatientInformation = (PatientInformation) participantsEMPI
+						.get(i);
+				lastName = empiPatientInformation.getLastName();
+				firstName = empiPatientInformation.getFirstName();
+				empiPatientInformation.setLastName(lastName.toLowerCase());
+				empiPatientInformation.setFirstName(firstName.toLowerCase());
+				empiPatientInformation.setActivityStatus("Active");
+				empiPatientInformation.setVitalStatus("");
+				empiPatientInformation.setIsFromEMPI("YES");
+				if (empiPatientInformation.getSsn() != null
+						&& empiPatientInformation.getSsn() != "")
+				{
+					String ssn = ParticipantManagerUtility.getSSN(empiPatientInformation.getSsn());
+					empiPatientInformation.setSsn(ssn);
+				}
+				else
+				{
+					empiPatientInformation.setSsn("");
+				}
+
+				empiPatientInformation.setId(Long.valueOf((0 - i)));
+				matchingParticipantsList.add(empiPatientInformation);
+			}
+
+		}
+		return matchingParticipantsList;
 	}
 }

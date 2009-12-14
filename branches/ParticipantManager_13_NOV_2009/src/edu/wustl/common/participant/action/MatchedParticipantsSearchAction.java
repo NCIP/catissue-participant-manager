@@ -4,6 +4,7 @@ package edu.wustl.common.participant.action;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
 
@@ -36,9 +37,8 @@ import edu.wustl.dao.exception.DAOException;
 
 // TODO: Auto-generated Javadoc
 /**
- * The Class MatchedParticipantsSearchAction.
- *
  * @author geeta_jaggal
+ *
  * The Class MatchedParticipantsSearchAction.
  * This class is used for fetching stored matched
  * participant from DB for a particiapnt in the  message board.
@@ -71,7 +71,7 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 				Long identifier = Long.valueOf(Utility.toLong(obj));
 				if (identifier.longValue() == 0L)
 				{
-					identifier = Long.valueOf((edu.wustl.common.util.global.Constants.SYSTEM_IDENTIFIER));
+					identifier = Long.valueOf(edu.wustl.common.util.global.Constants.SYSTEM_IDENTIFIER);
 				}
 				// fetch the stored matched participant for the participant in the message board
 				fetchMatchedParticipantsFromDB(identifier.longValue(), request);
@@ -181,8 +181,8 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 		for (int i = 0; i < matchPartpantLstTmp.size(); i++)
 		{
 			List participantValueList = (List) matchPartpantLstTmp.get(i);
-			if (!participantValueList.isEmpty() && participantValueList.get(0) != null
-					&& participantValueList.get(0) != "")
+			if (!participantValueList.isEmpty() && !participantValueList.get(0).equals(null)
+					&& !participantValueList.get(0).equals(""))
 			{
 				IParticipant participant = getParticipantObj(participantValueList);
 				DefaultLookupResult result = new DefaultLookupResult();
@@ -208,8 +208,7 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 	{
 		IParticipant participant = (IParticipant) ParticipantManagerUtility
 				.getParticipantInstance();
-		String dateStr = null;
-		java.util.Date date = null;
+
 		participant.setId(Long.valueOf((String) participantValueList.get(0)));
 		participant.setEmpiId((String) participantValueList.get(1));
 		participant.setLastName((String) participantValueList.get(2));
@@ -217,8 +216,8 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 		participant.setMiddleName((String) participantValueList.get(4));
 		if (participantValueList.get(5) != null && participantValueList.get(5) != "")
 		{
-			dateStr = (String) participantValueList.get(5);
-			date = Utility.parseDate(dateStr, Constants.DATE_FORMAT);
+			String dateStr = (String) participantValueList.get(5);
+			Date date = Utility.parseDate(dateStr, Constants.DATE_FORMAT);
 			participant.setBirthDate(date);
 		}
 		participant.setGender((String) participantValueList.get(6));
@@ -226,8 +225,8 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 		participant.setActivityStatus((String) participantValueList.get(8));
 		if (participantValueList.get(9) != null && participantValueList.get(9) != "")
 		{
-			dateStr = (String) participantValueList.get(9);
-			date = Utility.parseDate(dateStr, Constants.DATE_FORMAT);
+			String dateStr = (String) participantValueList.get(9);
+			Date date = Utility.parseDate(dateStr, Constants.DATE_FORMAT);
 			participant.setDeathDate(date);
 		}
 		participant.setVitalStatus((String) participantValueList.get(10));
@@ -327,8 +326,8 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 	 */
 	private String getSelectQuery(long identifier)
 	{
-		String query = "SELECT * FROM CATISSUE_MATCHED_PARTICIPANT WHERE SEARCHED_PARTICIPANT_ID='"+identifier+"'";
-		return query;
+		return "SELECT * FROM CATISSUE_MATCHED_PARTICIPANT WHERE SEARCHED_PARTICIPANT_ID='"+identifier+"'";
+
 	}
 
 	/**

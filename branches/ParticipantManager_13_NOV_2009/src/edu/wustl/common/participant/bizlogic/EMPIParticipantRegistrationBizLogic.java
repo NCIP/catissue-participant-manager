@@ -28,7 +28,7 @@ import edu.wustl.patientLookUp.util.PropertyHandler;
 // TODO: Auto-generated Javadoc
 /**
  * The Class EMPIParticipantRegistrationBizLogic.
- * 
+ *
  * @author geeta_jaggal.
  * The Class EMPIParticipantRegistrationBizLogic.
  */
@@ -62,7 +62,7 @@ public class EMPIParticipantRegistrationBizLogic
 
 	/**
 	 * Gets the temp mrn id.
-	 * 
+	 *
 	 * @return the temp mrn id
 	 */
 	public String getTempMrnId()
@@ -72,7 +72,7 @@ public class EMPIParticipantRegistrationBizLogic
 
 	/**
 	 * Sets the temp mrn id.
-	 * 
+	 *
 	 * @param tempMrnId the new temp mrn id
 	 */
 	public void setTempMrnId(String tempMrnId)
@@ -82,7 +82,7 @@ public class EMPIParticipantRegistrationBizLogic
 
 	/**
 	 * Gets the msg control id.
-	 * 
+	 *
 	 * @return the msg control id
 	 */
 	public String getMsgControlId()
@@ -92,7 +92,7 @@ public class EMPIParticipantRegistrationBizLogic
 
 	/**
 	 * Sets the msg control id.
-	 * 
+	 *
 	 * @param msgControlId the new msg control id
 	 */
 	public void setMsgControlId(String msgControlId)
@@ -102,7 +102,7 @@ public class EMPIParticipantRegistrationBizLogic
 
 	/**
 	 * Gets the date time.
-	 * 
+	 *
 	 * @return the date time
 	 */
 	public String getDateTime()
@@ -112,7 +112,7 @@ public class EMPIParticipantRegistrationBizLogic
 
 	/**
 	 * Sets the date time.
-	 * 
+	 *
 	 * @param dateTime the new date time
 	 */
 	public void setDateTime(String dateTime)
@@ -122,9 +122,9 @@ public class EMPIParticipantRegistrationBizLogic
 
 	/**
 	 * Register patient toe mpi.
-	 * 
+	 *
 	 * @param participant the participant
-	 * 
+	 *
 	 * @throws Exception the exception
 	 * @throws ApplicationException the application exception
 	 */
@@ -140,17 +140,17 @@ public class EMPIParticipantRegistrationBizLogic
 		{
 			logger.info("Error while sending HL7 message to EMPI ");
 			logger.info(e.getMessage());
-			throw new ApplicationException(null,e,e.getMessage());
+			throw new ApplicationException(null, e, e.getMessage());
 		}
 	}
 
 	/**
 	 * Gets the reg h l7 message.
-	 * 
+	 *
 	 * @param participant the participant
-	 * 
+	 *
 	 * @return the reg h l7 message
-	 * 
+	 *
 	 * @throws Exception the exception
 	 */
 	public String getRegHL7Message(IParticipant participant) throws Exception
@@ -162,17 +162,17 @@ public class EMPIParticipantRegistrationBizLogic
 		String commonHL7Segments = getMSHEVNPIDSengment(participant, eventTypeCode);
 		String pvSegment = getHL7PVSegment(participant, dateTime);
 
-		hl7Message = commonHL7Segments+"\r"+pvSegment+"\n";
+		hl7Message = commonHL7Segments + "\r" + pvSegment + "\n";
 		return hl7Message;
 	}
 
 	/**
 	 * Send merge message.
-	 * 
+	 *
 	 * @param participant the participant
 	 * @param oldParticipantId the old participant id
 	 * @param oldEMPIID the old empiid
-	 * 
+	 *
 	 * @throws Exception the exception
 	 */
 	public void sendMergeMessage(IParticipant participant, String oldParticipantId, String oldEMPIID)
@@ -187,9 +187,9 @@ public class EMPIParticipantRegistrationBizLogic
 
 	/**
 	 * Gets the zero appended empi id.
-	 * 
+	 *
 	 * @param empiId the empi id
-	 * 
+	 *
 	 * @return the zero appended empi id
 	 */
 	private String getZeroAppendedEMPIId(String empiId)
@@ -206,10 +206,10 @@ public class EMPIParticipantRegistrationBizLogic
 
 	/**
 	 * Send mrn merge mgs.
-	 * 
+	 *
 	 * @param participant the participant
 	 * @param oldParticipantId the old participant id
-	 * 
+	 *
 	 * @throws Exception the exception
 	 */
 	private void sendMRNMergeMgs(IParticipant participant, String oldParticipantId)
@@ -222,33 +222,33 @@ public class EMPIParticipantRegistrationBizLogic
 
 	/**
 	 * Gets the mRN merge mgs.
-	 * 
+	 *
 	 * @param participant the participant
 	 * @param oldParticipantId the old participant id
-	 * 
+	 *
 	 * @return the mRN merge mgs
-	 * 
+	 *
 	 * @throws Exception the exception
 	 */
 	public String getMRNMergeMgs(IParticipant participant, String oldParticipantId)
-			throws Exception
+			throws ApplicationException
 	{
 		logger.info("\n\n  MRN Merge HL7 Message \n \n \n\n\n");
 		String hl7Message = "";
 		String eventTypeCode = Constants.HL7_MERGE_EVENT_TYPE_A34;
 		String commonHL7Segments = getMSHEVNPIDSengment(participant, eventTypeCode);
 		String mgrSegment = getHL7MgrSegment(participant.getEmpiId(), oldParticipantId);
-		hl7Message = commonHL7Segments+"\r"+mgrSegment+"\n";
-		logger.info(mgrSegment+"\n");
+		hl7Message = commonHL7Segments + "\r" + mgrSegment + "\n";
+		logger.info(mgrSegment + "\n");
 		return hl7Message;
 	}
 
 	/**
 	 * Send empim id merge mgs.
-	 * 
+	 *
 	 * @param participant the participant
 	 * @param oldEMPIID the old empiid
-	 * 
+	 *
 	 * @throws Exception the exception
 	 */
 	private void sendEMPIMIdMergeMgs(IParticipant participant, String oldEMPIID) throws Exception
@@ -260,12 +260,12 @@ public class EMPIParticipantRegistrationBizLogic
 
 	/**
 	 * Gets the eMPIM id merge mgs.
-	 * 
+	 *
 	 * @param participant the participant
 	 * @param oldEMPIID the old empiid
-	 * 
+	 *
 	 * @return the eMPIM id merge mgs
-	 * 
+	 *
 	 * @throws Exception the exception
 	 */
 	public String getEMPIMIdMergeMgs(IParticipant participant, String oldEMPIID) throws Exception
@@ -276,24 +276,24 @@ public class EMPIParticipantRegistrationBizLogic
 
 		String commonHL7Segments = getMSHEVNPIDSengment(participant, eventTypeCode);
 		String mgrSegment = getHL7MgrSegment(oldEMPIID, String.valueOf(participant.getId()));
-		hl7Message = commonHL7Segments+"\r"+mgrSegment+"\n";
+		hl7Message = commonHL7Segments + "\r" + mgrSegment + "\n";
 
-		logger.info(mgrSegment+"\n");
+		logger.info(mgrSegment + "\n");
 		return hl7Message;
 	}
 
 	/**
 	 * Gets the mSHEVNPID sengment.
-	 * 
+	 *
 	 * @param participant the participant
 	 * @param eventTypeCode the event type code
-	 * 
+	 *
 	 * @return the mSHEVNPID sengment
-	 * 
+	 *
 	 * @throws Exception the exception
 	 */
 	private String getMSHEVNPIDSengment(IParticipant participant, String eventTypeCode)
-			throws Exception
+			throws ApplicationException
 	{
 		String hl7Segment = "";
 		setCurrentDateTime();
@@ -302,27 +302,27 @@ public class EMPIParticipantRegistrationBizLogic
 		String msgSegment = getHL7MSHSegment(msgControlId, dateTime, eventTypeCode);
 		String evnSegment = getHL7EVNSegment(dateTime, eventTypeCode);
 		String pid = getHL7PIDSegment(participant);
-		hl7Segment = msgSegment+"\r"+evnSegment+"\r"+pid;
-		logger.info(msgSegment+"\n");
-		logger.info(evnSegment+"\n");
-		logger.info(pid+"\n");
+		hl7Segment = msgSegment + "\r" + evnSegment + "\r" + pid;
+		logger.info(msgSegment + "\n");
+		logger.info(evnSegment + "\n");
+		logger.info(pid + "\n");
 		return hl7Segment;
 	}
 
 	/**
 	 * Gets the h l7 mgr segment.
-	 * 
+	 *
 	 * @param eMPI the e mpi
 	 * @param particiapntId the particiapnt id
-	 * 
+	 *
 	 * @return the h l7 mgr segment
 	 */
 	private String getHL7MgrSegment(String eMPI, String particiapntId)
 	{
 		String empiIdZeroAppnd = getZeroAppendedEMPIId(eMPI);
-		String eMPIID = empiIdZeroAppnd+"^^^64";
-		String mrn = particiapntId+"^^^"+Constants.CLINPORTAL_FACILITY_ID+"^U";
-		String mgrSegment = "MGR|"+mrn+"||"+eMPIID;
+		String eMPIID = empiIdZeroAppnd + "^^^64";
+		String mrn = particiapntId + "^^^" + Constants.CLINPORTAL_FACILITY_ID + "^U";
+		String mgrSegment = "MGR|" + mrn + "||" + eMPIID;
 		return mgrSegment;
 	}
 
@@ -343,82 +343,93 @@ public class EMPIParticipantRegistrationBizLogic
 		String minute = time[1];
 		String second = time[2];
 		String milisecond = time[3];
-		String msgControlId = milisecond+"FAC"+year+month+date+hour+minute+second;
-		String dateTime = year+month+date+hour+minute+second+"-0500^S";
+		String msgControlId = milisecond + "FAC" + year + month + date + hour + minute + second;
+		String dateTime = year + month + date + hour + minute + second + "-0500^S";
 		setMsgControlId(msgControlId);
 		setDateTime(dateTime);
 	}
 
 	/**
 	 * Gets the h l7 msh segment.
-	 * 
+	 *
 	 * @param msgControlId the msg control id
 	 * @param dateTime the date time
 	 * @param eventTypeCode the event type code
-	 * 
+	 *
 	 * @return the h l7 msh segment
 	 */
 	private String getHL7MSHSegment(String msgControlId, String dateTime, String eventTypeCode)
 	{
-		String msgSegment = "MSH|^~\\&|CLINPORTAL|CLINPORTAL|ADMISSION|ADT1|"+dateTime+"||ADT^"+eventTypeCode+"|"+msgControlId+"|P|2.1";
+		String msgSegment = "MSH|^~\\&|CLINPORTAL|CLINPORTAL|ADMISSION|ADT1|" + dateTime + "||ADT^"
+				+ eventTypeCode + "|" + msgControlId + "|P|2.1";
 		return msgSegment;
 	}
 
 	/**
 	 * Gets the h l7 evn segment.
-	 * 
+	 *
 	 * @param dateTime the date time
 	 * @param eventTypeCode the event type code
-	 * 
+	 *
 	 * @return the h l7 evn segment
 	 */
 	private String getHL7EVNSegment(String dateTime, String eventTypeCode)
 	{
-		String evnSegment = "EVN|"+eventTypeCode+"|"+dateTime;
+		String evnSegment = "EVN|" + eventTypeCode + "|" + dateTime;
 		return evnSegment;
 	}
 
 	/**
 	 * Gets the h l7 pid segment.
-	 * 
+	 *
 	 * @param participant the participant
-	 * 
+	 *
 	 * @return the h l7 pid segment
-	 * 
+	 *
 	 * @throws Exception the exception
 	 */
-	private String getHL7PIDSegment(IParticipant participant) throws Exception
+	private String getHL7PIDSegment(IParticipant participant) throws ApplicationException
 	{
-		String facilityId = Constants.CLINPORTAL_FACILITY_ID;
-		String lastName = participant.getLastName();
-		String firstName = participant.getFirstName();
-		String middleName = getMiddleName(participant.getMiddleName());
-		String socialSecurityNumber = getSSN(participant.getSocialSecurityNumber());
-		String gender = getGenderCode(participant.getGender());
-		String raceCode = getRaceCode(participant.getRaceCollection());
-		String dateOfBirth = getBirthDate(participant.getBirthDate());
-		String empiIdInPID2 = "";
-		String mrn = getMRN(participant.getId());
-		String pan = getPAN(participant.getId());
-		if (participant.getEmpiId() != null && participant.getEmpiId() != "")
+		String pid = null;
+		try
 		{
-			String empiIdZeroAppnd = getZeroAppendedEMPIId(participant.getEmpiId());
-			empiIdInPID2 = (new StringBuilder()).append(empiIdZeroAppnd).append("^^^64").toString();
+			String facilityId = Constants.CLINPORTAL_FACILITY_ID;
+			String lastName = participant.getLastName();
+			String firstName = participant.getFirstName();
+			String middleName = getMiddleName(participant.getMiddleName());
+			String socialSecurityNumber = getSSN(participant.getSocialSecurityNumber());
+			String gender = getGenderCode(participant.getGender());
+			String raceCode = getRaceCode(participant.getRaceCollection());
+			String dateOfBirth = getBirthDate(participant.getBirthDate());
+			String empiIdInPID2 = "";
+			String mrn = getMRN(participant.getId());
+			String pan = getPAN(participant.getId());
+			if (participant.getEmpiId() != null && participant.getEmpiId() != "")
+			{
+				String empiIdZeroAppnd = getZeroAppendedEMPIId(participant.getEmpiId());
+				empiIdInPID2 = empiIdZeroAppnd + "^^^64";
+			}
+			pid = "PID|" + mrn + "|" + empiIdInPID2 + "|" + mrn + "^^^" + facilityId + "^U||"
+					+ lastName.toUpperCase(Locale.US) + "^" + firstName.toUpperCase(Locale.US)
+					+ "^" + middleName.toUpperCase(Locale.US) + "||" + dateOfBirth + "|" + gender
+					+ "||" + raceCode + "||||||||" + pan + "^^^" + facilityId + "|"
+					+ socialSecurityNumber + "|||";
 		}
-		String pid = "PID|"+mrn+"|"+empiIdInPID2+"|"+mrn+"^^^"+facilityId+"^U||"+lastName.toUpperCase(Locale.US)+"^"+
-				firstName.toUpperCase(Locale.US)+"^"+middleName.toUpperCase(Locale.US)+"||"+dateOfBirth+"|"+gender+"||"+raceCode+"||||||||"+pan+
-				"^^^"+facilityId+"|"+socialSecurityNumber+"|||";
+		catch (Exception e)
+		{
+			throw new ApplicationException(null, e, e.getMessage());
+		}
 		return pid;
 	}
 
 	/**
 	 * Gets the h l7 pv segment.
-	 * 
+	 *
 	 * @param participant the participant
 	 * @param dateTime the date time
-	 * 
+	 *
 	 * @return the h l7 pv segment
-	 * 
+	 *
 	 * @throws DAOException the DAO exception
 	 */
 	private String getHL7PVSegment(IParticipant participant, String dateTime) throws DAOException
@@ -453,10 +464,11 @@ public class EMPIParticipantRegistrationBizLogic
 			{
 				csPIFirstName = blankLiteral;
 			}
-			pvSegment ="PV1|1|T|||||"+csPILastName.toUpperCase(Locale.US)+"^"+csPIFirstName.toUpperCase(Locale.US)+
-					"|||||||||||||||||||||||||||||||||||||"+dateTime+"||||||";
+			pvSegment = "PV1|1|T|||||" + csPILastName.toUpperCase(Locale.US) + "^"
+					+ csPIFirstName.toUpperCase(Locale.US)
+					+ "|||||||||||||||||||||||||||||||||||||" + dateTime + "||||||";
 
-			logger.info(pvSegment+"\n");
+			logger.info(pvSegment + "\n");
 		}
 		catch (DAOException e)
 		{
@@ -473,11 +485,11 @@ public class EMPIParticipantRegistrationBizLogic
 
 	/**
 	 * Gets the query.
-	 * 
+	 *
 	 * @param csId the cs id
-	 * 
+	 *
 	 * @return the query
-	 * 
+	 *
 	 * @throws DAOException the DAO exception
 	 */
 	private String getQuery(long csId) throws DAOException
@@ -517,7 +529,7 @@ public class EMPIParticipantRegistrationBizLogic
 
 	/**
 	 * Send hl message.
-	 * 
+	 *
 	 * @param hl7Message the hl7 message
 	 */
 	private void sendHLMessage(String hl7Message)
@@ -540,9 +552,9 @@ public class EMPIParticipantRegistrationBizLogic
 
 	/**
 	 * Gets the mRN.
-	 * 
+	 *
 	 * @param participantId the participant id
-	 * 
+	 *
 	 * @return the mRN
 	 */
 	private String getMRN(Long participantId)
@@ -565,9 +577,9 @@ public class EMPIParticipantRegistrationBizLogic
 
 	/**
 	 * Gets the pAN.
-	 * 
+	 *
 	 * @param participantId the participant id
-	 * 
+	 *
 	 * @return the pAN
 	 */
 	private String getPAN(Long participantId)
@@ -575,8 +587,7 @@ public class EMPIParticipantRegistrationBizLogic
 		String pan = null;
 		if (tempMrnId == null)
 		{
-			pan = (new StringBuilder()).append(String.valueOf(participantId)).append("1")
-					.toString();
+			pan = String.valueOf(participantId) + "1";
 			if (pan == null)
 			{
 				pan = blankLiteral;
@@ -584,16 +595,16 @@ public class EMPIParticipantRegistrationBizLogic
 		}
 		else
 		{
-			pan = (new StringBuilder()).append(tempMrnId).append("1").toString();
+			pan = tempMrnId + "1";
 		}
 		return pan;
 	}
 
 	/**
 	 * Gets the middle name.
-	 * 
+	 *
 	 * @param middleName the middle name
-	 * 
+	 *
 	 * @return the middle name
 	 */
 	private String getMiddleName(String middleName)
@@ -608,9 +619,9 @@ public class EMPIParticipantRegistrationBizLogic
 
 	/**
 	 * Gets the sSN.
-	 * 
+	 *
 	 * @param socialSecurityNumber the social security number
-	 * 
+	 *
 	 * @return the sSN
 	 */
 	private String getSSN(String socialSecurityNumber)
@@ -625,9 +636,9 @@ public class EMPIParticipantRegistrationBizLogic
 
 	/**
 	 * Gets the birth date.
-	 * 
+	 *
 	 * @param dob the dob
-	 * 
+	 *
 	 * @return the birth date
 	 */
 	private String getBirthDate(Date dob)
@@ -641,14 +652,12 @@ public class EMPIParticipantRegistrationBizLogic
 				String dobStr[] = dateOfBirth.split("-");
 				if (dobStr.length >= 3)
 				{
-					dateOfBirth = (new StringBuilder()).append(dobStr[0]).append(dobStr[1]).append(
-							dobStr[2]).toString();
+					dateOfBirth = dobStr[0] + dobStr[1] + dobStr[2];
 				}
 				else
 				{
 					dobStr = dateOfBirth.split("/");
-					dateOfBirth = (new StringBuilder()).append(dobStr[0]).append(dobStr[1]).append(
-							dobStr[2]).toString();
+					dateOfBirth = dobStr[0] + dobStr[1] + dobStr[2];
 				}
 			}
 		}
@@ -661,11 +670,11 @@ public class EMPIParticipantRegistrationBizLogic
 
 	/**
 	 * Gets the race code.
-	 * 
+	 *
 	 * @param participantRaceCollection the participant race collection
-	 * 
+	 *
 	 * @return the race code
-	 * 
+	 *
 	 * @throws Exception the exception
 	 */
 	private String getRaceCode(Collection participantRaceCollection) throws Exception
@@ -686,11 +695,11 @@ public class EMPIParticipantRegistrationBizLogic
 
 	/**
 	 * Gets the race code.
-	 * 
+	 *
 	 * @param raceName the race name
-	 * 
+	 *
 	 * @return the race code
-	 * 
+	 *
 	 * @throws Exception the exception
 	 */
 	private String getRaceCode(String raceName) throws Exception
@@ -706,9 +715,9 @@ public class EMPIParticipantRegistrationBizLogic
 
 	/**
 	 * Gets the race name.
-	 * 
+	 *
 	 * @param participantRaceCollection the participant race collection
-	 * 
+	 *
 	 * @return the race name
 	 */
 	private String getRaceName(Collection participantRaceCollection)
@@ -737,11 +746,11 @@ public class EMPIParticipantRegistrationBizLogic
 
 	/**
 	 * Gets the gender code.
-	 * 
+	 *
 	 * @param gender the gender
-	 * 
+	 *
 	 * @return the gender code
-	 * 
+	 *
 	 * @throws Exception the exception
 	 */
 	private String getGenderCode(String gender) throws Exception
