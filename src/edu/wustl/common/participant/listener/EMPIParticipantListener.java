@@ -154,7 +154,7 @@ public class EMPIParticipantListener implements MessageListener
 				personDemoGraphics = ((TextMessage) message).getText();
 				logger.info(" Received demographics message \n \n");
 				logger.info(personDemoGraphics);
-				processDomographicXML(personDemoGraphics);
+				updateParticipantWithEMPIDetails(personDemoGraphics);
 
 			}
 		}
@@ -172,7 +172,7 @@ public class EMPIParticipantListener implements MessageListener
 	 *
 	 * @throws Exception the exception
 	 */
-	public void processDomographicXML(String personDemoGraphics) throws Exception
+	public void updateParticipantWithEMPIDetails(String personDemoGraphics) throws Exception
 	{
 
 		String clinPortalId = null;
