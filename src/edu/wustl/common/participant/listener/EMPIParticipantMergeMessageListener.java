@@ -224,13 +224,15 @@ public class EMPIParticipantMergeMessageListener implements MessageListener
 				idenifier = 1L;
 			}
 			insQuery = "INSERT INTO PARTICIPANT_MERGE_MESSAGES VALUES(?,?,?,?,?)";
+			LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
 			LinkedList columnValueBeanList = new LinkedList();
 			columnValueBeanList.add(new ColumnValueBean("IDENTIFIER", Long.valueOf(idenifier), 3));
 			columnValueBeanList.add(new ColumnValueBean("MESSAGE_TYPE", messageType, 21));
 			columnValueBeanList.add(new ColumnValueBean("MESSAGE_DATE", date, 13));
 			columnValueBeanList.add(new ColumnValueBean("HL7_MESSAGE", hl7Message, 21));
 			columnValueBeanList.add(new ColumnValueBean("MESSAGE_STATUS", "false", 21));
-			jdbcdao.executeUpdate(insQuery, columnValueBeanList);
+			columnValueBeans.add(columnValueBeanList);
+			jdbcdao.executeUpdate(insQuery, columnValueBeans);
 			jdbcdao.commit();
 			logger.info((new StringBuilder()).append(
 					"\n \n  ----------- STORED MERGE MESSAGE ----------  \n\n").toString());

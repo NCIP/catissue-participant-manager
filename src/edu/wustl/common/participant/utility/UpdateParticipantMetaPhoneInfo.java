@@ -3,6 +3,7 @@ package edu.wustl.common.participant.utility;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.codec.language.Metaphone;
@@ -10,6 +11,7 @@ import org.apache.commons.codec.language.Metaphone;
 import edu.wustl.common.exception.ApplicationException;
 import edu.wustl.dao.JDBCDAO;
 import edu.wustl.dao.exception.DAOException;
+import edu.wustl.dao.query.generator.ColumnValueBean;
 
 /**
  * @author geeta_jaggal.
@@ -110,7 +112,13 @@ public final class UpdateParticipantMetaPhoneInfo
 	private static void updateMetaPhone(JDBCDAO dao, String identifier, String lNameMetaPhone)
 			throws DAOException
 	{
-		dao.executeUpdate("update catissue_participant set lName_metaPhone='" + lNameMetaPhone
-				+ "'" + "  where identifier=" + identifier);
+		LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
+		LinkedList columnValueBeanList = new LinkedList();
+		columnValueBeanList.add(new ColumnValueBean(lNameMetaPhone));
+		columnValueBeanList.add(new ColumnValueBean(identifier));
+		columnValueBeans.add(columnValueBeanList);
+		String query = (new StringBuilder()).append(
+				"update catissue_participant set lName_metaPhone=? where identifier=?").toString();
+		dao.executeUpdate(query, columnValueBeans);
 	}
 }

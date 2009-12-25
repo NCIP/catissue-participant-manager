@@ -30,9 +30,9 @@ public class ParticipantMatchingBizLogic
 
 	/**
 	 * Per form participant match.
-	 * 
+	 *
 	 * @param ParticipantIdLst the participant id lst
-	 * 
+	 *
 	 * @throws ApplicationException the application exception
 	 */
 	public void perFormParticipantMatch(List ParticipantIdLst) throws ApplicationException
@@ -79,10 +79,10 @@ public class ParticipantMatchingBizLogic
 
 	/**
 	 * Store matched participant.
-	 * 
+	 *
 	 * @param participant the participant
 	 * @param matchPartpantLst the match partpant lst
-	 * 
+	 *
 	 * @throws DAOException the DAO exception
 	 */
 	private void storeMatchedParticipant(IParticipant participant, List matchPartpantLst)
@@ -98,7 +98,8 @@ public class ParticipantMatchingBizLogic
 			String mrnValue = "";
 			PatientInformation patientInformation = null;
 			LinkedList columnValueBeanList = null;
-			for (int i = 0; i < matchPartpantLst.size(); i++)
+			LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
+ 			for (int i = 0; i < matchPartpantLst.size(); i++)
 			{
 				patientInformation = (PatientInformation) matchPartpantLst.get(i);
 				raceValues = getRaceValues(patientInformation.getRaceCollection());
@@ -168,7 +169,8 @@ public class ParticipantMatchingBizLogic
 					columnValueBeanList.add(new ColumnValueBean("DEATH_DATE", patientInformation
 							.getDeathDate(), 13));
 				}
-				dao.executeUpdate(query, columnValueBeanList);
+				columnValueBeans.add(columnValueBeanList);
+				dao.executeUpdate(query, columnValueBeans);
 			}
 
 			updateMatchedPartiMapping(dao, participant.getId().longValue(), matchPartpantLst.size());
@@ -187,11 +189,11 @@ public class ParticipantMatchingBizLogic
 
 	/**
 	 * Update matched parti mapping.
-	 * 
+	 *
 	 * @param jdbcdao the jdbcdao
 	 * @param searchPartiId the search parti id
 	 * @param noOfMathcedPaticipants the no of mathced paticipants
-	 * 
+	 *
 	 * @throws DAOException the DAO exception
 	 */
 	private void updateMatchedPartiMapping(JDBCDAO jdbcdao, long searchPartiId,
@@ -199,13 +201,16 @@ public class ParticipantMatchingBizLogic
 	{
 		Calendar cal = Calendar.getInstance();
 		java.util.Date date = cal.getTime();
+		LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
+		LinkedList columnValueBeanList = new LinkedList();
+		columnValueBeanList.add(new ColumnValueBean(noOfMathcedPaticipants));
+		columnValueBeanList.add(new ColumnValueBean(searchPartiId));
+		columnValueBeans.add(columnValueBeanList);
 		String query = (new StringBuilder()).append(
-				"UPDATE MATCHED_PARTICIPANT_MAPPING SET NO_OF_MATCHED_PARTICIPANTS = '").append(
-				noOfMathcedPaticipants).append("' WHERE SEARCHED_PARTICIPANT_ID='").append(
-				searchPartiId).append("'").toString();
+				"UPDATE MATCHED_PARTICIPANT_MAPPING SET NO_OF_MATCHED_PARTICIPANTS = ?").append(" WHERE SEARCHED_PARTICIPANT_ID=?").toString();
 		try
 		{
-			jdbcdao.executeUpdate(query);
+			jdbcdao.executeUpdate(query, columnValueBeans);
 			jdbcdao.commit();
 		}
 		catch (DAOException e)
@@ -217,9 +222,9 @@ public class ParticipantMatchingBizLogic
 
 	/**
 	 * Gets the race values.
-	 * 
+	 *
 	 * @param raceCollection the race collection
-	 * 
+	 *
 	 * @return the race values
 	 */
 	private String getRaceValues(Collection raceCollection)
@@ -246,9 +251,9 @@ public class ParticipantMatchingBizLogic
 
 	/**
 	 * Gets the mRN values.
-	 * 
+	 *
 	 * @param patientMedicalIdentifierColl the patient medical identifier coll
-	 * 
+	 *
 	 * @return the mRN values
 	 */
 	private String getMRNValues(Collection patientMedicalIdentifierColl)
@@ -281,10 +286,10 @@ public class ParticipantMatchingBizLogic
 
 	/**
 	 * Populate list with cs name.
-	 * 
+	 *
 	 * @param list the list
 	 * @param dao the dao
-	 * 
+	 *
 	 * @throws DAOException the DAO exception
 	 */
 	private void populateListWithCSName(List list, JDBCDAO dao) throws DAOException
@@ -308,12 +313,12 @@ public class ParticipantMatchingBizLogic
 
 	/**
 	 * Gets the clinical study names.
-	 * 
+	 *
 	 * @param participantId the participant id
 	 * @param dao the dao
-	 * 
+	 *
 	 * @return the clinical study names
-	 * 
+	 *
 	 * @throws DAOException the DAO exception
 	 */
 	private String getClinicalStudyNames(Long participantId, JDBCDAO dao) throws DAOException
@@ -351,11 +356,11 @@ public class ParticipantMatchingBizLogic
 
 	/**
 	 * Gets the processed matched participants.
-	 * 
+	 *
 	 * @param userId the user id
-	 * 
+	 *
 	 * @return the processed matched participants
-	 * 
+	 *
 	 * @throws DAOException the DAO exception
 	 */
 	public List getProcessedMatchedParticipants(Long userId) throws DAOException

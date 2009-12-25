@@ -31,7 +31,8 @@ public class ParticipantMatchingTimerTask extends TimerTask
 		catch (Exception e)
 		{
 			// TODO Auto-generated catch block
-			logger.info(e.getMessage());
+			//logger.info(e.getMessage());
+			System.out.println("Error during participant timer task");
 		}
 	}
 

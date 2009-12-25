@@ -4,15 +4,14 @@ package edu.wustl.common.participant.bizlogic;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.codec.language.Metaphone;
 
-import edu.wustl.common.audit.AuditManager;
 import edu.wustl.common.beans.SessionDataBean;
 import edu.wustl.common.cde.CDEManager;
 import edu.wustl.common.domain.AbstractDomainObject;
-import edu.wustl.common.exception.AuditException;
 import edu.wustl.common.exception.BizLogicException;
 import edu.wustl.common.participant.domain.IParticipant;
 import edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
@@ -28,7 +27,9 @@ import edu.wustl.common.util.global.Validator;
 import edu.wustl.common.util.logger.Logger;
 import edu.wustl.dao.DAO;
 import edu.wustl.dao.JDBCDAO;
+import edu.wustl.dao.exception.AuditException;
 import edu.wustl.dao.exception.DAOException;
+import edu.wustl.dao.query.generator.ColumnValueBean;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -45,24 +46,20 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 	 *
 	 * @param obj the obj
 	 * @param dao the dao
-	 * @param auditManager the audit manager
 	 * @param pmi the pmi
 	 *
 	 * @return the i participant
 	 *
 	 * @throws BizLogicException the biz logic exception
 	 * @throws DAOException the DAO exception
-	 * @throws AuditException the audit exception
 	 */
-	public static IParticipant insert(Object obj, DAO dao, AuditManager auditManager,
-			IParticipantMedicalIdentifier pmi) throws BizLogicException, DAOException,
-			AuditException
+	public static IParticipant insert(Object obj, DAO dao,
+			IParticipantMedicalIdentifier pmi) throws BizLogicException, DAOException
 	{
 		final IParticipant participant = (IParticipant) obj;
 		// update metaPhoneInformartion
 		setMetaPhoneCode(participant);
 		dao.insert(participant);
-		auditManager.insertAudit(dao, participant);
 		Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> pmiCollection = participant
 				.getParticipantMedicalIdentifierCollection();
 		if (pmiCollection == null)
@@ -85,7 +82,6 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 					.next();
 			pmIdentifier.setParticipant(participant);
 			dao.insert(pmIdentifier);
-			auditManager.insertAudit(dao, pmIdentifier);
 		}
 		return participant;
 	}
@@ -96,19 +92,15 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 	 * @param dao - DAO object
 	 * @param participant the participant
 	 * @param oldParticipant the old participant
-	 * @param auditManager the audit manager
 	 *
 	 * @throws BizLogicException throws BizLogicException
 	 * @throws DAOException the DAO exception
-	 * @throws AuditException the audit exception
 	 */
-	public static void update(DAO dao, IParticipant participant, IParticipant oldParticipant,
-			AuditManager auditManager) throws BizLogicException, DAOException, AuditException
+	public static void update(DAO dao, IParticipant participant, IParticipant oldParticipant) throws BizLogicException, DAOException
 	{
 
 		setMetaPhoneCode(participant);
-		dao.update(participant);
-		auditManager.updateAudit(dao, participant, oldParticipant);
+		dao.update(participant, oldParticipant);
 	}
 
 	/**
@@ -127,32 +119,24 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 	 * Update pmi.
 	 *
 	 * @param dao the dao
-	 * @param auditManager the audit manager
 	 * @param pmIdentifier the pm identifier
 	 * @param oldPartiMedIdCollection the old parti med id collection
 	 *
 	 * @throws DAOException the DAO exception
-	 * @throws AuditException the audit exception
 	 */
-	public static void updatePMI(DAO dao, final AuditManager auditManager,
-			final Collection oldPartiMedIdCollection,
-			final IParticipantMedicalIdentifier pmIdentifier) throws DAOException, AuditException
+	public static void updatePMI(DAO dao, final Collection oldPartiMedIdCollection,
+			final IParticipantMedicalIdentifier pmIdentifier) throws DAOException
 	{
 		if (pmIdentifier.getId() != null)
 		{
-			dao.update(pmIdentifier);
+			final IParticipantMedicalIdentifier oldPmIdentifier = (IParticipantMedicalIdentifier) getCorrespondingOldObj(
+					oldPartiMedIdCollection, pmIdentifier.getId());
+			dao.update(pmIdentifier, oldPmIdentifier);
 		}
 		else if (pmIdentifier.getId() == null || pmIdentifier.getId().equals(""))
 		{
 			dao.insert(pmIdentifier);
-			auditManager.insertAudit(dao, pmIdentifier);
 		}
-
-		// Audit of ParticipantMedicalIdentifier.
-		final IParticipantMedicalIdentifier oldPmIdentifier = (IParticipantMedicalIdentifier) getCorrespondingOldObj(
-				oldPartiMedIdCollection, pmIdentifier.getId());
-
-		auditManager.updateAudit(dao, pmIdentifier, oldPmIdentifier);
 	}
 
 	/**
@@ -392,9 +376,8 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 			cleanDAO = ParticipantManagerUtility.getDAO();
 			oldParticipant = ParticipantManagerUtility.getOldParticipant(cleanDAO, participant
 					.getId());
-			final AuditManager auditManager = updateParticipant(dao, sessionDataBean, participant,
-					oldParticipant);
-			pmiUpdate(dao, participant, auditManager, oldParticipant);
+			updateParticipant(dao, sessionDataBean, participant, oldParticipant);
+			pmiUpdate(dao, participant, oldParticipant);
 		}
 		catch (DAOException e)
 		{
@@ -428,7 +411,7 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 	}
 
 	/**
-	 * This method will update and audit Participant Object.
+	 * This method will update Participant Object.
 	 *
 	 * @param participant Participant object
 	 * @param oldParticipant Persistent participant object
@@ -441,13 +424,11 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 	 * @throws DAOException DAOException Exception
 	 * @throws AuditException AuditException Exception
 	 */
-	private AuditManager updateParticipant(DAO dao, SessionDataBean sessionDataBean,
+	private void updateParticipant(DAO dao, SessionDataBean sessionDataBean,
 			final IParticipant participant, final IParticipant oldParticipant)
-			throws BizLogicException, DAOException, AuditException
+			throws BizLogicException, DAOException
 	{
-		final AuditManager auditManager = this.getAuditManager(sessionDataBean);
-		update(dao, participant, oldParticipant, auditManager);
-		return auditManager;
+		update(dao, participant, oldParticipant);
 	}
 
 	/**
@@ -455,15 +436,12 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 	 *
 	 * @param dao the dao
 	 * @param participant the participant
-	 * @param auditManager the audit manager
 	 * @param oldParticipant the old participant
 	 *
 	 * @throws DAOException the DAO exception
-	 * @throws AuditException the audit exception
 	 * @throws BizLogicException the biz logic exception
 	 */
-	private void pmiUpdate(DAO dao, IParticipant participant, AuditManager auditManager,
-			IParticipant oldParticipant) throws DAOException, AuditException, BizLogicException
+	private void pmiUpdate(DAO dao, IParticipant participant, IParticipant oldParticipant) throws DAOException, BizLogicException
 	{
 		Collection oldPartMedIdColln = (Collection) oldParticipant
 				.getParticipantMedicalIdentifierCollection();
@@ -475,7 +453,7 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 					.next();
 			setParticipantMedicalIdentifierDefault(pmIdentifier);
 			pmIdentifier.setParticipant(participant);
-			updatePMI(dao, auditManager, oldPartMedIdColln, pmIdentifier);
+			updatePMI(dao, oldPartMedIdColln, pmIdentifier);
 		}
 	}
 
@@ -514,29 +492,29 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 		}
 	}
 
-	/**
-	 * This method will be called to return the Audit manager.
-	 *
-	 * @param sessionDataBean the session data bean
-	 *
-	 * @return the audit manager
-	 */
-	public AuditManager getAuditManager(SessionDataBean sessionDataBean)
-	{
-
-		AuditManager auditManager = new AuditManager();
-		if (sessionDataBean == null)
-		{
-			auditManager.setUserId(null);
-		}
-		else
-		{
-			auditManager.setUserId(sessionDataBean.getUserId());
-			auditManager.setIpAddress(sessionDataBean.getIpAddress());
-		}
-		return auditManager;
-
-	}
+//	/**
+//	 * This method will be called to return the Audit manager.
+//	 *
+//	 * @param sessionDataBean the session data bean
+//	 *
+//	 * @return the audit manager
+//	 */
+//	public AuditManager getAuditManager(SessionDataBean sessionDataBean)
+//	{
+//
+//		AuditManager auditManager = new AuditManager();
+//		if (sessionDataBean == null)
+//		{
+//			auditManager.setUserId(null);
+//		}
+//		else
+//		{
+//			auditManager.setUserId(sessionDataBean.getUserId());
+//			auditManager.setIpAddress(sessionDataBean.getIpAddress());
+//		}
+//		return auditManager;
+//
+//	}
 
 	/**
 	 * Post insert.
@@ -667,10 +645,16 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 		JDBCDAO jdbcDao = null;
 		try
 		{
+			LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
+			LinkedList columnValueBeanList = new LinkedList();
+			columnValueBeanList.add(new ColumnValueBean(permanentPartiId));
+			columnValueBeanList.add(new ColumnValueBean(tempararyPartiId));
+			columnValueBeanList.add(new ColumnValueBean(oldeMPIId));
 			jdbcDao = ParticipantManagerUtility.getJDBCDAO();
-			String sql = "INSERT INTO PARTICIPANT_EMPI_ID_MAPPING VALUES('" + permanentPartiId
-					+ "','" + tempararyPartiId + "','" + oldeMPIId + "')";
-			jdbcDao.executeUpdate(sql);
+			String sql = "INSERT INTO PARTICIPANT_EMPI_ID_MAPPING VALUES(?,?,?)";
+
+			columnValueBeans.add(columnValueBeanList);
+			jdbcDao.executeUpdate(sql, columnValueBeans);
 			jdbcDao.commit();
 		}
 		catch (DAOException e)
