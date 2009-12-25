@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.jms.Message;
@@ -41,6 +42,7 @@ import edu.wustl.common.util.XMLPropertyHandler;
 import edu.wustl.common.util.logger.Logger;
 import edu.wustl.dao.JDBCDAO;
 import edu.wustl.dao.exception.DAOException;
+import edu.wustl.dao.query.generator.ColumnValueBean;
 import edu.wustl.patientLookUp.util.PatientLookupException;
 import edu.wustl.patientLookUp.util.PropertyHandler;
 
@@ -250,11 +252,14 @@ public class EMPIParticipantListener implements MessageListener
 		try
 		{
 			jdbcdao = ParticipantManagerUtility.getJDBCDAO();
+			LinkedList columnValueBeanList = columnValueBeanList = new LinkedList();
+			columnValueBeanList.add(new ColumnValueBean(clinPortalId));
+			String query = (new StringBuilder()).append(
+			"SELECT PERMANENT_PARTICIPANT_ID FROM PARTICIPANT_EMPI_ID_MAPPING WHERE TEMPARARY_PARTICIPANT_ID=?")
+			.toString();
+
 			result = jdbcdao
-					.getQueryResultSet((new StringBuilder())
-							.append(
-									"SELECT PERMANENT_PARTICIPANT_ID FROM PARTICIPANT_EMPI_ID_MAPPING WHERE TEMPARARY_PARTICIPANT_ID='")
-							.append(clinPortalId).append("'").toString());
+					.getResultSet(query, columnValueBeanList, null);
 			if (result != null)
 			{
 				while (result.next())

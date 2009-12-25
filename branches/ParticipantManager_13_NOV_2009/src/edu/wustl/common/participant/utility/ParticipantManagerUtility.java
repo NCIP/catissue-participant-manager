@@ -442,10 +442,15 @@ public class ParticipantManagerUtility
 		try
 		{
 			jdbcDao = getJDBCDAO();
+			LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
+			LinkedList columnValueBeanList = new LinkedList();
+			columnValueBeanList.add(new ColumnValueBean(status));
+			columnValueBeanList.add(new ColumnValueBean(participantId));
+			columnValueBeans.add(columnValueBeanList);
 			String sql = (new StringBuilder()).append(
-					"UPDATE CATISSUE_PARTICIPANT SET EMPI_ID_STATUS='").append(status).append(
-					"' WHERE IDENTIFIER='").append(participantId).append("'").toString();
-			jdbcDao.executeUpdate(sql);
+					"UPDATE CATISSUE_PARTICIPANT SET EMPI_ID_STATUS=?").append(
+					" WHERE IDENTIFIER=?").toString();
+			jdbcDao.executeUpdate(sql, columnValueBeans);
 			jdbcDao.commit();
 		}
 		catch (DAOException e)
@@ -630,11 +635,15 @@ public class ParticipantManagerUtility
 			try
 			{
 				dao = getJDBCDAO();
+				LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
+				LinkedList columnValueBeanList = new LinkedList();
+				columnValueBeanList.add(new ColumnValueBean(participantId));
+				columnValueBeans.add(columnValueBeanList);
 				String query = (new StringBuilder())
 						.append(
-								"UPDATE CATISSUE_PARTICIPANT SET EMPI_ID_STATUS='PENDING' WHERE IDENTIFIER='")
-						.append(participantId).append("'").toString();
-				dao.executeUpdate(query);
+								"UPDATE CATISSUE_PARTICIPANT SET EMPI_ID_STATUS='PENDING' WHERE IDENTIFIER=?")
+						.toString();
+				dao.executeUpdate(query, columnValueBeans);
 				dao.commit();
 
 			}
@@ -877,8 +886,8 @@ public class ParticipantManagerUtility
 				query = (new StringBuilder())
 						.append(
 								"UPDATE MATCHED_PARTICIPANT_MAPPING SET SEARCHED_PARTICIPANT_ID=?,NO_OF_MATCHED_P"
-										+ "ARTICIPANTS=?,USER_ID=?,CREATION_DATE=? WHERE SEARCHED_PARTICIPANT_ID ='")
-						.append(participantId).append("'").toString();
+										+ "ARTICIPANTS=?,USER_ID=?,CREATION_DATE=? WHERE SEARCHED_PARTICIPANT_ID =?")
+						.toString();
 			}
 			else
 			{
@@ -886,6 +895,7 @@ public class ParticipantManagerUtility
 			}
 			Calendar cal = Calendar.getInstance();
 			Date date = cal.getTime();
+			LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
 			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
 			columnValueBeanList
 					.add(new ColumnValueBean("SEARCHED_PARTICIPANT_ID", participantId, 3));
@@ -893,7 +903,9 @@ public class ParticipantManagerUtility
 					.valueOf(-1), 3));
 			columnValueBeanList.add(new ColumnValueBean("USER_ID", userId, 3));
 			columnValueBeanList.add(new ColumnValueBean("CREATION_DATE", date, 13));
-			jdbcdao.executeUpdate(query, columnValueBeanList);
+			columnValueBeanList.add(new ColumnValueBean(participantId));
+			columnValueBeans.add(columnValueBeanList);
+			jdbcdao.executeUpdate(query, columnValueBeans);
 			jdbcdao.commit();
 		}
 		catch (DAOException e)
@@ -1002,9 +1014,14 @@ public class ParticipantManagerUtility
 		try
 		{
 			jdbcdao = getJDBCDAO();
-			jdbcdao.executeUpdate((new StringBuilder()).append(
-					"DELETE FROM MATCHED_PARTICIPANT_MAPPING WHERE SEARCHED_PARTICIPANT_ID='")
-					.append(id).append("'").toString());
+			LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
+			LinkedList columnValueBeanList = new LinkedList();
+			columnValueBeanList.add(new ColumnValueBean(id));
+			columnValueBeans.add(columnValueBeanList);
+			String query = (new StringBuilder()).append(
+			"DELETE FROM MATCHED_PARTICIPANT_MAPPING WHERE SEARCHED_PARTICIPANT_ID=?")
+			.toString();
+			jdbcdao.executeUpdate(query, columnValueBeans);
 			jdbcdao.commit();
 		}
 		catch (DAOException e)
