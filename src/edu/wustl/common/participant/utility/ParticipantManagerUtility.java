@@ -62,8 +62,6 @@ public class ParticipantManagerUtility
 	/** The logger. */
 	private static final Logger logger = Logger.getCommonLogger(ParticipantManagerUtility.class);
 
-
-
 	/**
 	 * Register wmq listener.
 	 *
@@ -296,10 +294,10 @@ public class ParticipantManagerUtility
 	 *
 	 * @throws Exception the exception
 	 */
-	public static List getListOfMatchingParticipants(IParticipant participant,
+	public static List<DefaultLookupResult> getListOfMatchingParticipants(IParticipant participant,
 			SessionDataBean sessionDataBean, String lookupAlgorithm) throws Exception
 	{
-		List matchParticipantList = null;
+		List<DefaultLookupResult> matchParticipantList = null;
 		LookupLogic partLookupLgic = null;
 		if (lookupAlgorithm == null)
 		{
@@ -317,6 +315,60 @@ public class ParticipantManagerUtility
 		return matchParticipantList;
 	}
 
+	public static boolean isParticipantMatchWithinCSCPEnable(Long id) throws DAOException
+	{
+		boolean status = false;
+		JDBCDAO dao = null;
+		String query = null;
+
+		try
+		{
+			query = " SELECT SP.PARTCIPNT_MATCH_WITHIN_CSCP FROM  CATISSUE_SPECIMEN_PROTOCOL SP JOIN  CATISSUE_CLINICAL_STUDY_REG CSR  "
+					+ " ON SP.IDENTIFIER = CSR.CLINICAL_STUDY_ID";
+			dao = getJDBCDAO();
+			List list = dao.executeQuery(query);
+			if (!list.isEmpty() && list.get(0) != "")
+			{
+				List statusList = (List) list.get(0);
+				if (!statusList.isEmpty() && ((String) statusList.get(0)).equals("1"))
+				{
+					status = true;
+				}
+			}
+		}
+		catch (DAOException exp)
+		{
+			logger.info("ERROR WHILE GETTING THE EMPI STATUS");
+			throw new DAOException(exp.getErrorKey(), exp, exp.getMsgValues());
+		}
+		finally
+		{
+			dao.closeSession();
+		}
+		return status;
+	}
+
+
+	public static List<Long> getPartcipantIdsList(Long id) throws DAOException{
+		List<Long> idList = null;
+		JDBCDAO dao = null;
+		String query = null;
+		try
+		{
+			query="SELECT PARTICIPANT_ID FROM CATISSUE_CLINICAL_STUDY_REG WHERE CLINICAL_STUDY_ID='"+id+"'";
+			dao = getJDBCDAO();
+			idList=dao.executeQuery(query);
+		}
+		catch (DAOException exp)
+		{
+			// TODO Auto-generated catch block
+			throw new DAOException(exp.getErrorKey(), exp, exp.getMsgValues());
+		}
+		finally{
+			dao.closeSession();
+		}
+		return idList;
+	}
 	/**
 	 * Gets the race instance.
 	 *
@@ -602,9 +654,20 @@ public class ParticipantManagerUtility
 			if (!statusList.isEmpty() && statusList.get(0) != "")
 			{
 				List idList = (List) statusList.get(0);
-				if (!idList.isEmpty() && ((String) idList.get(0)).equals("1"))
+				//if (!idList.isEmpty() && ((String) idList.get(0)).equals("1"))
+				//{
+					//status = true;
+				//}
+
+				if (!idList.isEmpty() && ((String) idList.get(0))!="")
 				{
-					status = true;
+					for(int i=0;i<idList.size();i++)
+					{
+						if(((String) idList.get(0)).equals("1")){
+							status = true;
+							break;
+						}
+					}
 				}
 			}
 		}
@@ -742,7 +805,6 @@ public class ParticipantManagerUtility
 		List<String> columnList = Arrays.asList(columnHeaderList);
 
 		List<String> displayList = new ArrayList<String>();
-		displayList.add("EMPI");
 		displayList.add("EMPIID");
 		List<String> displayListTemp = getColumnList(columnList);
 		displayList.addAll(displayListTemp);
@@ -768,7 +830,6 @@ public class ParticipantManagerUtility
 			DefaultLookupResult result = (DefaultLookupResult) itr.next();
 			IParticipant participant = (IParticipant) result.getObject();
 			participantInfo = new ArrayList<String>();
-			participantInfo.add(participant.getIsFromEMPI());
 			participantInfo.add(participant.getEmpiId());
 			participantInfo.add(Utility.toString(participant.getLastName()));
 			participantInfo.add(Utility.toString(participant.getFirstName()));
@@ -783,7 +844,6 @@ public class ParticipantManagerUtility
 				medicalRecordNo = getParticipantMrnDisplay(participant);
 			}
 			participantInfo.add(Utility.toString(medicalRecordNo));
-			//participantInfo.add(participant.getId());
 			participantInfo.add(String.valueOf(participant.getId()));
 		}
 
@@ -1018,8 +1078,8 @@ public class ParticipantManagerUtility
 			columnValueBeanList.add(new ColumnValueBean(id));
 			columnValueBeans.add(columnValueBeanList);
 			String query = (new StringBuilder()).append(
-			"DELETE FROM MATCHED_PARTICIPANT_MAPPING WHERE SEARCHED_PARTICIPANT_ID=?")
-			.toString();
+					"DELETE FROM MATCHED_PARTICIPANT_MAPPING WHERE SEARCHED_PARTICIPANT_ID=?")
+					.toString();
 			jdbcdao.executeUpdate(query, columnValueBeans);
 			jdbcdao.commit();
 		}
