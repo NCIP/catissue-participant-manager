@@ -690,7 +690,6 @@ public class ParticipantManagerUtility
 				}
 			}
 			dao.commit();
-
 		}
 		catch (DAOException exp)
 		{
