@@ -53,8 +53,8 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 	 * @throws BizLogicException the biz logic exception
 	 * @throws DAOException the DAO exception
 	 */
-	public static IParticipant insert(Object obj, DAO dao,
-			IParticipantMedicalIdentifier pmi) throws BizLogicException, DAOException
+	public static IParticipant insert(Object obj, DAO dao, IParticipantMedicalIdentifier pmi)
+			throws BizLogicException, DAOException
 	{
 		final IParticipant participant = (IParticipant) obj;
 		// update metaPhoneInformartion
@@ -96,7 +96,8 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 	 * @throws BizLogicException throws BizLogicException
 	 * @throws DAOException the DAO exception
 	 */
-	public static void update(DAO dao, IParticipant participant, IParticipant oldParticipant) throws BizLogicException, DAOException
+	public static void update(DAO dao, IParticipant participant, IParticipant oldParticipant)
+			throws BizLogicException, DAOException
 	{
 
 		setMetaPhoneCode(participant);
@@ -441,7 +442,8 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 	 * @throws DAOException the DAO exception
 	 * @throws BizLogicException the biz logic exception
 	 */
-	private void pmiUpdate(DAO dao, IParticipant participant, IParticipant oldParticipant) throws DAOException, BizLogicException
+	private void pmiUpdate(DAO dao, IParticipant participant, IParticipant oldParticipant)
+			throws DAOException, BizLogicException
 	{
 		Collection oldPartMedIdColln = (Collection) oldParticipant
 				.getParticipantMedicalIdentifierCollection();
@@ -492,29 +494,29 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 		}
 	}
 
-//	/**
-//	 * This method will be called to return the Audit manager.
-//	 *
-//	 * @param sessionDataBean the session data bean
-//	 *
-//	 * @return the audit manager
-//	 */
-//	public AuditManager getAuditManager(SessionDataBean sessionDataBean)
-//	{
-//
-//		AuditManager auditManager = new AuditManager();
-//		if (sessionDataBean == null)
-//		{
-//			auditManager.setUserId(null);
-//		}
-//		else
-//		{
-//			auditManager.setUserId(sessionDataBean.getUserId());
-//			auditManager.setIpAddress(sessionDataBean.getIpAddress());
-//		}
-//		return auditManager;
-//
-//	}
+	//	/**
+	//	 * This method will be called to return the Audit manager.
+	//	 *
+	//	 * @param sessionDataBean the session data bean
+	//	 *
+	//	 * @return the audit manager
+	//	 */
+	//	public AuditManager getAuditManager(SessionDataBean sessionDataBean)
+	//	{
+	//
+	//		AuditManager auditManager = new AuditManager();
+	//		if (sessionDataBean == null)
+	//		{
+	//			auditManager.setUserId(null);
+	//		}
+	//		else
+	//		{
+	//			auditManager.setUserId(sessionDataBean.getUserId());
+	//			auditManager.setIpAddress(sessionDataBean.getIpAddress());
+	//		}
+	//		return auditManager;
+	//
+	//	}
 
 	/**
 	 * Post insert.
@@ -549,18 +551,23 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 	 *
 	 * @throws BizLogicException the biz logic exception
 	 */
-	public static void preUpdate(Object obj, SessionDataBean sessionDataBean)
+	public static void preUpdate(Object oldObj, Object obj, SessionDataBean sessionDataBean)
 			throws BizLogicException
 	{
 		final IParticipant participant = (IParticipant) obj;
+		IParticipant oldParticipant = (IParticipant) oldObj;
+		String oldEMPIStatus = oldParticipant.getEmpiIdStatus();
 		try
 		{
 			if (ParticipantManagerUtility.isEMPIEnable(participant.getId()))
 			{
 				// if the
-				if (Constants.EMPI_ID_CREATED.equals(participant.getEmpiIdStatus()))
+				if (oldEMPIStatus != null && !("".equals(oldEMPIStatus)))
 				{
-					participant.setEmpiIdStatus(Constants.EMPI_ID_PENDING);
+					if (Constants.EMPI_ID_CREATED.equals(participant.getEmpiIdStatus()))
+					{
+						participant.setEmpiIdStatus(Constants.EMPI_ID_PENDING);
+					}
 				}
 			}
 		}
@@ -586,16 +593,13 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 		{
 			if (ParticipantManagerUtility.isEMPIEnable(participant.getId()))
 			{
-				//if (Constants.EMPI_ID_CREATED.equals(participant.getEmpiIdStatus()))
-				//if (Constants.EMPI_ID_PENDING.equals(participant.getEmpiIdStatus()))
-				//{
-					regNewPatientToEMPI(participant);
-				//}
+				regNewPatientToEMPI(participant);
 			}
 		}
 		catch (Exception e)
 		{
 			logger.info("ERROR WHILE REGISTERING NEW PATIENT TO EMPI  ##############  \n");
+			throw new BizLogicException(null,e,e.getMessage());
 		}
 	}
 
