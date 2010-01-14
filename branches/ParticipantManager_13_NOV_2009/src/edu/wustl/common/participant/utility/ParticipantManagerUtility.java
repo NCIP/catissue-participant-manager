@@ -1004,7 +1004,6 @@ public class ParticipantManagerUtility
 					.valueOf(-1), 3));
 			columnValueBeanList.add(new ColumnValueBean("USER_ID", userId, 3));
 			columnValueBeanList.add(new ColumnValueBean("CREATION_DATE", date, 13));
-			columnValueBeanList.add(new ColumnValueBean(participantId));
 			columnValueBeans.add(columnValueBeanList);
 			jdbcdao.executeUpdate(query, columnValueBeans);
 			jdbcdao.commit();
