@@ -19,7 +19,7 @@ public interface IParticipantForm {
 	 *
 	 * @param s the new last name
 	 */
-	 void setLastName(String s);
+	 void setLastName(String lastName);
 
 	/**
 	 * Gets the first name.
@@ -33,7 +33,7 @@ public interface IParticipantForm {
 	 *
 	 * @param s the new first name
 	 */
-    void setFirstName(String s);
+    void setFirstName(String firstName);
 
 	/**
 	 * Gets the birth date.
@@ -47,14 +47,14 @@ public interface IParticipantForm {
 	 *
 	 * @param s the new birth date
 	 */
-	 void setBirthDate(String s);
+	 void setBirthDate(String birthDate);
 
 	/**
 	 * Sets the operation.
 	 *
 	 * @param s the new operation
 	 */
-	 void setOperation(String s);
+	 void setOperation(String operation);
 
 	/**
 	 * Gets the operation.
@@ -96,7 +96,7 @@ public interface IParticipantForm {
 	 *
 	 * @return the empi id
 	 */
-	public String getEmpiId();
+	 String getEmpiId();
 
 	/**
 	 * Sets the empi id.
@@ -105,4 +105,13 @@ public interface IParticipantForm {
 	 */
 	void setEmpiId(String empiId);
 
+	/**
+	 * @return cpId
+	 */
+	long getCpId();
+
+	/**
+	 * @param cpId Set cpId
+	 */
+	void setCpId(long cpId);
 }

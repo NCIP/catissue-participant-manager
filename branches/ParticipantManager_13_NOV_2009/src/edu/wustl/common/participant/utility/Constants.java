@@ -265,4 +265,6 @@ public class Constants
 	/** The Constant IS_DELETE_PARTICIPANT. */
 	public static final String IS_DELETE_PARTICIPANT = "isDelete";
 
+	public static final String TRUE = "true";
+
 }
