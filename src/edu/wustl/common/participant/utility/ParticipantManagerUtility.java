@@ -295,7 +295,8 @@ public class ParticipantManagerUtility
 	 * @throws Exception the exception
 	 */
 	public static List<DefaultLookupResult> getListOfMatchingParticipants(IParticipant participant,
-			SessionDataBean sessionDataBean, String lookupAlgorithm) throws Exception
+			SessionDataBean sessionDataBean, String lookupAlgorithm, Long linkedCSCPId)
+			throws Exception
 	{
 		List<DefaultLookupResult> matchParticipantList = null;
 		LookupLogic partLookupLgic = null;
@@ -312,7 +313,44 @@ public class ParticipantManagerUtility
 		DefaultLookupParameters params = new DefaultLookupParameters();
 		params.setObject(participant);
 		matchParticipantList = partLookupLgic.lookup(params);
+
+		if (linkedCSCPId != null)
+		{
+			processListForMatchWithinCS(matchParticipantList, linkedCSCPId);
+		}
 		return matchParticipantList;
+	}
+
+	public static void processListForMatchWithinCS(List<DefaultLookupResult> matchPartpantLst,
+			Long csId) throws DAOException
+	{
+		if (ParticipantManagerUtility.isParticipantMatchWithinCSCPEnable(csId))
+		{
+			List idList = ParticipantManagerUtility.getPartcipantIdsList(csId);
+			matchPartpantLst = filerMatchedList(matchPartpantLst, idList);
+		}
+	}
+
+	public static List<DefaultLookupResult> filerMatchedList(
+			List<DefaultLookupResult> matchPartpantLst, List idList)
+	{
+
+		List<DefaultLookupResult> matchPartpantLstFiltred = new ArrayList<DefaultLookupResult>();
+		Iterator<DefaultLookupResult> itr = matchPartpantLst.iterator();
+		if (!idList.isEmpty() && idList.get(0) != null && String.valueOf(idList.get(0)) != "")
+		{
+			List participantIdList = (List) idList.get(0);
+			while (itr.hasNext())
+			{
+				DefaultLookupResult result = (DefaultLookupResult) itr.next();
+				IParticipant participant = (IParticipant) result.getObject();
+				if ((participantIdList).contains(String.valueOf(participant.getId().longValue())))
+				{
+					matchPartpantLstFiltred.add(result);
+				}
+			}
+		}
+		return matchPartpantLstFiltred;
 	}
 
 	public static boolean isParticipantMatchWithinCSCPEnable(Long id) throws DAOException
@@ -320,11 +358,11 @@ public class ParticipantManagerUtility
 		boolean status = false;
 		JDBCDAO dao = null;
 		String query = null;
-
 		try
 		{
-			query = " SELECT SP.PARTCIPNT_MATCH_WITHIN_CSCP FROM  CATISSUE_SPECIMEN_PROTOCOL SP JOIN  CATISSUE_CLINICAL_STUDY_REG CSR  "
-					+ " ON SP.IDENTIFIER = CSR.CLINICAL_STUDY_ID";
+			//query = " SELECT SP.PARTCIPNT_MATCH_WITHIN_CSCP FROM  CATISSUE_SPECIMEN_PROTOCOL SP JOIN  CATISSUE_CLINICAL_STUDY_REG CSR  "+ " ON SP.IDENTIFIER = CSR.CLINICAL_STUDY_ID  WHERE CSR.CLINICAL_STUDY_ID='"+id+"'";
+			query = "SELECT SP.PARTCIPNT_MATCH_WITHIN_CSCP FROM  CATISSUE_SPECIMEN_PROTOCOL SP WHERE SP.IDENTIFIER='"
+					+ id + "'";
 			dao = getJDBCDAO();
 			List list = dao.executeQuery(query);
 			if (!list.isEmpty() && list.get(0) != "")
@@ -348,27 +386,30 @@ public class ParticipantManagerUtility
 		return status;
 	}
 
-
-	public static List<Long> getPartcipantIdsList(Long id) throws DAOException{
-		List<Long> idList = null;
+	public static List getPartcipantIdsList(Long id) throws DAOException
+	{
+		List idList = null;
 		JDBCDAO dao = null;
 		String query = null;
 		try
 		{
-			query="SELECT PARTICIPANT_ID FROM CATISSUE_CLINICAL_STUDY_REG WHERE CLINICAL_STUDY_ID='"+id+"'";
+			query = "SELECT PARTICIPANT_ID FROM CATISSUE_CLINICAL_STUDY_REG WHERE CLINICAL_STUDY_ID='"
+					+ id + "'";
 			dao = getJDBCDAO();
-			idList=dao.executeQuery(query);
+			idList = dao.executeQuery(query);
 		}
 		catch (DAOException exp)
 		{
 			// TODO Auto-generated catch block
 			throw new DAOException(exp.getErrorKey(), exp, exp.getMsgValues());
 		}
-		finally{
+		finally
+		{
 			dao.closeSession();
 		}
 		return idList;
 	}
+
 	/**
 	 * Gets the race instance.
 	 *
@@ -656,14 +697,15 @@ public class ParticipantManagerUtility
 				List idList = (List) statusList.get(0);
 				//if (!idList.isEmpty() && ((String) idList.get(0)).equals("1"))
 				//{
-					//status = true;
+				//status = true;
 				//}
 
-				if (!idList.isEmpty() && ((String) idList.get(0))!="")
+				if (!idList.isEmpty() && ((String) idList.get(0)) != "")
 				{
-					for(int i=0;i<idList.size();i++)
+					for (int i = 0; i < idList.size(); i++)
 					{
-						if(((String) idList.get(0)).equals("1")){
+						if (((String) idList.get(0)).equals("1"))
+						{
 							status = true;
 							break;
 						}

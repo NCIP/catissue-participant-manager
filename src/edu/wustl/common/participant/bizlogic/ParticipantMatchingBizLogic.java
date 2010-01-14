@@ -54,7 +54,7 @@ public class ParticipantMatchingBizLogic
 					{
 						List matchPartpantLst = ParticipantManagerUtility
 								.getListOfMatchingParticipants(participant, null,
-										Constants.PARTICIPANT_LOOKUP_ALGO_EMPI);
+										Constants.PARTICIPANT_LOOKUP_ALGO_EMPI,null);
 						if (matchPartpantLst.size() == 0
 								&& ParticipantManagerUtility.isParticipantValidForEMPI(participant
 										.getLastName(), participant.getFirstName(), participant

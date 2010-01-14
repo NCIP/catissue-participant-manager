@@ -153,7 +153,7 @@ public class EMPIParticipantRegistrationBizLogic
 	 *
 	 * @throws Exception the exception
 	 */
-	public String getRegHL7Message(IParticipant participant) throws Exception
+	public String getRegHL7Message(IParticipant participant) throws ApplicationException
 	{
 		String hl7Message = "";
 		String eventTypeCode = Constants.HL7_REG_EVENT_TYPE;
@@ -176,7 +176,7 @@ public class EMPIParticipantRegistrationBizLogic
 	 * @throws Exception the exception
 	 */
 	public void sendMergeMessage(IParticipant participant, String oldParticipantId, String oldEMPIID)
-			throws Exception
+			throws ApplicationException
 	{
 		sendMRNMergeMgs(participant, oldParticipantId);
 		if (!participant.getEmpiId().equals(oldEMPIID))
@@ -213,7 +213,7 @@ public class EMPIParticipantRegistrationBizLogic
 	 * @throws Exception the exception
 	 */
 	private void sendMRNMergeMgs(IParticipant participant, String oldParticipantId)
-			throws Exception
+			throws ApplicationException
 	{
 		String hl7Message = "";
 		hl7Message = getMRNMergeMgs(participant, oldParticipantId);
@@ -251,7 +251,7 @@ public class EMPIParticipantRegistrationBizLogic
 	 *
 	 * @throws Exception the exception
 	 */
-	private void sendEMPIMIdMergeMgs(IParticipant participant, String oldEMPIID) throws Exception
+	private void sendEMPIMIdMergeMgs(IParticipant participant, String oldEMPIID) throws ApplicationException
 	{
 		String hl7Message = "";
 		hl7Message = getEMPIMIdMergeMgs(participant, oldEMPIID);
@@ -268,7 +268,7 @@ public class EMPIParticipantRegistrationBizLogic
 	 *
 	 * @throws Exception the exception
 	 */
-	public String getEMPIMIdMergeMgs(IParticipant participant, String oldEMPIID) throws Exception
+	public String getEMPIMIdMergeMgs(IParticipant participant, String oldEMPIID) throws ApplicationException
 	{
 		String hl7Message = "";
 		logger.info("\n\n  EMPI Merge HL7 Message \n \n \n\n\n");
@@ -510,19 +510,16 @@ public class EMPIParticipantRegistrationBizLogic
 		{
 			hql
 					.append("select CSReg.clinicalStudy.principalInvestigator.firstName,CSReg.clinicalStudy.p"
-							+ "rincipalInvestigator.lastName from ");
-			hql.append("edu.wustl.clinportal.domain.ClinicalStudyRegistration ");
-			hql.append(" CSReg where CSReg.participant.id=");
-			hql.append(csId);
+							+ "rincipalInvestigator.lastName from edu.wustl.clinportal.domain.ClinicalStudyRegistration "
+							+ " CSReg where CSReg.participant.id="+csId);
 		}
 		else
 		{
 			hql
 					.append("select CSReg.clinicalStudy.principalInvestigator.firstName,CSReg.clinicalStudy.p"
-							+ "rincipalInvestigator.lastName from ");
-			hql.append("edu.wustl.catissuecore.domain.ClinicalStudyRegistration");
-			hql.append(" CSReg where CSReg.participant.id=");
-			hql.append(csId);
+							+ "rincipalInvestigator.lastName from "
+							+ " edu.wustl.catissuecore.domain.ClinicalStudyRegistration"
+							+ " CSReg where CSReg.participant.id="+csId);
 		}
 		return hql.toString();
 	}
@@ -587,7 +584,7 @@ public class EMPIParticipantRegistrationBizLogic
 		String pan = null;
 		if (tempMrnId == null)
 		{
-			pan = String.valueOf(participantId) + "1";
+			pan = participantId + "1";
 			if (pan == null)
 			{
 				pan = blankLiteral;
@@ -677,7 +674,7 @@ public class EMPIParticipantRegistrationBizLogic
 	 *
 	 * @throws Exception the exception
 	 */
-	private String getRaceCode(Collection participantRaceCollection) throws Exception
+	private String getRaceCode(Collection participantRaceCollection) throws ApplicationException
 	{
 		String raceName = null;
 		String raceCode = null;
@@ -702,7 +699,7 @@ public class EMPIParticipantRegistrationBizLogic
 	 *
 	 * @throws Exception the exception
 	 */
-	private String getRaceCode(String raceName) throws Exception
+	private String getRaceCode(String raceName) throws ApplicationException
 	{
 		String raceCode = "";
 		raceCode = RaceGenderCodesProperyHandler.getValue(raceName);
@@ -727,19 +724,14 @@ public class EMPIParticipantRegistrationBizLogic
 		if (participantRaceCollection != null && !participantRaceCollection.isEmpty())
 		{
 			Iterator itr = participantRaceCollection.iterator();
-			do
+			while (itr.hasNext())
 			{
-				if (!itr.hasNext())
-				{
-					break;
-				}
 				race = (IRace) itr.next();
 				if (race != null)
 				{
 					raceName = race.getRaceName();
 				}
 			}
-			while (true);
 		}
 		return raceName;
 	}
@@ -753,7 +745,7 @@ public class EMPIParticipantRegistrationBizLogic
 	 *
 	 * @throws Exception the exception
 	 */
-	private String getGenderCode(String gender) throws Exception
+	private String getGenderCode(String gender) throws ApplicationException
 	{
 		String gendercode = null;
 		gendercode = RaceGenderCodesProperyHandler.getValue(gender);

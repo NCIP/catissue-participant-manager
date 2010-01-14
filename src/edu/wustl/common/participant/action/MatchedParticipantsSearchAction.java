@@ -242,7 +242,6 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 			Collection raceCollection = getRaceCollection(raceString);
 			participant.setRaceCollection(raceCollection);
 		}
-		participant.setIsFromEMPI((String) participantValueList.get(13));
 		return participant;
 	}
 

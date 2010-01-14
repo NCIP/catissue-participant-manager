@@ -1,6 +1,8 @@
 
 package edu.wustl.common.participant.action;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -12,14 +14,14 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
-
 import edu.wustl.common.action.BaseAction;
 import edu.wustl.common.actionForm.AbstractActionForm;
 import edu.wustl.common.exception.ApplicationException;
-import edu.wustl.common.exception.AssignDataException;
 import edu.wustl.common.exception.BizLogicException;
 import edu.wustl.common.factory.AbstractFactoryConfig;
 import edu.wustl.common.factory.IDomainObjectFactory;
+import edu.wustl.common.lookup.DefaultLookupResult;
+import edu.wustl.common.participant.actionForm.IParticipantForm;
 import edu.wustl.common.participant.domain.IParticipant;
 import edu.wustl.common.participant.utility.Constants;
 import edu.wustl.common.participant.utility.ParticipantManagerUtility;
@@ -43,54 +45,68 @@ public class ParticipantLookupAction extends BaseAction
 			HttpServletRequest request, HttpServletResponse response) throws ApplicationException
 	{
 		AbstractActionForm abstractForm = (AbstractActionForm) form;
+
+		IParticipantForm participantForm = (IParticipantForm) form;
 		String target = null;
 		try
 		{
-		boolean isForward = checkForwardToParticipantSelectAction(request, abstractForm
-				.isAddOperation());
-		if (isForward)
-		{
-			target = "participantSelect";
-		}
-		else
-		{
-			IDomainObjectFactory domainObjectFactory;
-
-				domainObjectFactory = AbstractFactoryConfig.getInstance()
-						.getDomainObjectFactory();
-
-			edu.wustl.common.domain.AbstractDomainObject abstractDomain = domainObjectFactory
-					.getDomainObject(abstractForm.getFormId(), abstractForm);
-			IParticipant participant = (IParticipant) abstractDomain;
-			boolean isCallToLkupLgic = ParticipantManagerUtility
-					.isCallToLookupLogicNeeded(participant);
-			if (isCallToLkupLgic)
+			boolean isForward = checkForwardToParticipantSelectAction(request, abstractForm
+					.isAddOperation());
+			if (isForward)
 			{
-				List matchPartpantLst = getListOfMatchingParticipants(participant, request);
-				if (matchPartpantLst == null || matchPartpantLst.isEmpty())
-				{
-					target = Constants.PARTICIPANT_ADD_FORWARD;
-				}
-				else
-				{
-					storeLists(request, matchPartpantLst);
-					target = edu.wustl.common.util.global.Constants.SUCCESS;
-				}
+				target = "participantSelect";
 			}
 			else
 			{
-				target = Constants.PARTICIPANT_ADD_FORWARD;
-			}
-			setRequestAttributes(request);
+				IDomainObjectFactory domainObjectFactory;
 
-		}
+				domainObjectFactory = AbstractFactoryConfig.getInstance().getDomainObjectFactory();
+
+				edu.wustl.common.domain.AbstractDomainObject abstractDomain = domainObjectFactory
+						.getDomainObject(abstractForm.getFormId(), abstractForm);
+				IParticipant participant = (IParticipant) abstractDomain;
+				boolean isCallToLkupLgic = ParticipantManagerUtility
+						.isCallToLookupLogicNeeded(participant);
+				if (isCallToLkupLgic)
+				{
+					List<DefaultLookupResult> matchPartpantLst = getListOfMatchingParticipants(
+							participant, request,participantForm.getCpId());
+
+					if (!matchPartpantLst.isEmpty())
+					{
+						target = edu.wustl.common.util.global.Constants.SUCCESS;
+						storeLists(request, matchPartpantLst);
+					}
+					else
+					{
+						target = Constants.PARTICIPANT_ADD_FORWARD;
+					}
+
+					/*
+					if (matchPartpantLst == null || matchPartpantLst.isEmpty())
+					{
+						target = Constants.PARTICIPANT_ADD_FORWARD;
+					}
+					else
+					{
+						target = processListForMatchWithinCS(request, matchPartpantLst,
+								participantForm.getCpId());
+					}
+					*/
+				}
+				else
+				{
+					target = Constants.PARTICIPANT_ADD_FORWARD;
+				}
+				setRequestAttributes(request);
+
+			}
 		}
 		catch (Exception e)
 		{
 			// TODO Auto-generated catch block
-			throw new ApplicationException(null,e,e.getMessage());
+			throw new ApplicationException(null, e, e.getMessage());
 		}
-
 		return mapping.findForward(target);
 	}
 
@@ -105,15 +121,62 @@ public class ParticipantLookupAction extends BaseAction
 	 *
 	 * @throws Exception the exception
 	 */
-	private List getListOfMatchingParticipants(IParticipant participant, HttpServletRequest request) throws Exception
+	private List<DefaultLookupResult> getListOfMatchingParticipants(IParticipant participant,
+			HttpServletRequest request,Long csId) throws Exception
 
 	{
 		edu.wustl.common.beans.SessionDataBean sessionDataBean = getSessionData(request);
-		List matchPartpantLst = ParticipantManagerUtility.getListOfMatchingParticipants(
-				participant, sessionDataBean, null);
+		List<DefaultLookupResult> matchPartpantLst = ParticipantManagerUtility
+				.getListOfMatchingParticipants(participant, sessionDataBean, null,csId);
 		return matchPartpantLst;
 	}
 
+	/*
+	private String processListForMatchWithinCS(HttpServletRequest request,
+			List<DefaultLookupResult> matchPartpantLst, Long csId) throws DAOException
+	{
+		String target = null;
+		if (ParticipantManagerUtility.isParticipantMatchWithinCSCPEnable(csId))
+		{
+			List idList = ParticipantManagerUtility.getPartcipantIdsList(csId);
+
+			if (!idList.isEmpty() && idList.get(0) != null && String.valueOf(idList.get(0)) != "")
+			{
+				matchPartpantLst = filerMatchedList(matchPartpantLst, idList);
+			}
+		}
+		if (!matchPartpantLst.isEmpty())
+		{
+			target = edu.wustl.common.util.global.Constants.SUCCESS;
+			storeLists(request, matchPartpantLst);
+		}
+		else
+		{
+			//request.setAttribute("matchNotFoundWithinCS", Constants.TRUE);
+			target = Constants.PARTICIPANT_ADD_FORWARD;
+		}
+		return target;
+	}
+
+	private List<DefaultLookupResult> filerMatchedList(List<DefaultLookupResult> matchPartpantLst,
+			List idList)
+	{
+
+		List<DefaultLookupResult> matchPartpantLstFiltred = new ArrayList<DefaultLookupResult>();
+		Iterator<DefaultLookupResult> itr = matchPartpantLst.iterator();
+		List participantIdList=(List)idList.get(0);
+		while (itr.hasNext())
+		{
+			DefaultLookupResult result = (DefaultLookupResult) itr.next();
+			IParticipant participant = (IParticipant) result.getObject();
+			if ((participantIdList).contains(String.valueOf(participant.getId().longValue())))
+			{
+				matchPartpantLstFiltred.add(result);
+			}
+		}
+		return matchPartpantLstFiltred;
+	}
+*/
 	/**
 	 * Store lists.
 	 *
@@ -122,7 +185,8 @@ public class ParticipantLookupAction extends BaseAction
 	 *
 	 * @throws DAOException the DAO exception
 	 */
-	private void storeLists(HttpServletRequest request, List matchPartpantLst) throws DAOException
+	private void storeLists(HttpServletRequest request, List<DefaultLookupResult> matchPartpantLst)
+			throws DAOException
 	{
 		ActionMessages messages = new ActionMessages();
 		messages.add("org.apache.struts.action.GLOBAL_MESSAGE", new ActionMessage(
