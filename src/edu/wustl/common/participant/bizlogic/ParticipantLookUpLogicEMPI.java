@@ -130,7 +130,6 @@ public class ParticipantLookUpLogicEMPI implements LookupLogic
 				empiPatientInformation.setFirstName(firstName.toLowerCase());
 				empiPatientInformation.setActivityStatus("Active");
 				empiPatientInformation.setVitalStatus("");
-				empiPatientInformation.setIsFromEMPI("YES");
 				if (empiPatientInformation.getSsn() != null
 						&& empiPatientInformation.getSsn() != "")
 				{

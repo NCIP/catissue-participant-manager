@@ -157,8 +157,7 @@ public class Constants
 	/** The Constant EMPIMAXNOOFPATIENS. */
 	public static final String EMPIMAXNOOFPATIENS = "empi.MaxNoOfPatients";
 
-	/** The Constant PARTICIPANT_IS_FROM_EMPI. */
-	public static final String PARTICIPANT_IS_FROM_EMPI = "EMPI";
+
 
 	/** The Constant PARTICIPANT_EMPI_ID. */
 	public static final String PARTICIPANT_EMPI_ID = "EMPIID";
