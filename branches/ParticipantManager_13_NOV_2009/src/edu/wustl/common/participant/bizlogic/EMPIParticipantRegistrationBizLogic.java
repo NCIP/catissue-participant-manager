@@ -178,11 +178,11 @@ public class EMPIParticipantRegistrationBizLogic
 	public void sendMergeMessage(IParticipant participant, String oldParticipantId, String oldEMPIID)
 			throws ApplicationException
 	{
-		sendMRNMergeMgs(participant, oldParticipantId);
 		if (!participant.getEmpiId().equals(oldEMPIID))
 		{
 			sendEMPIMIdMergeMgs(participant, oldEMPIID);
 		}
+		sendMRNMergeMgs(participant, oldParticipantId);
 	}
 
 	/**
@@ -322,7 +322,7 @@ public class EMPIParticipantRegistrationBizLogic
 		String empiIdZeroAppnd = getZeroAppendedEMPIId(eMPI);
 		String eMPIID = empiIdZeroAppnd + "^^^64";
 		String mrn = particiapntId + "^^^" + Constants.CLINPORTAL_FACILITY_ID + "^U";
-		String mgrSegment = "MGR|" + mrn + "||" + eMPIID;
+		String mgrSegment = "MRG|" + mrn + "|||" + eMPIID;
 		return mgrSegment;
 	}
 

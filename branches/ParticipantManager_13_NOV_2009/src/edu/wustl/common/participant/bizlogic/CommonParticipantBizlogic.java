@@ -629,6 +629,7 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 			}
 			if (!participant.getEmpiIdStatus().equals(Constants.EMPI_ID_CREATED))
 			{
+				participant.setEmpiId("");
 				sendHL7RegMes(participant, tempararyPartiId);
 			}
 		}

@@ -126,8 +126,7 @@ public class ParticipantMatchingBizLogic
 						.getVitalStatus(), 11));
 				columnValueBeanList.add(new ColumnValueBean("PARTICIPANT_MRN", mrnValue, 11));
 				columnValueBeanList.add(new ColumnValueBean("PARTICIPANT_RACE", raceValues, 11));
-				columnValueBeanList.add(new ColumnValueBean("IS_FROM_EMPI", patientInformation
-						.getIsFromEMPI(), 11));
+				//columnValueBeanList.add(new ColumnValueBean("IS_FROM_EMPI", patientInformation.getIsFromEMPI(), 11));
 				columnValueBeanList.add(new ColumnValueBean("SEARCHED_PARTICIPANT_ID", participant
 						.getId(), 22));
 				if (patientInformation.getDob() == null
@@ -135,16 +134,16 @@ public class ParticipantMatchingBizLogic
 				{
 					query = "INSERT INTO CATISSUE_MATCHED_PARTICIPANT(PARTICIPANT_ID,EMPI_ID,LAST_NAME,FIRST_"
 							+ "NAME,MIDDLE_NAME,GENDER,SOCIAL_SECURITY_NUMBER,ACTIVITY_STATUS,VITAL_STATUS,PART"
-							+ "ICIPANT_MRN,PARTICIPANT_RACE,IS_FROM_EMPI,SEARCHED_PARTICIPANT_ID) VALUES(?,?,?,"
-							+ "?,?,?,?,?,?,?,?,?,?)";
+							+ "ICIPANT_MRN,PARTICIPANT_RACE,SEARCHED_PARTICIPANT_ID) VALUES(?,?,?,"
+							+ "?,?,?,?,?,?,?,?,?)";
 				}
 				else if (patientInformation.getDob() == null
 						&& patientInformation.getDeathDate() != null)
 				{
 					query = "INSERT INTO CATISSUE_MATCHED_PARTICIPANT(PARTICIPANT_ID,EMPI_ID,LAST_NAME,FIRST_"
 							+ "NAME,MIDDLE_NAME,GENDER,SOCIAL_SECURITY_NUMBER,ACTIVITY_STATUS,VITAL_STATUS,PART"
-							+ "ICIPANT_MRN,PARTICIPANT_RACE,IS_FROM_EMPI,SEARCHED_PARTICIPANT_ID,DEATH_DATE) VA"
-							+ "LUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+							+ "ICIPANT_MRN,PARTICIPANT_RACE,SEARCHED_PARTICIPANT_ID,DEATH_DATE) VA"
+							+ "LUES(?,?,?,?,?,?,?,?,?,?,?,?,?)";
 					columnValueBeanList.add(new ColumnValueBean("DEATH_DATE", patientInformation
 							.getDeathDate(), 13));
 				}
@@ -153,8 +152,8 @@ public class ParticipantMatchingBizLogic
 				{
 					query = "INSERT INTO CATISSUE_MATCHED_PARTICIPANT(PARTICIPANT_ID,EMPI_ID,LAST_NAME,FIRST_"
 							+ "NAME,MIDDLE_NAME,GENDER,SOCIAL_SECURITY_NUMBER,ACTIVITY_STATUS,VITAL_STATUS,PART"
-							+ "ICIPANT_MRN,PARTICIPANT_RACE,IS_FROM_EMPI,SEARCHED_PARTICIPANT_ID,BIRTH_DATE) VA"
-							+ "LUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+							+ "ICIPANT_MRN,PARTICIPANT_RACE,SEARCHED_PARTICIPANT_ID,BIRTH_DATE) VA"
+							+ "LUES(?,?,?,?,?,?,?,?,?,?,?,?,?)";
 					columnValueBeanList.add(new ColumnValueBean("BIRTH_DATE", patientInformation
 							.getDob(), 13));
 				}
@@ -162,8 +161,8 @@ public class ParticipantMatchingBizLogic
 				{
 					query = "INSERT INTO CATISSUE_MATCHED_PARTICIPANT(PARTICIPANT_ID,EMPI_ID,LAST_NAME,FIRST_"
 							+ "NAME,MIDDLE_NAME,GENDER,SOCIAL_SECURITY_NUMBER,ACTIVITY_STATUS,VITAL_STATUS,PART"
-							+ "ICIPANT_MRN,PARTICIPANT_RACE,IS_FROM_EMPI,SEARCHED_PARTICIPANT_ID,BIRTH_DATE,DEA"
-							+ "TH_DATE) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+							+ "ICIPANT_MRN,PARTICIPANT_RACE,SEARCHED_PARTICIPANT_ID,BIRTH_DATE,DEA"
+							+ "TH_DATE) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 					columnValueBeanList.add(new ColumnValueBean("BIRTH_DATE", patientInformation
 							.getDob(), 13));
 					columnValueBeanList.add(new ColumnValueBean("DEATH_DATE", patientInformation
