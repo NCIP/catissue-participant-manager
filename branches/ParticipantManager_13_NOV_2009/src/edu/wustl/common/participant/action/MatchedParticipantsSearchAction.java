@@ -35,7 +35,7 @@ import edu.wustl.common.util.logger.Logger;
 import edu.wustl.dao.JDBCDAO;
 import edu.wustl.dao.exception.DAOException;
 
-// TODO: Auto-generated Javadoc
+
 /**
  * @author geeta_jaggal
  *
@@ -48,14 +48,8 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 
 	/** The Constant logger. */
 	private static final  Logger logger = Logger.getCommonLogger(MatchedParticipantsSearchAction.class);
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see
-	 * edu.wustl.common.action.CommonSearchAction#execute(org.apache.struts.
-	 * action.ActionMapping, org.apache.struts.action.ActionForm,
-	 * javax.servlet.http.HttpServletRequest,
-	 * javax.servlet.http.HttpServletResponse)
+	/**
+	 * For displaying the matched participants from eMPI
 	 */
 	public ActionForward execute(ActionMapping mapping, ActionForm form,
 			HttpServletRequest request, HttpServletResponse response) throws ApplicationException
@@ -278,14 +272,14 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 	 * @throws BizLogicException the biz logic exception
 	 * @throws Exception the exception
 	 */
-	private Collection getPartiMediIdColnCollection(String mrnString) throws BizLogicException
+	private Collection<IParticipantMedicalIdentifier<IParticipant,ISite>> getPartiMediIdColnCollection(String mrnString) throws BizLogicException
 	{
-		Collection partiMediIdColn = new LinkedHashSet();
+		Collection<IParticipantMedicalIdentifier<IParticipant,ISite>> partiMediIdColn = new LinkedHashSet<IParticipantMedicalIdentifier<IParticipant,ISite>>();
 		String values[] = mrnString.split(",");
 		for (int i = 0; i < values.length; i++)
 		{
 			String value = values[i];
-			IParticipantMedicalIdentifier participantMedicalIdentifier = getParticipantMedicalIdentifierObj(value);
+			IParticipantMedicalIdentifier<IParticipant,ISite> participantMedicalIdentifier = getParticipantMedicalIdentifierObj(value);
 			partiMediIdColn.add(participantMedicalIdentifier);
 		}
 
@@ -302,10 +296,10 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 	 * @throws BizLogicException the biz logic exception
 	 * @throws Exception the exception
 	 */
-	private IParticipantMedicalIdentifier getParticipantMedicalIdentifierObj(String value) throws BizLogicException
+	private IParticipantMedicalIdentifier<IParticipant,ISite> getParticipantMedicalIdentifierObj(String value) throws BizLogicException
 
 	{
-		IParticipantMedicalIdentifier participantMedicalIdentifier = (IParticipantMedicalIdentifier) ParticipantManagerUtility
+		IParticipantMedicalIdentifier<IParticipant,ISite> participantMedicalIdentifier = (IParticipantMedicalIdentifier<IParticipant,ISite>) ParticipantManagerUtility
 				.getPMIInstance();
 		String values[] = value.split(":");
 		String mrn = values[0];
