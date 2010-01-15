@@ -301,7 +301,7 @@ public class EMPIParticipantRegistrationBizLogic
 		String dateTime = getDateTime();
 		String msgSegment = getHL7MSHSegment(msgControlId, dateTime, eventTypeCode);
 		String evnSegment = getHL7EVNSegment(dateTime, eventTypeCode);
-		String pid = getHL7PIDSegment(participant);
+		String pid = getHL7PIDSegment(participant,eventTypeCode);
 		hl7Segment = msgSegment + "\r" + evnSegment + "\r" + pid;
 		logger.info(msgSegment + "\n");
 		logger.info(evnSegment + "\n");
@@ -388,7 +388,7 @@ public class EMPIParticipantRegistrationBizLogic
 	 *
 	 * @throws Exception the exception
 	 */
-	private String getHL7PIDSegment(IParticipant participant) throws ApplicationException
+	private String getHL7PIDSegment(IParticipant participant,String eventTypeCode) throws ApplicationException
 	{
 		String pid = null;
 		try
@@ -408,6 +408,10 @@ public class EMPIParticipantRegistrationBizLogic
 			{
 				String empiIdZeroAppnd = getZeroAppendedEMPIId(participant.getEmpiId());
 				empiIdInPID2 = empiIdZeroAppnd + "^^^64";
+			}
+			if(Constants.HL7_MERGE_EVENT_TYPE_A34.equals(eventTypeCode)){
+				// for merge messages PID.1 field should have value :1
+				mrn="1";
 			}
 			pid = "PID|" + mrn + "|" + empiIdInPID2 + "|" + mrn + "^^^" + facilityId + "^U||"
 					+ lastName.toUpperCase(Locale.US) + "^" + firstName.toUpperCase(Locale.US)
