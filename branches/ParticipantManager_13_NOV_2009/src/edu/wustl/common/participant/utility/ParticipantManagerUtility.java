@@ -52,7 +52,6 @@ import edu.wustl.dao.query.generator.ColumnValueBean;
 import edu.wustl.patientLookUp.domain.PatientInformation;
 import edu.wustl.patientLookUp.util.PropertyHandler;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Class ParticipantManagerUtility.
  */
@@ -146,16 +145,16 @@ public class ParticipantManagerUtility
 	 *
 	 * @throws Exception the exception
 	 */
-	public static IParticipantMedicalIdentifier getParticipantMedicalIdentifierObj(String mrn,
+	public static IParticipantMedicalIdentifier<IParticipant,ISite> getParticipantMedicalIdentifierObj(String mrn,
 			String facilityId) throws Exception
 	{
 
 		ISite site = null;
 		site = getSiteObject(facilityId);
-		IParticipantMedicalIdentifier participantMedicalIdentifier = null;
+		IParticipantMedicalIdentifier<IParticipant,ISite> participantMedicalIdentifier = null;
 		if (site != null)
 		{
-			participantMedicalIdentifier = (IParticipantMedicalIdentifier) getPMIInstance();
+			participantMedicalIdentifier = (IParticipantMedicalIdentifier<IParticipant,ISite>) getPMIInstance();
 			participantMedicalIdentifier.setMedicalRecordNumber(mrn);
 			participantMedicalIdentifier.setSite(site);
 		}
@@ -536,7 +535,7 @@ public class ParticipantManagerUtility
 		{
 			jdbcDao = getJDBCDAO();
 			LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
-			LinkedList columnValueBeanList = new LinkedList();
+			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
 			columnValueBeanList.add(new ColumnValueBean(status));
 			columnValueBeanList.add(new ColumnValueBean(participantId));
 			columnValueBeans.add(columnValueBeanList);
@@ -695,11 +694,6 @@ public class ParticipantManagerUtility
 			if (!statusList.isEmpty() && statusList.get(0) != "")
 			{
 				List idList = (List) statusList.get(0);
-				//if (!idList.isEmpty() && ((String) idList.get(0)).equals("1"))
-				//{
-				//status = true;
-				//}
-
 				if (!idList.isEmpty() && ((String) idList.get(0)) != "")
 				{
 					for (int i = 0; i < idList.size(); i++)
@@ -741,7 +735,7 @@ public class ParticipantManagerUtility
 			{
 				dao = getJDBCDAO();
 				LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
-				LinkedList columnValueBeanList = new LinkedList();
+				LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
 				columnValueBeanList.add(new ColumnValueBean(participantId));
 				columnValueBeans.add(columnValueBeanList);
 				String query = (new StringBuilder())
@@ -911,8 +905,7 @@ public class ParticipantManagerUtility
 				{
 					break;
 				}
-				IParticipantMedicalIdentifier participantMedicalIdentifier = (IParticipantMedicalIdentifier) pmiItr
-						.next();
+				IParticipantMedicalIdentifier<IParticipant,ISite> participantMedicalIdentifier = (IParticipantMedicalIdentifier<IParticipant,ISite>) pmiItr.next();
 				if (participantMedicalIdentifier.getSite() != null
 						&& ((ISite) participantMedicalIdentifier.getSite()).getId() != null)
 				{
@@ -1058,7 +1051,7 @@ public class ParticipantManagerUtility
 				{
 					break;
 				}
-				IParticipantMedicalIdentifier participantMedicalIdentifier = (IParticipantMedicalIdentifier) itr
+				IParticipantMedicalIdentifier<IParticipant,ISite> participantMedicalIdentifier = (IParticipantMedicalIdentifier<IParticipant,ISite>) itr
 						.next();
 				if (participantMedicalIdentifier.getMedicalRecordNumber() != null)
 				{
@@ -1084,7 +1077,7 @@ public class ParticipantManagerUtility
 				{
 					break;
 				}
-				IRace race = (IRace) itr.next();
+				IRace<IParticipant> race = (IRace<IParticipant>) itr.next();
 				if (race != null)
 				{
 					participantInfoRaceCollection.add(race.getRaceName());
@@ -1115,7 +1108,7 @@ public class ParticipantManagerUtility
 		{
 			jdbcdao = getJDBCDAO();
 			LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
-			LinkedList columnValueBeanList = new LinkedList();
+			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList();
 			columnValueBeanList.add(new ColumnValueBean(id));
 			columnValueBeans.add(columnValueBeanList);
 			String query = (new StringBuilder()).append(
