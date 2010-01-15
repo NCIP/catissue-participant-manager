@@ -404,6 +404,7 @@ public class EMPIParticipantRegistrationBizLogic
 			String empiIdInPID2 = "";
 			String mrn = getMRN(participant.getId());
 			String pan = getPAN(participant.getId());
+			String pidFirstField="";
 			if (participant.getEmpiId() != null && participant.getEmpiId() != "")
 			{
 				String empiIdZeroAppnd = getZeroAppendedEMPIId(participant.getEmpiId());
@@ -411,9 +412,12 @@ public class EMPIParticipantRegistrationBizLogic
 			}
 			if(Constants.HL7_MERGE_EVENT_TYPE_A34.equals(eventTypeCode)){
 				// for merge messages PID.1 field should have value :1
-				mrn="1";
+				pidFirstField="1";
 			}
-			pid = "PID|" + mrn + "|" + empiIdInPID2 + "|" + mrn + "^^^" + facilityId + "^U||"
+			if(Constants.HL7_REG_EVENT_TYPE.equals(eventTypeCode)){
+				pidFirstField=mrn;
+			}
+			pid = "PID|" + pidFirstField + "|" + empiIdInPID2 + "|" + mrn + "^^^" + facilityId + "^U||"
 					+ lastName.toUpperCase(Locale.US) + "^" + firstName.toUpperCase(Locale.US)
 					+ "^" + middleName.toUpperCase(Locale.US) + "||" + dateOfBirth + "|" + gender
 					+ "||" + raceCode + "||||||||" + pan + "^^^" + facilityId + "|"
