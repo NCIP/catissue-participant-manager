@@ -25,7 +25,7 @@ import edu.wustl.dao.daofactory.IDAOFactory;
 import edu.wustl.dao.exception.DAOException;
 import edu.wustl.patientLookUp.util.PropertyHandler;
 
-// TODO: Auto-generated Javadoc
+
 /**
  * The Class EMPIParticipantRegistrationBizLogic.
  *
@@ -678,7 +678,7 @@ public class EMPIParticipantRegistrationBizLogic
 	 *
 	 * @throws Exception the exception
 	 */
-	private String getRaceCode(Collection participantRaceCollection) throws ApplicationException
+	private String getRaceCode(Collection<IRace<IParticipant>> participantRaceCollection) throws ApplicationException
 	{
 		String raceName = null;
 		String raceCode = null;
@@ -721,16 +721,16 @@ public class EMPIParticipantRegistrationBizLogic
 	 *
 	 * @return the race name
 	 */
-	private String getRaceName(Collection participantRaceCollection)
+	private String getRaceName(Collection<IRace<IParticipant>> participantRaceCollection)
 	{
-		IRace race = null;
+		IRace<IParticipant> race = null;
 		String raceName = null;
 		if (participantRaceCollection != null && !participantRaceCollection.isEmpty())
 		{
-			Iterator itr = participantRaceCollection.iterator();
+			Iterator<IRace<IParticipant>> itr = participantRaceCollection.iterator();
 			while (itr.hasNext())
 			{
-				race = (IRace) itr.next();
+				race = (IRace<IParticipant>) itr.next();
 				if (race != null)
 				{
 					raceName = race.getRaceName();
