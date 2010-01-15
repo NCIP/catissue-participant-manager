@@ -1,8 +1,6 @@
 
 package edu.wustl.common.participant.action;
 
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -14,10 +12,10 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
+
 import edu.wustl.common.action.BaseAction;
 import edu.wustl.common.actionForm.AbstractActionForm;
 import edu.wustl.common.exception.ApplicationException;
-import edu.wustl.common.exception.BizLogicException;
 import edu.wustl.common.factory.AbstractFactoryConfig;
 import edu.wustl.common.factory.IDomainObjectFactory;
 import edu.wustl.common.lookup.DefaultLookupResult;
@@ -28,7 +26,7 @@ import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.util.logger.Logger;
 import edu.wustl.dao.exception.DAOException;
 
-// TODO: Auto-generated Javadoc
+
 /**
  * @author geeta_jaggal
  *
@@ -38,8 +36,8 @@ import edu.wustl.dao.exception.DAOException;
 public class ParticipantLookupAction extends BaseAction
 {
 
-	/* (non-Javadoc)
-	 * @see edu.wustl.common.action.BaseAction#executeAction(org.apache.struts.action.ActionMapping, org.apache.struts.action.ActionForm, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
+	/**
+	 * Method for performing participant look up.
 	 */
 	public ActionForward executeAction(ActionMapping mapping, ActionForm form,
 			HttpServletRequest request, HttpServletResponse response) throws ApplicationException
@@ -70,7 +68,7 @@ public class ParticipantLookupAction extends BaseAction
 				if (isCallToLkupLgic)
 				{
 					List<DefaultLookupResult> matchPartpantLst = getListOfMatchingParticipants(
-							participant, request,participantForm.getCpId());
+							participant, request, participantForm.getCpId());
 
 					if (!matchPartpantLst.isEmpty())
 					{
@@ -122,12 +120,12 @@ public class ParticipantLookupAction extends BaseAction
 	 * @throws Exception the exception
 	 */
 	private List<DefaultLookupResult> getListOfMatchingParticipants(IParticipant participant,
-			HttpServletRequest request,Long csId) throws Exception
+			HttpServletRequest request, Long csId) throws Exception
 
 	{
 		edu.wustl.common.beans.SessionDataBean sessionDataBean = getSessionData(request);
 		List<DefaultLookupResult> matchPartpantLst = ParticipantManagerUtility
-				.getListOfMatchingParticipants(participant, sessionDataBean, null,csId);
+				.getListOfMatchingParticipants(participant, sessionDataBean, null, csId);
 		return matchPartpantLst;
 	}
 
@@ -176,7 +174,7 @@ public class ParticipantLookupAction extends BaseAction
 		}
 		return matchPartpantLstFiltred;
 	}
-*/
+	*/
 	/**
 	 * Store lists.
 	 *
