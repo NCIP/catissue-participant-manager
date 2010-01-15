@@ -31,7 +31,7 @@ import edu.wustl.common.util.Utility;
 import edu.wustl.common.util.logger.Logger;
 import edu.wustl.dao.exception.DAOException;
 
-// TODO: Auto-generated Javadoc
+
 /**
  * The Class ParticipantEMPIGenerationAction.
  *
@@ -44,8 +44,8 @@ public class ParticipantEMPIGenerationAction extends CommonAddEditAction
 	/** The logger. */
 	private static final  Logger logger = Logger.getCommonLogger(ParticipantEMPIGenerationAction.class);
 
-	/* (non-Javadoc)
-	 * @see edu.wustl.common.action.CommonAddEditAction#execute(org.apache.struts.action.ActionMapping, org.apache.struts.action.ActionForm, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
+	/**
+	 *  Method for generating eMPI id for the participant.
 	 */
 	public ActionForward execute(ActionMapping mapping, ActionForm form,
 			HttpServletRequest request, HttpServletResponse response)
