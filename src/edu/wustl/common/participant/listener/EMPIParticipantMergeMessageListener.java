@@ -18,7 +18,7 @@ import edu.wustl.dao.JDBCDAO;
 import edu.wustl.dao.exception.DAOException;
 import edu.wustl.dao.query.generator.ColumnValueBean;
 
-// TODO: Auto-generated Javadoc
+
 /**
  * The listener interface for receiving EMPIParticipantMergeMessage events.
  * The class that is interested in processing a EMPIParticipantMergeMessage
@@ -38,14 +38,14 @@ public class EMPIParticipantMergeMessageListener implements MessageListener
 			.getCommonLogger(EMPIParticipantMergeMessageListener.class);
 
 
-	/*
-	 * (non-Javadoc)
+	/**
 	 *
-	 * @see javax.jms.MessageListener#onMessage(javax.jms.Message)
+	 * This method will be called as soon as the participant demographic message arrives in the queue.
+	 * Read teh message from queue and update the participant.
+	 *
 	 */
 	public void onMessage(Message message)
 	{
-		// TODO Auto-generated method stub
 		String token = null;
 		String hl7EventType = "";
 		String mrgEmpiId = "";
@@ -107,14 +107,14 @@ public class EMPIParticipantMergeMessageListener implements MessageListener
 		}
 		catch (DAOException e)
 		{
-			// TODO Auto-generated catch block
+
 			logger.info("Error while storing the following participant merge messages\n"
 					+ mergeMessage);
 			logger.info(e.getMessage());
 		}
 		catch (JMSException exp)
 		{
-			// TODO Auto-generated catch block
+
 			logger.error(exp.getMessage());
 		}
 	}
@@ -225,7 +225,7 @@ public class EMPIParticipantMergeMessageListener implements MessageListener
 			}
 			insQuery = "INSERT INTO PARTICIPANT_MERGE_MESSAGES VALUES(?,?,?,?,?)";
 			LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
-			LinkedList columnValueBeanList = new LinkedList();
+			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
 			columnValueBeanList.add(new ColumnValueBean("IDENTIFIER", Long.valueOf(idenifier), 3));
 			columnValueBeanList.add(new ColumnValueBean("MESSAGE_TYPE", messageType, 21));
 			columnValueBeanList.add(new ColumnValueBean("MESSAGE_DATE", date, 13));
