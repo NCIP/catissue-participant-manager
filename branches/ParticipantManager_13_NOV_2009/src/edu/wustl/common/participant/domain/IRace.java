@@ -1,7 +1,7 @@
 
 package edu.wustl.common.participant.domain;
 
-// TODO: Auto-generated Javadoc
+
 /**
  * The Interface IRace.
  */

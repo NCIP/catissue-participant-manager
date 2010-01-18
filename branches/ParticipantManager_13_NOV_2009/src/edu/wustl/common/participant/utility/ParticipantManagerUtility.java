@@ -115,7 +115,6 @@ public class ParticipantManagerUtility
 		}
 		catch (JMSException e)
 		{
-			// TODO Auto-generated catch block
 			logger
 					.error(" -------------  ERROR WHILE INITIALISING THE MESSAGE QUEUES \n \n ------------- ");
 			logger.info(e.getMessage());
