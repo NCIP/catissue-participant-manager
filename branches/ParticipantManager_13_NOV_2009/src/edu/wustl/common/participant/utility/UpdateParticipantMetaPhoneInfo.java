@@ -113,7 +113,7 @@ public final class UpdateParticipantMetaPhoneInfo
 			throws DAOException
 	{
 		LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
-		LinkedList columnValueBeanList = new LinkedList();
+		LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
 		columnValueBeanList.add(new ColumnValueBean(lNameMetaPhone));
 		columnValueBeanList.add(new ColumnValueBean(identifier));
 		columnValueBeans.add(columnValueBeanList);
