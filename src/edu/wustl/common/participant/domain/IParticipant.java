@@ -4,7 +4,6 @@ package edu.wustl.common.participant.domain;
 import java.util.Collection;
 import java.util.Date;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Interface IParticipant.
  */
