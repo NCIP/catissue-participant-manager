@@ -11,7 +11,7 @@ import com.ibm.mq.MQQueue;
 import com.ibm.mq.MQQueueManager;
 import edu.wustl.common.util.logger.Logger;
 
-// TODO: Auto-generated Javadoc
+
 /**
  * The Class MQMessageWriter.
  */

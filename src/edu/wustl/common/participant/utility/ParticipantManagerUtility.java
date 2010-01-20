@@ -52,6 +52,7 @@ import edu.wustl.dao.query.generator.ColumnValueBean;
 import edu.wustl.patientLookUp.domain.PatientInformation;
 import edu.wustl.patientLookUp.util.PropertyHandler;
 
+// TODO: Auto-generated Javadoc
 /**
  * The Class ParticipantManagerUtility.
  */
@@ -287,6 +288,7 @@ public class ParticipantManagerUtility
 	 * @param participant the participant
 	 * @param sessionDataBean the session data bean
 	 * @param lookupAlgorithm the lookup algorithm
+	 * @param linkedCSCPId the linked cscp id
 	 *
 	 * @return the list of matching participants
 	 *
@@ -314,12 +316,20 @@ public class ParticipantManagerUtility
 
 		if (linkedCSCPId != null)
 		{
-			processListForMatchWithinCS(matchParticipantList, linkedCSCPId);
+			matchParticipantList = processListForMatchWithinCS(matchParticipantList, linkedCSCPId);
 		}
 		return matchParticipantList;
 	}
 
-	public static void processListForMatchWithinCS(List<DefaultLookupResult> matchPartpantLst,
+	/**
+	 * Process list for match within cs.
+	 *
+	 * @param matchPartpantLst the match partpant lst
+	 * @param csId the cs id
+	 *
+	 * @throws DAOException the DAO exception
+	 */
+	public static List processListForMatchWithinCS(List<DefaultLookupResult> matchPartpantLst,
 			Long csId) throws DAOException
 	{
 		if (ParticipantManagerUtility.isParticipantMatchWithinCSCPEnable(csId))
@@ -327,8 +337,17 @@ public class ParticipantManagerUtility
 			List idList = ParticipantManagerUtility.getPartcipantIdsList(csId);
 			matchPartpantLst = filerMatchedList(matchPartpantLst, idList);
 		}
+		return matchPartpantLst;
 	}
 
+	/**
+	 * Filer matched list.
+	 *
+	 * @param matchPartpantLst the match partpant lst
+	 * @param idList the id list
+	 *
+	 * @return the list< default lookup result>
+	 */
 	public static List<DefaultLookupResult> filerMatchedList(
 			List<DefaultLookupResult> matchPartpantLst, List idList)
 	{
@@ -337,7 +356,7 @@ public class ParticipantManagerUtility
 		Iterator<DefaultLookupResult> itr = matchPartpantLst.iterator();
 		if (!idList.isEmpty() && idList.get(0) != null && String.valueOf(idList.get(0)) != "")
 		{
-			List participantIdList = (List) idList.get(0);
+			List participantIdList = (List) idList ;
 			while (itr.hasNext())
 			{
 				DefaultLookupResult result = (DefaultLookupResult) itr.next();
@@ -351,6 +370,15 @@ public class ParticipantManagerUtility
 		return matchPartpantLstFiltred;
 	}
 
+	/**
+	 * Checks if is participant match within cscp enable.
+	 *
+	 * @param id the id
+	 *
+	 * @return true, if is participant match within cscp enable
+	 *
+	 * @throws DAOException the DAO exception
+	 */
 	public static boolean isParticipantMatchWithinCSCPEnable(Long id) throws DAOException
 	{
 		boolean status = false;
@@ -384,9 +412,19 @@ public class ParticipantManagerUtility
 		return status;
 	}
 
+	/**
+	 * Gets the partcipant ids list.
+	 *
+	 * @param id the id
+	 *
+	 * @return the partcipant ids list
+	 *
+	 * @throws DAOException the DAO exception
+	 */
 	public static List getPartcipantIdsList(Long id) throws DAOException
 	{
-		List idList = null;
+		List idListArray=null;
+		List<String> idList = new ArrayList<String>();
 		JDBCDAO dao = null;
 		String query = null;
 		try
@@ -394,11 +432,16 @@ public class ParticipantManagerUtility
 			query = "SELECT PARTICIPANT_ID FROM CATISSUE_CLINICAL_STUDY_REG WHERE CLINICAL_STUDY_ID='"
 					+ id + "'";
 			dao = getJDBCDAO();
-			idList = dao.executeQuery(query);
+			idListArray = dao.executeQuery(query);
+			if(!idListArray.isEmpty() && idListArray.get(0)!=""){
+				for(Iterator<List> itr=idListArray.iterator();itr.hasNext();){
+					idList.add(String.valueOf(((List)itr.next()).get(0)));
+				}
+			}
 		}
 		catch (DAOException exp)
 		{
-			// TODO Auto-generated catch block
+
 			throw new DAOException(exp.getErrorKey(), exp, exp.getMsgValues());
 		}
 		finally
