@@ -27,7 +27,7 @@ import edu.wustl.patientLookUp.lookUpServiceBizLogic.PatientInfoLookUpService;
 import edu.wustl.patientLookUp.queryExecutor.SQLQueryExecutorImpl;
 import edu.wustl.patientLookUp.util.PatientLookupException;
 
-// TODO: Auto-generated Javadoc
+
 /**
  * The Class ParticipantLookupLogic.
  *
@@ -160,10 +160,14 @@ public class ParticipantLookupLogic implements LookupLogic
 								.add(participantMedicalIdentifier))
 						{
 							String mrn = (String) iterator.next();
-							String siteId = (String) iterator.next();
+							String siteIdStr = (String) iterator.next();
+							Long siteId =null;
 							String siteName = (String) iterator.next();
 							ISite site = (ISite) ParticipantManagerUtility.getSiteInstance();
-							site.setId(Long.valueOf(siteId));
+							if(siteIdStr!=null && siteIdStr!=""){
+								siteId=Long.valueOf(siteIdStr);
+							}
+							site.setId(siteId);
 							site.setName(siteName);
 							participantMedicalIdentifier = (IParticipantMedicalIdentifier) ParticipantManagerUtility
 									.getPMIInstance();
