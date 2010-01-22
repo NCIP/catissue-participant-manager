@@ -322,7 +322,7 @@ public class EMPIParticipantRegistrationBizLogic
 		String empiIdZeroAppnd = getZeroAppendedEMPIId(eMPI);
 		String eMPIID = empiIdZeroAppnd + "^^^64";
 		String mrn = particiapntId + "^^^" + Constants.CLINPORTAL_FACILITY_ID + "^U";
-		String mgrSegment = "MRG|" + mrn + "|||" + eMPIID;
+		String mgrSegment = "MRG|" + mrn + "|||" + eMPIID+"||||^^^&&";
 		return mgrSegment;
 	}
 
