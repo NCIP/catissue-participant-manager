@@ -51,7 +51,7 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 	/**
 	 * For displaying the matched participants from eMPI
 	 */
-	public ActionForward execute(ActionMapping mapping, ActionForm form,
+	public ActionForward executeXSS(ActionMapping mapping, ActionForm form,
 			HttpServletRequest request, HttpServletResponse response) throws ApplicationException
 	{
 		ActionForward forward = null;
