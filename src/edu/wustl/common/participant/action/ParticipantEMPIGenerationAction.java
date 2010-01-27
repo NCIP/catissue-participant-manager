@@ -47,7 +47,7 @@ public class ParticipantEMPIGenerationAction extends CommonAddEditAction
 	/**
 	 *  Method for generating eMPI id for the participant.
 	 */
-	public ActionForward execute(ActionMapping mapping, ActionForm form,
+	public ActionForward executeXSS(ActionMapping mapping, ActionForm form,
 			HttpServletRequest request, HttpServletResponse response)
 	{
 		ActionForward forward = null;
