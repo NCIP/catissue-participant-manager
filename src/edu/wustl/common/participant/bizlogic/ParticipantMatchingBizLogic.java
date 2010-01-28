@@ -97,7 +97,7 @@ public class ParticipantMatchingBizLogic
 			String raceValues = null;
 			String mrnValue = "";
 			PatientInformation patientInformation = null;
-			LinkedList columnValueBeanList = null;
+			LinkedList<ColumnValueBean> columnValueBeanList = null;
 			LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
  			for (int i = 0; i < matchPartpantLst.size(); i++)
 			{
@@ -105,7 +105,7 @@ public class ParticipantMatchingBizLogic
 				raceValues = getRaceValues(patientInformation.getRaceCollection());
 				mrnValue = getMRNValues(patientInformation
 						.getParticipantMedicalIdentifierCollection());
-				columnValueBeanList = new LinkedList();
+				columnValueBeanList = new LinkedList<ColumnValueBean>();
 				columnValueBeanList.add(new ColumnValueBean("PARTICIPANT_ID", patientInformation
 						.getId(), 22));
 				columnValueBeanList.add(new ColumnValueBean("EMPI_ID", patientInformation.getUpi(),
@@ -199,9 +199,8 @@ public class ParticipantMatchingBizLogic
 			int noOfMathcedPaticipants) throws DAOException
 	{
 		Calendar cal = Calendar.getInstance();
-		java.util.Date date = cal.getTime();
 		LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
-		LinkedList columnValueBeanList = new LinkedList();
+		LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
 		columnValueBeanList.add(new ColumnValueBean(noOfMathcedPaticipants));
 		columnValueBeanList.add(new ColumnValueBean(searchPartiId));
 		columnValueBeans.add(columnValueBeanList);
