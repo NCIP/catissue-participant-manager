@@ -156,7 +156,7 @@ public class EMPIParticipantRegistrationBizLogic
 	public String getRegHL7Message(IParticipant participant) throws ApplicationException
 	{
 		String hl7Message = "";
-		String eventTypeCode = Constants.HL7_REG_EVENT_TYPE;
+		String eventTypeCode = Constants.HL7_REG_EVENT_TYPE_A04;
 		logger.info("\n\nHL7 Message \n \n \n\n\n");
 
 		String commonHL7Segments = getMSHEVNPIDSengment(participant, eventTypeCode);
@@ -237,9 +237,9 @@ public class EMPIParticipantRegistrationBizLogic
 		String hl7Message = "";
 		String eventTypeCode = Constants.HL7_MERGE_EVENT_TYPE_A34;
 		String commonHL7Segments = getMSHEVNPIDSengment(participant, eventTypeCode);
-		String mgrSegment = getHL7MgrSegment(participant.getEmpiId(), oldParticipantId);
-		hl7Message = commonHL7Segments + "\r" + mgrSegment + "\n";
-		logger.info(mgrSegment + "\n");
+		String mrgSegment = getHL7MgrSegment(participant.getEmpiId(), oldParticipantId);
+		hl7Message = commonHL7Segments + "\r" + mrgSegment + "\n";
+		logger.info(mrgSegment + "\n");
 		return hl7Message;
 	}
 
@@ -360,8 +360,14 @@ public class EMPIParticipantRegistrationBizLogic
 	 */
 	private String getHL7MSHSegment(String msgControlId, String dateTime, String eventTypeCode)
 	{
-		String msgSegment = "MSH|^~\\&|CLINPORTAL|CLINPORTAL|ADMISSION|ADT1|" + dateTime + "||ADT^"
+		String msgSegment = null;
+		if(Constants.HL7_REG_EVENT_TYPE_A04.equals(eventTypeCode)){
+			msgSegment = "MSH|^~\\&|CLINPORTAL|CLINPORTAL|ADMISSION|ADT1|" + dateTime + "||ADT^"
 				+ eventTypeCode + "|" + msgControlId + "|P|2.1";
+		}else if(Constants.HL7_MERGE_EVENT_TYPE_A34.equals(eventTypeCode)){
+			msgSegment = "MSH|^~\\&|CLINPORTAL|CLINPORTAL|CDR__S|BJC_SYSTEM|" + dateTime + "||ADT^"
+			+ eventTypeCode + "|" + msgControlId + "|P|2.1";
+		}
 		return msgSegment;
 	}
 
@@ -414,7 +420,7 @@ public class EMPIParticipantRegistrationBizLogic
 				// for merge messages PID.1 field should have value :1
 				pidFirstField="1";
 			}
-			if(Constants.HL7_REG_EVENT_TYPE.equals(eventTypeCode)){
+			if(Constants.HL7_REG_EVENT_TYPE_A04.equals(eventTypeCode)){
 				pidFirstField=mrn;
 			}
 			pid = "PID|" + pidFirstField + "|" + empiIdInPID2 + "|" + mrn + "^^^" + facilityId + "^U||"

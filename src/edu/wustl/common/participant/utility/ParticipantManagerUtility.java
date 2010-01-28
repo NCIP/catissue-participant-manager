@@ -524,7 +524,7 @@ public class ParticipantManagerUtility
 	 *
 	 * @throws BizLogicException the biz logic exception
 	 */
-	public static Object getPMIInstance() throws BizLogicException
+	public static IParticipantMedicalIdentifier<IParticipant,ISite> getPMIInstance() throws BizLogicException
 	{
 		String application = applicationType();
 		Object PMIInstance = null;
@@ -536,7 +536,7 @@ public class ParticipantManagerUtility
 		{
 			PMIInstance = getObject("edu.wustl.catissuecore.domain.ParticipantMedicalIdentifier");
 		}
-		return PMIInstance;
+		return (IParticipantMedicalIdentifier<IParticipant,ISite>)PMIInstance;
 	}
 
 	/**

@@ -46,7 +46,6 @@ import edu.wustl.dao.query.generator.ColumnValueBean;
 import edu.wustl.patientLookUp.util.PatientLookupException;
 import edu.wustl.patientLookUp.util.PropertyHandler;
 
-
 /**
  * * @author geeta_jaggal
  *
@@ -70,7 +69,7 @@ public class EMPIParticipantListener implements MessageListener
 	private Document document;
 
 	/** The parti med id coll. */
-	private Collection<IParticipantMedicalIdentifier<IParticipant,ISite>> partiMedIdColl;
+	private Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> partiMedIdColl;
 
 	/** The participant id. */
 	public String participantId;
@@ -88,7 +87,7 @@ public class EMPIParticipantListener implements MessageListener
 	 *
 	 * @return the parti med id coll
 	 */
-	public Collection<IParticipantMedicalIdentifier<IParticipant,ISite>> getPartiMedIdColl()
+	public Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> getPartiMedIdColl()
 	{
 		return partiMedIdColl;
 	}
@@ -98,7 +97,8 @@ public class EMPIParticipantListener implements MessageListener
 	 *
 	 * @param partiMedIdColl the new parti med id coll
 	 */
-	public void setPartiMedIdColl(Collection<IParticipantMedicalIdentifier<IParticipant,ISite>> partiMedIdColl)
+	public void setPartiMedIdColl(
+			final Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> partiMedIdColl)
 	{
 		this.partiMedIdColl = partiMedIdColl;
 	}
@@ -118,7 +118,7 @@ public class EMPIParticipantListener implements MessageListener
 	 *
 	 * @param participantId the new participant id
 	 */
-	public void setParticipantId(String participantId)
+	public void setParticipantId(final String participantId)
 	{
 		this.participantId = participantId;
 	}
@@ -138,7 +138,7 @@ public class EMPIParticipantListener implements MessageListener
 	 *
 	 * @param document the new document
 	 */
-	public void setDocument(Document document)
+	public void setDocument(final Document document)
 	{
 		this.document = document;
 	}
@@ -146,7 +146,7 @@ public class EMPIParticipantListener implements MessageListener
 	/* (non-Javadoc)
 	 * @see javax.jms.MessageListener#onMessage(javax.jms.Message)
 	 */
-	public void onMessage(Message message)
+	public void onMessage(final Message message)
 	{
 		String personDemoGraphics = null;
 		try
@@ -174,7 +174,7 @@ public class EMPIParticipantListener implements MessageListener
 	 *
 	 * @throws Exception the exception
 	 */
-	public void updateParticipantWithEMPIDetails(String personDemoGraphics) throws Exception
+	public void updateParticipantWithEMPIDetails(final String personDemoGraphics) throws Exception
 	{
 
 		String clinPortalId = null;
@@ -201,14 +201,14 @@ public class EMPIParticipantListener implements MessageListener
 		docEle = document.getDocumentElement();
 		parseDomographicXML(docEle);
 		clinPortalId = getParticipantId();
-		String permanentId = getPermanentId(clinPortalId);
+		final String permanentId = getPermanentId(clinPortalId);
 		oldParticipantId = clinPortalId;
 		if (permanentId != null && permanentId != "")
 		{
 			isGenerateMgrMessage = true;
 			clinPortalId = permanentId;
 		}
-		DefaultBizLogic bizlogic = new DefaultBizLogic();
+		final DefaultBizLogic bizlogic = new DefaultBizLogic();
 		partcipantObj = (IParticipant) bizlogic.retrieve(sourceObjectName, Long.valueOf(Long
 				.parseLong(clinPortalId)));
 		oldEMPIID = String.valueOf(partcipantObj.getEmpiId());
@@ -223,7 +223,7 @@ public class EMPIParticipantListener implements MessageListener
 			updateParticipant(docEle, partcipantObj, sessionData);
 			if (isGenerateMgrMessage)
 			{
-				EMPIParticipantRegistrationBizLogic eMPIPartiReg = new EMPIParticipantRegistrationBizLogic();
+				final EMPIParticipantRegistrationBizLogic eMPIPartiReg = new EMPIParticipantRegistrationBizLogic();
 				eMPIPartiReg.sendMergeMessage(partcipantObj, oldParticipantId, oldEMPIID);
 			}
 		}
@@ -243,7 +243,7 @@ public class EMPIParticipantListener implements MessageListener
 	 * @throws DAOException the DAO exception
 	 * @throws SQLException the SQL exception
 	 */
-	private String getPermanentId(String clinPortalId) throws DAOException, SQLException
+	private String getPermanentId(final String clinPortalId) throws DAOException, SQLException
 	{
 		String permanentId = null;
 
@@ -252,14 +252,11 @@ public class EMPIParticipantListener implements MessageListener
 		try
 		{
 			jdbcdao = ParticipantManagerUtility.getJDBCDAO();
-			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
+			final LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
 			columnValueBeanList.add(new ColumnValueBean(clinPortalId));
-			String query = (new StringBuilder()).append(
-			"SELECT PERMANENT_PARTICIPANT_ID FROM PARTICIPANT_EMPI_ID_MAPPING WHERE TEMPARARY_PARTICIPANT_ID=?")
-			.toString();
+			String query = "SELECT PERMANENT_PARTICIPANT_ID FROM PARTICIPANT_EMPI_ID_MAPPING WHERE TEMPARARY_PARTICIPANT_ID=?";
 
-			result = jdbcdao
-					.getResultSet(query, columnValueBeanList, null);
+			result = jdbcdao.getResultSet(query, columnValueBeanList, null);
 			if (result != null)
 			{
 				while (result.next())
@@ -288,18 +285,18 @@ public class EMPIParticipantListener implements MessageListener
 	 * @throws BizLogicException the biz logic exception
 	 * @throws DAOException the DAO exception
 	 */
-	private void updateParticipant(Element docEle, IParticipant partcipantObj,
-			SessionDataBean sessionData) throws PatientLookupException, BizLogicException,
+	private void updateParticipant(final Element docEle, final IParticipant partcipantObj,
+			final SessionDataBean sessionData) throws PatientLookupException, BizLogicException,
 			DAOException
 	{
 		IParticipant participant = null;
 		String gender = null;
-		Collection<IParticipantMedicalIdentifier<IParticipant,ISite>> partiMedicalIdColl = null;
+		Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> partiMedicalIdColl = null;
 		if (partcipantObj != null)
 		{
-			String personUpi = docEle.getElementsByTagName("personUpi").item(0).getFirstChild()
+			final String personUpi = docEle.getElementsByTagName("personUpi").item(0).getFirstChild()
 					.getNodeValue();
-			NodeList childNodeList = docEle.getElementsByTagName("demographics").item(0)
+			final NodeList childNodeList = docEle.getElementsByTagName("demographics").item(0)
 					.getChildNodes();
 			for (int i = 0; i < childNodeList.getLength(); i++)
 			{
@@ -308,8 +305,8 @@ public class EMPIParticipantListener implements MessageListener
 						&& Constants.EMPI_DEMOGRAPHIC_XML_GENDER.equals(childNodeList.item(i)
 								.getNodeName()))
 				{
-					Element ele = (Element) childNodeList.item(i);
-					String value = getNodeValue(ele, "id");
+					final Element ele = (Element) childNodeList.item(i);
+					final String value = getNodeValue(ele, "id");
 					gender = PropertyHandler.getValue(value);
 					partcipantObj.setGender(gender);
 				}
@@ -325,7 +322,7 @@ public class EMPIParticipantListener implements MessageListener
 			partcipantObj.setEmpiId(personUpi);
 			partcipantObj.setEmpiIdStatus(Constants.EMPI_ID_CREATED);
 			partcipantObj.setParticipantMedicalIdentifierCollection(partiMedicalIdColl);
-			CommonParticipantBizlogic bizlogic = new CommonParticipantBizlogic();
+			final CommonParticipantBizlogic bizlogic = new CommonParticipantBizlogic();
 			bizlogic.update(partcipantObj, participant, sessionData);
 
 			logger.info("\n\n\n\n\nPARTIICPANT SUCCESSFULLY UPDATED WITH  EMPI \n\n\n\n\n");
@@ -338,7 +335,7 @@ public class EMPIParticipantListener implements MessageListener
 	 * @param partcipantObj the partcipant obj
 	 * @param childNode the child node
 	 */
-	private void setRaceCollection(IParticipant partcipantObj, Node childNode)
+	private void setRaceCollection(final IParticipant partcipantObj, final Node childNode)
 	{
 		label0 :
 		{
@@ -348,7 +345,7 @@ public class EMPIParticipantListener implements MessageListener
 			{
 				break label0;
 			}
-			Iterator itr = partcipantObj.getRaceCollection().iterator();
+			final Iterator itr = partcipantObj.getRaceCollection().iterator();
 			IRace<IParticipant> race;
 			do
 			{
@@ -377,12 +374,12 @@ public class EMPIParticipantListener implements MessageListener
 	 * @throws SAXException the SAX exception
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
-	private Document getDocument(String hl7MessageFromQueue) throws ParserConfigurationException,
+	private Document getDocument(final String hl7MessageFromQueue) throws ParserConfigurationException,
 			SAXException, IOException
 	{
 		Document document = null;
-		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-		DocumentBuilder docBuilder = dbf.newDocumentBuilder();
+		final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+		final DocumentBuilder docBuilder = dbf.newDocumentBuilder();
 		document = docBuilder.parse(new InputSource(new StringReader(hl7MessageFromQueue)));
 		setDocument(document);
 		return document;
@@ -396,10 +393,10 @@ public class EMPIParticipantListener implements MessageListener
 	 *
 	 * @return the node value
 	 */
-	public String getNodeValue(Element ele, String nodeName)
+	public String getNodeValue(final Element ele, final String nodeName)
 	{
-		NodeList list1 = ele.getElementsByTagName(nodeName);
-		Element element1 = (Element) list1.item(0);
+		final NodeList list1 = ele.getElementsByTagName(nodeName);
+		final Element element1 = (Element) list1.item(0);
 		return element1.getFirstChild().getNodeValue();
 	}
 
@@ -411,21 +408,22 @@ public class EMPIParticipantListener implements MessageListener
 	 *
 	 * @return the race collection
 	 */
-	private Collection<IRace<IParticipant>> getRaceCollection(Node childNode, IParticipant partcipantObj)
+	private Collection<IRace<IParticipant>> getRaceCollection(final Node childNode,
+			final IParticipant partcipantObj)
 	{
-		NodeList subChildNodes = childNode.getChildNodes();
-		Collection<IRace<IParticipant>> raceCollection = new LinkedHashSet<IRace<IParticipant>>();
+		final NodeList subChildNodes = childNode.getChildNodes();
+		final Collection<IRace<IParticipant>> raceCollection = new LinkedHashSet<IRace<IParticipant>>();
 		try
 		{
 			for (int p = 0; p < subChildNodes.getLength(); p++)
 			{
 				if (subChildNodes.item(p).getNodeName().equals("race"))
 				{
-					Element ele = (Element) subChildNodes.item(p);
-					String raceId = getNodeValue(ele, "id");
-					String raceName = PropertyHandler.getValue(raceId);
-					Object raceInstance = ParticipantManagerUtility.getRaceInstance();
-					IRace<IParticipant> race = (IRace<IParticipant>) raceInstance;
+					final Element ele = (Element) subChildNodes.item(p);
+					final String raceId = getNodeValue(ele, "id");
+					final String raceName = PropertyHandler.getValue(raceId);
+					final Object raceInstance = ParticipantManagerUtility.getRaceInstance();
+					final IRace<IParticipant> race = (IRace<IParticipant>) raceInstance;
 					race.setRaceName(raceName);
 					race.setParticipant(partcipantObj);
 					raceCollection.add(race);
@@ -446,20 +444,22 @@ public class EMPIParticipantListener implements MessageListener
 	 * @param partiMedIdColl the parti med id coll
 	 * @param partcipantObj the partcipant obj
 	 */
-	private void processPartiMedIdColl(Collection<IParticipantMedicalIdentifier<IParticipant,ISite>> partiMedIdColl, IParticipant partcipantObj)
+	private void processPartiMedIdColl(
+			final Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> partiMedIdColl,
+			final IParticipant partcipantObj)
 	{
-		IParticipantMedicalIdentifier<IParticipant,ISite> partMedIdOld = null;
+		IParticipantMedicalIdentifier<IParticipant, ISite> partMedIdOld = null;
 		Iterator itreratorNew = null;
 		boolean MRNNotFound = false;
 		int count = 0;
-		ArrayList<Long> oldMrnIdList = new ArrayList<Long>();
+		final ArrayList<Long> oldMrnIdList = new ArrayList<Long>();
 		if (partiMedIdColl != null && !partiMedIdColl.isEmpty())
 		{
-			Collection partiMedIdCollOld = partcipantObj
+			final Collection partiMedIdCollOld = partcipantObj
 					.getParticipantMedicalIdentifierCollection();
 			if (partiMedIdCollOld != null && !partiMedIdCollOld.isEmpty())
 			{
-				Iterator itreratorOld = partiMedIdCollOld.iterator();
+				final Iterator itreratorOld = partiMedIdCollOld.iterator();
 				do
 				{
 					if (!itreratorOld.hasNext())
@@ -467,13 +467,14 @@ public class EMPIParticipantListener implements MessageListener
 						break;
 					}
 					MRNNotFound = false;
-					partMedIdOld = (IParticipantMedicalIdentifier<IParticipant,ISite>) itreratorOld.next();
+					partMedIdOld = (IParticipantMedicalIdentifier<IParticipant, ISite>) itreratorOld
+							.next();
 					if (partMedIdOld.getMedicalRecordNumber() != null
 							&& partMedIdOld.getSite() != null)
 					{
-						String oldMRN = partMedIdOld.getMedicalRecordNumber();
-						ISite site = (ISite) partMedIdOld.getSite();
-						Long oldSiteID = site.getId();
+						final String oldMRN = partMedIdOld.getMedicalRecordNumber();
+						final ISite site = (ISite) partMedIdOld.getSite();
+						final Long oldSiteID = site.getId();
 						itreratorNew = partiMedIdColl.iterator();
 						do
 						{
@@ -481,10 +482,10 @@ public class EMPIParticipantListener implements MessageListener
 							{
 								break;
 							}
-							IParticipantMedicalIdentifier<IParticipant,ISite> partiMedIdNew = (IParticipantMedicalIdentifier<IParticipant,ISite>) itreratorNew
+							final IParticipantMedicalIdentifier<IParticipant, ISite> partiMedIdNew = (IParticipantMedicalIdentifier<IParticipant, ISite>) itreratorNew
 									.next();
 							ISite siteNew = (ISite) partiMedIdNew.getSite();
-							Long oldSiteIDNew = site.getId();
+							final Long oldSiteIDNew = site.getId();
 							if (oldMRN.equals(partiMedIdNew.getMedicalRecordNumber())
 									&& oldSiteID.equals(oldSiteIDNew))
 							{
@@ -506,21 +507,21 @@ public class EMPIParticipantListener implements MessageListener
 		count = 0;
 		if (partiMedIdColl != null)
 		{
-			Iterator iterator1 = partiMedIdColl.iterator();
+			final Iterator iterator1 = partiMedIdColl.iterator();
 			do
 			{
 				if (!iterator1.hasNext())
 				{
 					break;
 				}
-				IParticipantMedicalIdentifier<IParticipant,ISite> partiMediIdNew = (IParticipantMedicalIdentifier<IParticipant,ISite>) iterator1
+				final IParticipantMedicalIdentifier<IParticipant, ISite> partiMediIdNew = (IParticipantMedicalIdentifier<IParticipant, ISite>) iterator1
 						.next();
 				if (partiMediIdNew.getId() == null)
 				{
 					if (count < oldMrnIdList.size())
 					{
-						partiMediIdNew.setId(Long.valueOf(((Long) oldMrnIdList
-								.get(count)).longValue()));
+						partiMediIdNew.setId(Long.valueOf(((Long) oldMrnIdList.get(count))
+								.longValue()));
 					}
 					count++;
 				}
@@ -536,26 +537,26 @@ public class EMPIParticipantListener implements MessageListener
 	 *
 	 * @throws Exception the exception
 	 */
-	private void parseDomographicXML(Element docEle) throws Exception
+	private void parseDomographicXML(final Element docEle) throws Exception
 	{
-		IParticipantMedicalIdentifier<IParticipant,ISite> participantMedicalIdentifier = null;
-		partiMedIdColl = new LinkedHashSet<IParticipantMedicalIdentifier<IParticipant,ISite>>();
+		IParticipantMedicalIdentifier<IParticipant, ISite> participantMedicalIdentifier = null;
+		partiMedIdColl = new LinkedHashSet<IParticipantMedicalIdentifier<IParticipant, ISite>>();
 		String facilityId = "";
 		String clinPortalId = null;
 		String mrn = "";
-		NodeList attributeGroup = docEle.getElementsByTagName("attributeGroup");
+		final NodeList attributeGroup = docEle.getElementsByTagName("attributeGroup");
 		for (int h = 0; h < attributeGroup.getLength(); h++)
 		{
-			NodeList subChildNodes = attributeGroup.item(h).getChildNodes();
+			final NodeList subChildNodes = attributeGroup.item(h).getChildNodes();
 			for (int p = 0; p < subChildNodes.getLength(); p++)
 			{
 				if (!"attribute".equals(subChildNodes.item(p).getNodeName()))
 				{
 					continue;
 				}
-				Element ele = (Element) subChildNodes.item(p);
-				String element = getNodeValue(ele, "element");
-				String value = getNodeValue(ele, "value");
+				final Element ele = (Element) subChildNodes.item(p);
+				final String element = getNodeValue(ele, "element");
+				final String value = getNodeValue(ele, "value");
 				if ("FacilityID".equals(element))
 				{
 					facilityId = value;
@@ -594,9 +595,9 @@ public class EMPIParticipantListener implements MessageListener
 	 *
 	 * @return the session data bean
 	 */
-	private SessionDataBean getSessionDataBean(IUser validUser)
+	private SessionDataBean getSessionDataBean(final IUser validUser)
 	{
-		SessionDataBean sessionData = new SessionDataBean();
+		final SessionDataBean sessionData = new SessionDataBean();
 		sessionData.setAdmin(validUser.getAdminuser());
 		sessionData.setUserName(validUser.getLoginName());
 		sessionData.setUserId(validUser.getId());
@@ -614,17 +615,15 @@ public class EMPIParticipantListener implements MessageListener
 	 * @throws BizLogicException the biz logic exception
 	 * @throws Exception the exception
 	 */
-	private void checkUserAccount(String loginName) throws BizLogicException, Exception
+	private void checkUserAccount(final String loginName) throws BizLogicException, Exception
 	{
 		if (getUser(loginName, Constants.ACTIVITY_STATUS_CLOSED) != null)
 		{
-			throw new Exception((new StringBuilder()).append(loginName).append(
-					" Closed user. Sending back to the login Page").toString());
+			throw new Exception(loginName+" Closed user. Sending back to the login Page");
 		}
 		else
 		{
-			throw new Exception((new StringBuilder()).append(loginName).append(
-					"Invalid user. Sending back to the login Page").toString());
+			throw new Exception(loginName+"Invalid user. Sending back to the login Page");
 		}
 	}
 
@@ -638,17 +637,17 @@ public class EMPIParticipantListener implements MessageListener
 	 *
 	 * @throws BizLogicException the biz logic exception
 	 */
-	private IUser getUser(String loginName, String activityStatus) throws BizLogicException
+	private IUser getUser(final String loginName, final String activityStatus) throws BizLogicException
 	{
-		String getActiveUser = (new StringBuilder()).append(
+		final String getActiveUser = (new StringBuilder()).append(
 				"from edu.wustl.clinportal.domain.User user where user.activityStatus= '").append(
 				activityStatus).append("' and user.loginName =").append("'").append(loginName)
 				.append("'").toString();
-		DefaultBizLogic bizlogic = new DefaultBizLogic();
-		List users = bizlogic.executeQuery(getActiveUser);
+		final DefaultBizLogic bizlogic = new DefaultBizLogic();
+		final List users = bizlogic.executeQuery(getActiveUser);
 		if (users != null && !users.isEmpty())
 		{
-			IUser validUser = (IUser) users.get(0);
+			final IUser validUser = (IUser) users.get(0);
 			return validUser;
 		}
 		else

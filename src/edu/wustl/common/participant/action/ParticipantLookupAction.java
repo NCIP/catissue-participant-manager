@@ -13,7 +13,7 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 
-import edu.wustl.common.action.BaseAction;
+import edu.wustl.common.action.SecureAction;
 import edu.wustl.common.actionForm.AbstractActionForm;
 import edu.wustl.common.exception.ApplicationException;
 import edu.wustl.common.factory.AbstractFactoryConfig;
@@ -26,20 +26,19 @@ import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.util.logger.Logger;
 import edu.wustl.dao.exception.DAOException;
 
-
 /**
  * @author geeta_jaggal
  *
  * The Class ParticipantLookupAction. :
  * Used for finding the matched participants from local db.
  */
-public class ParticipantLookupAction extends BaseAction
+public class ParticipantLookupAction extends SecureAction
 {
 
 	/**
 	 * Method for performing participant look up.
 	 */
-	public ActionForward executeAction(ActionMapping mapping, ActionForm form,
+	public ActionForward executeSecureAction(ActionMapping mapping, ActionForm form,
 			HttpServletRequest request, HttpServletResponse response) throws ApplicationException
 	{
 		AbstractActionForm abstractForm = (AbstractActionForm) form;

@@ -7,7 +7,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 
-import edu.wustl.common.exception.ApplicationException;
+
 import edu.wustl.common.exception.BizLogicException;
 import edu.wustl.common.lookup.DefaultLookupParameters;
 import edu.wustl.common.lookup.DefaultLookupResult;
@@ -19,14 +19,12 @@ import edu.wustl.common.participant.domain.ISite;
 import edu.wustl.common.participant.utility.Constants;
 import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.util.XMLPropertyHandler;
-import edu.wustl.common.util.logger.Logger;
 import edu.wustl.dao.JDBCDAO;
 import edu.wustl.dao.exception.DAOException;
 import edu.wustl.patientLookUp.domain.PatientInformation;
 import edu.wustl.patientLookUp.lookUpServiceBizLogic.PatientInfoLookUpService;
 import edu.wustl.patientLookUp.queryExecutor.SQLQueryExecutorImpl;
 import edu.wustl.patientLookUp.util.PatientLookupException;
-
 
 /**
  * The Class ParticipantLookupLogic.
@@ -65,7 +63,6 @@ public class ParticipantLookupLogic implements LookupLogic
 	protected static transient int maxNoOfParticipantsToReturn;
 
 	/** The Constant logger. */
-	private static final Logger logger = Logger.getCommonLogger(ParticipantLookupLogic.class);
 
 	/**
 	 * Instantiates a new participant lookup logic.
@@ -79,7 +76,7 @@ public class ParticipantLookupLogic implements LookupLogic
 	/* (non-Javadoc)
 	 * @see edu.wustl.common.lookup.LookupLogic#lookup(edu.wustl.common.lookup.LookupParameters)
 	 */
-	public List lookup(LookupParameters params) throws PatientLookupException
+	public List lookup(final LookupParameters params) throws PatientLookupException
 	{
 
 		if (params == null)
@@ -88,16 +85,14 @@ public class ParticipantLookupLogic implements LookupLogic
 		}
 		else
 		{
-			DefaultLookupParameters participantParams = (DefaultLookupParameters) params;
-			IParticipant participant = (IParticipant) participantParams.getObject();
-			PatientInformation patientInformation = ParticipantManagerUtility
+			final DefaultLookupParameters participantParams = (DefaultLookupParameters) params;
+			final IParticipant participant = (IParticipant) participantParams.getObject();
+			final PatientInformation patientInfo = ParticipantManagerUtility
 					.populatePatientObject(participant);
-			cutoffPoints = Integer.valueOf(XMLPropertyHandler.getValue(Constants.EMPITHRESHOLD))
-					.intValue();
-			maxNoOfParticipantsToReturn = Integer.valueOf(
-					XMLPropertyHandler.getValue(Constants.EMPIMAXNOOFPATIENS)).intValue();
-			List<DefaultLookupResult> matchingParticipantsList = searchMatchingParticipant(patientInformation);
-			return matchingParticipantsList;
+			cutoffPoints = Integer.parseInt(XMLPropertyHandler.getValue(Constants.EMPITHRESHOLD));
+			maxNoOfParticipantsToReturn = Integer.parseInt(XMLPropertyHandler.getValue(Constants.EMPIMAXNOOFPATIENS));
+			final List<DefaultLookupResult> matchingPartisList = searchMatchingParticipant(patientInfo);
+			return matchingPartisList;
 		}
 
 	}
@@ -113,63 +108,65 @@ public class ParticipantLookupLogic implements LookupLogic
 	 * @throws ApplicationException the application exception
 	 */
 	protected List<DefaultLookupResult> searchMatchingParticipant(
-			PatientInformation patientInformation) throws PatientLookupException
+			final PatientInformation patientInfoInput) throws PatientLookupException
 	{
-		List<DefaultLookupResult> matchingParticipantsList = new ArrayList<DefaultLookupResult>();
-		PatientInfoLookUpService patientLookupObj = new PatientInfoLookUpService();
+		final List<DefaultLookupResult> matchingPartisList = new ArrayList<DefaultLookupResult>();
+		final PatientInfoLookUpService patientLookupObj = new PatientInfoLookUpService();
+		PatientInformation patientInfo=null;
 		JDBCDAO jdbcDAO = null;
 		try
 		{
 			jdbcDAO = ParticipantManagerUtility.getJDBCDAO();
-			edu.wustl.patientLookUp.queryExecutor.IQueryExecutor queryExecutor = new SQLQueryExecutorImpl(
+			final edu.wustl.patientLookUp.queryExecutor.IQueryExecutor queryExecutor = new SQLQueryExecutorImpl(
 					jdbcDAO);
-			List patientInfoList = patientLookupObj.patientLookupService(patientInformation,
+			final List patientInfoList = patientLookupObj.patientLookupService(patientInfoInput,
 					queryExecutor, cutoffPoints, maxNoOfParticipantsToReturn);
 			if (patientInfoList != null && !patientInfoList.isEmpty())
 			{
 				for (int i = 0; i < patientInfoList.size(); i++)
 				{
-					patientInformation = (PatientInformation) patientInfoList.get(i);
-					DefaultLookupResult result = new DefaultLookupResult();
-					IParticipant partcipantNew = (IParticipant) ParticipantManagerUtility
+					patientInfo = (PatientInformation) patientInfoList.get(i);
+					final DefaultLookupResult result = new DefaultLookupResult();
+					final IParticipant partcipantNew = (IParticipant) ParticipantManagerUtility
 							.getParticipantInstance();
-					partcipantNew.setId(patientInformation.getId());
-					partcipantNew.setLastName(patientInformation.getLastName());
-					partcipantNew.setFirstName(patientInformation.getFirstName());
-					partcipantNew.setMiddleName(patientInformation.getMiddleName());
-					partcipantNew.setBirthDate(patientInformation.getDob());
-					partcipantNew.setDeathDate(patientInformation.getDeathDate());
-					partcipantNew.setVitalStatus(patientInformation.getVitalStatus());
-					partcipantNew.setGender(patientInformation.getGender());
-					partcipantNew.setEmpiId(patientInformation.getUpi());
-					partcipantNew.setActivityStatus(patientInformation.getActivityStatus());
-					if (patientInformation.getSsn() != null && patientInformation.getSsn() != "")
+					partcipantNew.setId(patientInfo.getId());
+					partcipantNew.setLastName(patientInfo.getLastName());
+					partcipantNew.setFirstName(patientInfo.getFirstName());
+					partcipantNew.setMiddleName(patientInfo.getMiddleName());
+					partcipantNew.setBirthDate(patientInfo.getDob());
+					partcipantNew.setDeathDate(patientInfo.getDeathDate());
+					partcipantNew.setVitalStatus(patientInfo.getVitalStatus());
+					partcipantNew.setGender(patientInfo.getGender());
+					partcipantNew.setEmpiId(patientInfo.getUpi());
+					partcipantNew.setActivityStatus(patientInfo.getActivityStatus());
+					if (patientInfo.getSsn() != null && patientInfo.getSsn() != "")
 					{
-						String ssn = ParticipantManagerUtility.getSSN(patientInformation.getSsn());
+						final String ssn = ParticipantManagerUtility.getSSN(patientInfo.getSsn());
 						partcipantNew.setSocialSecurityNumber(ssn);
 					}
-					Collection participantInfoMedicalIdentifierCollection = patientInformation
+					final Collection participantInfoMedicalIdentifierCollection = patientInfo
 							.getParticipantMedicalIdentifierCollection();
-					Collection participantMedicalIdentifierCollectionNew = new LinkedHashSet();
+					final Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> participantMedicalIdentifierCollectionNew = new LinkedHashSet<IParticipantMedicalIdentifier<IParticipant, ISite>>();
 					if (participantInfoMedicalIdentifierCollection != null
 							&& participantInfoMedicalIdentifierCollection.size() > 0)
 					{
-						IParticipantMedicalIdentifier participantMedicalIdentifier;
+						IParticipantMedicalIdentifier<IParticipant, ISite> participantMedicalIdentifier;
 						for (Iterator iterator = participantInfoMedicalIdentifierCollection
 								.iterator(); iterator.hasNext(); participantMedicalIdentifierCollectionNew
 								.add(participantMedicalIdentifier))
 						{
-							String mrn = (String) iterator.next();
-							String siteIdStr = (String) iterator.next();
-							Long siteId =null;
-							String siteName = (String) iterator.next();
-							ISite site = (ISite) ParticipantManagerUtility.getSiteInstance();
-							if(siteIdStr!=null && siteIdStr!=""){
-								siteId=Long.valueOf(siteIdStr);
+							final String mrn = (String) iterator.next();
+							final String siteIdStr = (String) iterator.next();
+							Long siteId = null;
+							final String siteName = (String) iterator.next();
+							final ISite site = (ISite) ParticipantManagerUtility.getSiteInstance();
+							if (siteIdStr != null && siteIdStr != "")
+							{
+								siteId = Long.valueOf(siteIdStr);
 							}
 							site.setId(siteId);
 							site.setName(siteName);
-							participantMedicalIdentifier = (IParticipantMedicalIdentifier) ParticipantManagerUtility
+							participantMedicalIdentifier = (IParticipantMedicalIdentifier<IParticipant, ISite>) ParticipantManagerUtility
 									.getPMIInstance();
 							participantMedicalIdentifier.setMedicalRecordNumber(mrn);
 							participantMedicalIdentifier.setSite(site);
@@ -179,7 +176,7 @@ public class ParticipantLookupLogic implements LookupLogic
 					partcipantNew
 							.setParticipantMedicalIdentifierCollection(participantMedicalIdentifierCollectionNew);
 					result.setObject(partcipantNew);
-					matchingParticipantsList.add(result);
+					matchingPartisList.add(result);
 				}
 			}
 
@@ -204,6 +201,6 @@ public class ParticipantLookupLogic implements LookupLogic
 				throw new PatientLookupException(daoExp.getMsgValues(), daoExp);
 			}
 		}
-		return matchingParticipantsList;
+		return matchingPartisList;
 	}
 }

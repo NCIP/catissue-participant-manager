@@ -8,13 +8,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 
+import edu.wustl.common.action.SecureAction;
 import edu.wustl.common.beans.SessionDataBean;
 import edu.wustl.common.exception.ApplicationException;
 import edu.wustl.common.participant.bizlogic.ParticipantMatchingBizLogic;
@@ -33,39 +33,40 @@ import edu.wustl.common.util.logger.Logger;
  * The Class ProcessMatchedParticipantsAction :
  * Used for displaying processed matched participants.
  */
-public class ProcessMatchedParticipantsAction extends Action
+public class ProcessMatchedParticipantsAction extends SecureAction
 {
 
 	/** The Constant logger. */
-	private static final Logger logger = Logger
+	private static final Logger LOGGER = Logger
 			.getCommonLogger(ProcessMatchedParticipantsAction.class);
 
 	/* (non-Javadoc)
 	 * @see org.apache.struts.action.Action#execute(org.apache.struts.action.ActionMapping, org.apache.struts.action.ActionForm, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
 	 */
-	public ActionForward execute(ActionMapping mapping, ActionForm form,
-			HttpServletRequest request, HttpServletResponse response) throws ApplicationException
+	public ActionForward executeSecureAction(final ActionMapping mapping, final ActionForm form,
+			final HttpServletRequest request, final HttpServletResponse response)
+			throws ApplicationException
 	{
-		HttpSession session = request.getSession();
+		final HttpSession session = request.getSession();
 		String target = null;
 		try
 		{
-			int recordsPerPage = getRecordsPerPage(session);
-			String isDelete = request.getParameter(Constants.IS_DELETE_PARTICIPANT);
-			String particicipantId = request.getParameter("participantId");
-			List<String> columnNames = getColumnList();
-			Long userId = getUserId(request);
+			final int recordsPerPage = getRecordsPerPage(session);
+			final String isDelete = request.getParameter(Constants.IS_DELETE_PARTICIPANT);
+			final String particicipantId = request.getParameter("participantId");
+			final List<String> columnNames = getColumnList();
+			final Long userId = getUserId(request);
 
 			if (isDelete != null && isDelete != "" && isDelete.equalsIgnoreCase(Constants.YES)
 					&& particicipantId != null && particicipantId != "")
 			{
-				boolean delStatus = ParticipantManagerUtility.deleteProcessedParticipant(Long
+				final boolean delStatus = ParticipantManagerUtility.deleteProcessedParticipant(Long
 						.valueOf(particicipantId));
 				setStatusMessage(request, delStatus);
 			}
 
-			ParticipantMatchingBizLogic bizLogic = new ParticipantMatchingBizLogic();
-			List list = bizLogic.getProcessedMatchedParticipants(userId);
+			final ParticipantMatchingBizLogic bizLogic = new ParticipantMatchingBizLogic();
+			final List list = bizLogic.getProcessedMatchedParticipants(userId);
 
 			storeList(request, session, columnNames, list, recordsPerPage);
 
@@ -75,14 +76,14 @@ public class ProcessMatchedParticipantsAction extends Action
 		}
 		catch (Exception e)
 		{
-			logger.info(e.getMessage());
+			LOGGER.info(e.getMessage());
 			throw new ApplicationException(null, e, e.getMessage());
 		}
 	}
 
 	private List<String> getColumnList()
 	{
-		List<String> columnNames = new ArrayList<String>();
+		final List<String> columnNames = new ArrayList<String>();
 		columnNames.add("ID");
 		columnNames.add("Last Name");
 		columnNames.add("First Name");
@@ -92,10 +93,10 @@ public class ProcessMatchedParticipantsAction extends Action
 		return columnNames;
 	}
 
-	private int getRecordsPerPage(HttpSession session)
+	private int getRecordsPerPage(final HttpSession session)
 	{
 		int recordsPerPage = 0;
-		String recordsPerPageSessionValue = (String) session
+		final String recordsPerPageSessionValue = (String) session
 				.getAttribute(edu.wustl.common.util.global.Constants.RESULTS_PER_PAGE);
 		if (recordsPerPageSessionValue == null)
 		{
@@ -106,23 +107,23 @@ public class ProcessMatchedParticipantsAction extends Action
 		}
 		else
 		{
-			recordsPerPage = (Integer.valueOf((recordsPerPageSessionValue))).intValue();
+			recordsPerPage = Integer.parseInt(recordsPerPageSessionValue);
 		}
 		return recordsPerPage;
 	}
 
-	private Long getUserId(HttpServletRequest request)
+	private Long getUserId(final HttpServletRequest request)
 	{
-		SessionDataBean sessionDataBean = (SessionDataBean) request.getSession().getAttribute(
-				edu.wustl.common.util.global.Constants.SESSION_DATA);
-		Long userId = sessionDataBean.getUserId();
+		final SessionDataBean sessionDataBean = (SessionDataBean) request.getSession()
+				.getAttribute(edu.wustl.common.util.global.Constants.SESSION_DATA);
+		final Long userId = sessionDataBean.getUserId();
 		return userId;
 	}
 
-	private void storeList(HttpServletRequest request, HttpSession session,
-			List<String> columnNames, List list, int recordsPerPage)
+	private void storeList(final HttpServletRequest request, final HttpSession session,
+			final List<String> columnNames, final List list, final int recordsPerPage)
 	{
-		QuerySessionData querySessionData = new QuerySessionData();
+		final QuerySessionData querySessionData = new QuerySessionData();
 		querySessionData.setRecordsPerPage(recordsPerPage);
 		querySessionData.setTotalNumberOfRecords(list.size());
 		session.setAttribute(edu.wustl.common.util.global.Constants.QUERY_SESSION_DATA,
@@ -142,9 +143,9 @@ public class ProcessMatchedParticipantsAction extends Action
 	 * @param request the request
 	 * @param delStatus the del status
 	 */
-	private void setStatusMessage(HttpServletRequest request, boolean delStatus)
+	private void setStatusMessage(final HttpServletRequest request, final boolean delStatus)
 	{
-		ActionMessages actionMsgs = new ActionMessages();
+		final ActionMessages actionMsgs = new ActionMessages();
 		if (delStatus)
 		{
 			actionMsgs.add("GLOBAL_MESSAGE", new ActionMessage(

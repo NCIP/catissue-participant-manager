@@ -40,13 +40,13 @@ public class CommonDefaultBizLogic extends DefaultBizLogic
 
 	//@see edu.wustl.common.bizlogic.IBizLogic#
 	// isAuthorized(edu.wustl.common.dao.AbstractDAO, java.lang.Object, edu.wustl.common.beans.SessionDataBean)
-	public boolean isAuthorized(DAO dao, Object domainObject, SessionDataBean sessionDataBean)
+	public boolean isAuthorized(final DAO dao,final Object domainObject, final SessionDataBean sessionDataBean)
 			throws BizLogicException
 	{
 		boolean isAuthorized = false;
 		try
 		{
-			PrivilegeManager privilegeManager = PrivilegeManager.getInstance();
+			final PrivilegeManager privilegeManager = PrivilegeManager.getInstance();
 			if (sessionDataBean == null)
 			{
 				isAuthorized = false;
@@ -59,7 +59,7 @@ public class CommonDefaultBizLogic extends DefaultBizLogic
 				}
 				else
 				{
-					PrivilegeCache privilegeCache = privilegeManager
+					final PrivilegeCache privilegeCache = privilegeManager
 							.getPrivilegeCache(sessionDataBean.getUserName());
 					isAuthorized = privilegeCache.hasPrivilege(
 							getObjectIdForSecureMethodAccess(domainObject), Permissions.EXECUTE);
@@ -89,7 +89,7 @@ public class CommonDefaultBizLogic extends DefaultBizLogic
 	 *
 	 * @return the object id for secure method access
 	 */
-	protected String getObjectIdForSecureMethodAccess(Object domainObject)
+	protected String getObjectIdForSecureMethodAccess(final Object domainObject)
 	{
 		return domainObject.getClass().getName();
 	}
@@ -101,10 +101,10 @@ public class CommonDefaultBizLogic extends DefaultBizLogic
 	 *
 	 * @return the biz logic exception
 	 */
-	protected BizLogicException handleSMException(SMException exp)
+	protected BizLogicException handleSMException(final SMException exp)
 	{
 
-		StringBuffer message = new StringBuffer("Security Exception: " + exp.getMessage());
+		final StringBuffer message = new StringBuffer("Security Exception: " + exp.getMessage());
 		if (exp.getCause() != null){
 			message.append( " : " ).append( exp.getCause().getMessage());
 		}
