@@ -44,7 +44,7 @@ public class EMPIParticipantMergeMessageListener implements MessageListener
 	 * Read teh message from queue and update the participant.
 	 *
 	 */
-	public void onMessage(Message message)
+	public void onMessage(final Message message)
 	{
 		String token = null;
 		String hl7EventType = "";
@@ -61,11 +61,11 @@ public class EMPIParticipantMergeMessageListener implements MessageListener
 				StringTokenizer strTokenizer = new StringTokenizer(mergeMessage, "\r");
 				while (strTokenizer.hasMoreTokens())
 				{
-					token = (strTokenizer.nextToken()).trim();
+					token = strTokenizer.nextToken().trim();
 					//System.out.println(token);
 
 					StringTokenizer strTokenizer1 = new StringTokenizer(token, "|");
-					String token1 = (strTokenizer1.nextToken()).trim();
+					String token1 = strTokenizer1.nextToken().trim();
 					if (token1.equalsIgnoreCase("EVN"))
 					{
 						hl7EventType = strTokenizer1.nextToken();
@@ -130,16 +130,16 @@ public class EMPIParticipantMergeMessageListener implements MessageListener
 	 *
 	 * @throws DAOException the DAO exception
 	 */
-	private boolean isEMPIIdExists(JDBCDAO jdbcdao, String pidEmpiId, String mrgEmpiId)
+	private boolean isEMPIIdExists(final JDBCDAO jdbcdao, final String pidEmpiId, final String mrgEmpiId)
 			throws DAOException
 	{
 		boolean isIdExists = false;
 		try
 		{
-			String query = (new StringBuilder()).append(
+			final String query = (new StringBuilder()).append(
 					"SELECT EMPI_ID FROM CATISSUE_PARTICIPANT WHERE EMPI_ID IN ('").append(
 					pidEmpiId).append("','").append(mrgEmpiId).append("')").toString();
-			List empiIdList = jdbcdao.executeQuery(query);
+			final List empiIdList = jdbcdao.executeQuery(query);
 			if (!empiIdList.isEmpty() && !((List) empiIdList.get(0)).isEmpty())
 			{
 				isIdExists = true;
@@ -161,7 +161,7 @@ public class EMPIParticipantMergeMessageListener implements MessageListener
 	 *
 	 * @return the eMPI id
 	 */
-	private String getEMPIId(String id)
+	private String getEMPIId(final String id)
 	{
 		String empiId = "";
 		StringTokenizer strTokenizer = new StringTokenizer(id, "^^^");
@@ -198,8 +198,8 @@ public class EMPIParticipantMergeMessageListener implements MessageListener
 	 *
 	 * @throws DAOException the DAO exception
 	 */
-	private void storeMergeMessage(JDBCDAO jdbcdao, String hl7Message, String messageType,
-			String pidEmpiId, String mrgEmpiId) throws DAOException
+	private void storeMergeMessage(final JDBCDAO jdbcdao, final String hl7Message, final String messageType,
+			final String pidEmpiId, final String mrgEmpiId) throws DAOException
 	{
 		long idenifier = 0L;
 		String insQuery = "";
@@ -234,8 +234,7 @@ public class EMPIParticipantMergeMessageListener implements MessageListener
 			columnValueBeans.add(columnValueBeanList);
 			jdbcdao.executeUpdate(insQuery, columnValueBeans);
 			jdbcdao.commit();
-			logger.info((new StringBuilder()).append(
-					"\n \n  ----------- STORED MERGE MESSAGE ----------  \n\n").toString());
+			logger.info("\n \n  ----------- STORED MERGE MESSAGE ----------  \n\n");
 			logger.info(hl7Message);
 		}
 		catch (DAOException e)

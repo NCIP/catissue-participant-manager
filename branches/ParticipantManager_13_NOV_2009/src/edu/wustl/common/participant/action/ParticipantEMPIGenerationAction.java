@@ -42,18 +42,18 @@ public class ParticipantEMPIGenerationAction extends CommonAddEditAction
 {
 
 	/** The logger. */
-	private static final  Logger logger = Logger.getCommonLogger(ParticipantEMPIGenerationAction.class);
+	private static final  Logger LOGGER = Logger.getCommonLogger(ParticipantEMPIGenerationAction.class);
 
 	/**
 	 *  Method for generating eMPI id for the participant.
 	 */
-	public ActionForward executeXSS(ActionMapping mapping, ActionForm form,
-			HttpServletRequest request, HttpServletResponse response)
+	public ActionForward executeXSS(final ActionMapping mapping, final ActionForm form,
+			final HttpServletRequest request, final HttpServletResponse response)
 	{
 		ActionForward forward = null;
-		IParticipantForm participantForm = (IParticipantForm) form;
-		String isGenerateHL7 = (String) request.getParameter("isGenerateHL7");
-		String isGenerateEMPID = request.getParameter("isGenerateEMPIID");
+		final IParticipantForm participantForm = (IParticipantForm) form;
+		final String isGenerateHL7 = (String) request.getParameter("isGenerateHL7");
+		final String isGenerateEMPID = request.getParameter("isGenerateEMPIID");
 		try
 		{
 			// If user selects ignore and generate the eMPI
@@ -65,7 +65,7 @@ public class ParticipantEMPIGenerationAction extends CommonAddEditAction
 				{
 					participantForm.setOperation(edu.wustl.common.util.global.Constants.EDIT);
 					participantForm.setEmpiIdStatus(Constants.EMPI_ID_PENDING);
-					forward = super.execute(mapping, (AbstractActionForm) participantForm, request,
+					forward = super.executeXSS(mapping, (AbstractActionForm) participantForm, request,
 							response);
 					if (!forward.getName().equals(edu.wustl.common.util.global.Constants.FAILURE))
 					{
@@ -82,7 +82,7 @@ public class ParticipantEMPIGenerationAction extends CommonAddEditAction
 			{
 				// chech the status first if its waiting for generating eMPI thn
 				// can't edit it util it get eMPi id.
-				String eMPIStatus = ParticipantManagerUtility.getPartiEMPIStatus(participantForm
+				final String eMPIStatus = ParticipantManagerUtility.getPartiEMPIStatus(participantForm
 						.getId());
 				if (eMPIStatus.equals(Constants.EMPI_ID_PENDING))
 				{
@@ -96,8 +96,8 @@ public class ParticipantEMPIGenerationAction extends CommonAddEditAction
 		catch (Exception e)
 		{
 			// TODO Auto-generated catch block
-			logger.info("Error while generating EMPI for the participant \n");
-			logger.info(e.getMessage());
+			LOGGER.info("Error while generating EMPI for the participant \n");
+			LOGGER.info(e.getMessage());
 		}
 		return forward;
 
@@ -112,14 +112,14 @@ public class ParticipantEMPIGenerationAction extends CommonAddEditAction
 	 * @throws BizLogicException the biz logic exception
 	 * @throws AssignDataException the assign data exception
 	 */
-	private void registerPatientToEMPI(HttpServletRequest request, IParticipantForm participantForm)
+	private void registerPatientToEMPI(final HttpServletRequest request, final IParticipantForm participantForm)
 			throws BizLogicException, AssignDataException
 	{
-		IParticipant participant = (IParticipant) ParticipantManagerUtility
+		final IParticipant participant = (IParticipant) ParticipantManagerUtility
 				.getParticipantInstance();
 		((AbstractDomainObject) participant).setAllValues((AbstractActionForm) participantForm);
 		participant.setId(participantForm.getId());
-		EMPIParticipantRegistrationBizLogic bizLogic = new EMPIParticipantRegistrationBizLogic();
+		final EMPIParticipantRegistrationBizLogic bizLogic = new EMPIParticipantRegistrationBizLogic();
 		String regStatusMessage = "";
 		try
 		{
@@ -140,9 +140,9 @@ public class ParticipantEMPIGenerationAction extends CommonAddEditAction
 	 * @param request the request
 	 * @param regStatus the reg status
 	 */
-	private void setStatusMessage(HttpServletRequest request, String regStatus)
+	private void setStatusMessage(final HttpServletRequest request, final String regStatus)
 	{
-		ActionMessages actionMsgs = new ActionMessages();
+		final ActionMessages actionMsgs = new ActionMessages();
 		if (regStatus.equals(edu.wustl.common.util.global.Constants.SUCCESS))
 		{
 			actionMsgs.add(ActionErrors.GLOBAL_MESSAGE, new ActionMessage(
@@ -156,7 +156,7 @@ public class ParticipantEMPIGenerationAction extends CommonAddEditAction
 			{
 				actionErrors = new ActionErrors();
 			}
-			ActionError actionError = new ActionError(
+			final ActionError actionError = new ActionError(
 					"participant.empi.registration.failure.message", regStatus);
 			actionErrors.add(ActionErrors.GLOBAL_ERROR, actionError);
 			saveErrors(request, actionErrors);
@@ -177,10 +177,10 @@ public class ParticipantEMPIGenerationAction extends CommonAddEditAction
 	 *
 	 * @throws DAOException the DAO exception
 	 */
-	private void generateEMPI(HttpServletRequest request, IParticipantForm participantForm)
+	private void generateEMPI(final HttpServletRequest request, final IParticipantForm participantForm)
 			throws DAOException
 	{
-		SessionDataBean sessionDataBean = (SessionDataBean) request.getSession().getAttribute(
+		final SessionDataBean sessionDataBean = (SessionDataBean) request.getSession().getAttribute(
 				Constants.SESSION_DATA);
 		try
 		{
@@ -200,7 +200,7 @@ public class ParticipantEMPIGenerationAction extends CommonAddEditAction
 	 *
 	 * @param request the new message
 	 */
-	private void setStatusMessage(HttpServletRequest request)
+	private void setStatusMessage(final HttpServletRequest request)
 	{
 		ActionMessages actionMsgs = (ActionMessages) request.getAttribute(Globals.MESSAGE_KEY);
 		if (actionMsgs == null)

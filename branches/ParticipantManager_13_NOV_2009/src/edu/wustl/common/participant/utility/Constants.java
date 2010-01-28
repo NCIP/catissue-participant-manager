@@ -190,7 +190,7 @@ public class Constants
 	public static final String EMPI_ID_PENDING = "PENDING";
 
 	/** The Constant HL7_REG_EVENT_TYPE. */
-	public static final String HL7_REG_EVENT_TYPE = "A04";
+	public static final String HL7_REG_EVENT_TYPE_A04 = "A04";
 
 	/** The Constant HL7_MERGE_EVENT_TYPE_A34. */
 	public static final String HL7_MERGE_EVENT_TYPE_A34 = "A34";
