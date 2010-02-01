@@ -197,14 +197,14 @@ public interface IParticipant
 	 *
 	 * @return the participant medical identifier collection
 	 */
-	Collection getParticipantMedicalIdentifierCollection();
+	Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> getParticipantMedicalIdentifierCollection();
 
 	/**
 	 * Sets the participant medical identifier collection.
 	 *
 	 * @param participantMedicalIdentifierCollection the new participant medical identifier collection
 	 */
-	void setParticipantMedicalIdentifierCollection(Collection participantMedicalIdentifierCollection);
+	void setParticipantMedicalIdentifierCollection(Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> participantMedicalIdentifierCollection);
 
 	/**
 	 * Gets the meta phone code.

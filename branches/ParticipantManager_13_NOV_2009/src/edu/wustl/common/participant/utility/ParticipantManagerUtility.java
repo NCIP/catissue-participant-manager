@@ -313,6 +313,12 @@ public class ParticipantManagerUtility
 		DefaultLookupParameters params = new DefaultLookupParameters();
 		params.setObject(participant);
 		matchParticipantList = partLookupLgic.lookup(params);
+		String application = applicationType();
+		//Remove this check, once this feature integrated with caTissueSuite
+		if (!Constants.CLINPORTAL_APPLICATION_NAME.equals(application))
+		{
+			linkedCSCPId =null;
+		}
 
 		if (linkedCSCPId != null)
 		{
