@@ -76,7 +76,7 @@ public class ParticipantLookupLogic implements LookupLogic
 	/* (non-Javadoc)
 	 * @see edu.wustl.common.lookup.LookupLogic#lookup(edu.wustl.common.lookup.LookupParameters)
 	 */
-	public List lookup(final LookupParameters params) throws PatientLookupException
+	public List<DefaultLookupResult> lookup(LookupParameters params) throws PatientLookupException
 	{
 
 		if (params == null)
