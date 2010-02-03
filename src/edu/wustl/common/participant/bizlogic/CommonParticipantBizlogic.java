@@ -299,8 +299,10 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 				final String medicalRecordNo = partiMedobj.getMedicalRecordNumber();
 				if (validator.isEmpty(medicalRecordNo) || site == null || site.getId() == null)
 				{
-					throw new BizLogicException(null, null, "errors.participant.extiden.missing",
-							"");
+					if(partiMedobj.getId() == null)
+					{
+						throw new BizLogicException(null, null, "errors.participant.extiden.missing", "");
+					}
 				}
 				else
 				{
