@@ -550,14 +550,14 @@ public class EMPIParticipantRegistrationBizLogic
 		String qmgName = XMLPropertyHandler.getValue(Constants.WMQ_QMG_NAME);
 		String channelName = XMLPropertyHandler.getValue(Constants.WMQ_CHANNEL);
 		int port = Integer.parseInt(XMLPropertyHandler.getValue(Constants.WMQ_PORT));
-		String inBoundQueueName = XMLPropertyHandler.getValue(Constants.IN_BOUND_QUEUE_NAME);
+		String outBoundQueueName = XMLPropertyHandler.getValue(Constants.OUT_BOUND_QUEUE_NAME);
 
 		MQMessageWriter messageWriter = new MQMessageWriter();
 		messageWriter.setHostName(hostName);
 		messageWriter.setPort(port);
 		messageWriter.setQManagerName(qmgName);
 		messageWriter.setChannelName(channelName);
-		messageWriter.setQName(inBoundQueueName);
+		messageWriter.setQName(outBoundQueueName);
 		messageWriter.sendTextMessage(hl7Message);
 	}
 
