@@ -73,7 +73,7 @@ public class ParticipantManagerUtility
 		String hostName = null;
 		String qmgName = null;
 		String channel = null;
-		String outBoundQueueName = null;
+		String inBoundQueueName = null;
 		String mergeMessageQueueName = null;
 		int port = 0;
 		try
@@ -86,6 +86,12 @@ public class ParticipantManagerUtility
 			{
 				port = Integer.parseInt(XMLPropertyHandler.getValue(Constants.WMQ_PORT));
 			}
+
+			logger.info("WMQ_SERVER_NAME ----------- : "+ hostName);
+			logger.info("WMQ_QMG_NAME ----------- : " + qmgName);
+			logger.info("WMQ_CHANNEL ----------- : "+  channel);
+			logger.info("WMQ_PORT ----------- : "+  port);
+
 			MQQueueConnectionFactory factory = new MQQueueConnectionFactory();
 			factory.setTransportType(JMSC.MQJMS_TP_CLIENT_MQ_TCPIP);
 			factory.setQueueManager(qmgName);
@@ -99,9 +105,12 @@ public class ParticipantManagerUtility
 
 			QueueSession session = connection.createQueueSession(false,
 					javax.jms.Session.AUTO_ACKNOWLEDGE);
-			outBoundQueueName = XMLPropertyHandler.getValue(Constants.OUT_BOUND_QUEUE_NAME);
-			Queue outBoundQueue = session.createQueue("queue:///" + outBoundQueueName);
-			QueueReceiver queueReceiver = session.createReceiver(outBoundQueue);
+			inBoundQueueName = XMLPropertyHandler.getValue(Constants.IN_BOUND_QUEUE_NAME);
+			Queue inBoundQueue = session.createQueue("queue:///" + inBoundQueueName);
+
+			logger.info("IN_BOUND_QUEUE_NAME ----------- : "+  inBoundQueueName);
+
+			QueueReceiver queueReceiver = session.createReceiver(inBoundQueue);
 
 			EMPIParticipantListener listener = new EMPIParticipantListener();
 
@@ -116,11 +125,22 @@ public class ParticipantManagerUtility
 		}
 		catch (JMSException e)
 		{
+
 			logger
 					.error(" -------------  ERROR WHILE INITIALISING THE MESSAGE QUEUES \n \n ------------- ");
-			logger.info(e.getMessage());
-			throw new JMSException(e.getMessage());
+			logger.error(e.getMessage());
+			logger.error(e.getStackTrace());
+			e.printStackTrace();
+			e.getLinkedException();
+			logger.error(e.getLinkedException());
+			logger.error(e.getLinkedException().getMessage());
+			logger.error(e.getLinkedException().getStackTrace());
+			throw e;
 
+		}
+		catch(Exception e){
+			e.printStackTrace();
+			logger.error(e.getMessage());
 		}
 	}
 
