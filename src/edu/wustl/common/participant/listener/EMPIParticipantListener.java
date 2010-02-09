@@ -320,7 +320,7 @@ public class EMPIParticipantListener implements MessageListener
 			processPartiMedIdColl(partiMedicalIdColl, partcipantObj);
 			participant = partcipantObj;
 			partcipantObj.setEmpiId(personUpi);
-			partcipantObj.setEmpiIdStatus(Constants.EMPI_ID_CREATED);
+			partcipantObj.setEmpiIdStatus(Constants.ACTIVITY_STATUS_ACTIVE);
 			partcipantObj.setParticipantMedicalIdentifierCollection(partiMedicalIdColl);
 			final CommonParticipantBizlogic bizlogic = new CommonParticipantBizlogic();
 			bizlogic.update(partcipantObj, participant, sessionData);

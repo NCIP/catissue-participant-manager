@@ -49,6 +49,7 @@ import edu.wustl.dao.daofactory.DAOConfigFactory;
 import edu.wustl.dao.daofactory.IDAOFactory;
 import edu.wustl.dao.exception.DAOException;
 import edu.wustl.dao.query.generator.ColumnValueBean;
+import edu.wustl.dao.query.generator.DBTypes;
 import edu.wustl.patientLookUp.domain.PatientInformation;
 import edu.wustl.patientLookUp.util.PropertyHandler;
 
@@ -1222,6 +1223,37 @@ public class ParticipantManagerUtility
 			throw new BizLogicException(e.getErrorKey(), e, e.getMsgValues());
 		}
 		return oldParticipant;
+	}
+
+
+	public static boolean isParticipantIsProcessing(Long id) throws DAOException{
+
+		boolean status = false;
+		JDBCDAO dao = null;
+		String query = null;
+		try
+		{
+			query = "SELECT * FROM MATCHED_PARTICIPANT_MAPPING WHERE SEARCHED_PARTICIPANT_ID=? AND NO_OF_MATCHED_PARTICIPANTS!=?";
+			dao = getJDBCDAO();
+			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
+			columnValueBeanList.add(new ColumnValueBean("SEARCHED_PARTICIPANT_ID",id,DBTypes.LONG));
+			columnValueBeanList.add(new ColumnValueBean("NO_OF_MATCHED_PARTICIPANTS",0,DBTypes.INTEGER));
+			List list = dao.executeQuery(query, null,columnValueBeanList);
+			if (!list.isEmpty() && list.get(0) != "")
+			{
+					status = true;
+			}
+		}
+		catch (DAOException exp)
+		{
+			logger.info("ERROR WHILE GETTING THE EMPI STATUS");
+			throw new DAOException(exp.getErrorKey(), exp, exp.getMsgValues());
+		}
+		finally
+		{
+			dao.closeSession();
+		}
+		return status;
 	}
 
 }

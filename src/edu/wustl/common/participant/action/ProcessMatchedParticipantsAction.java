@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.apache.struts.Globals;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
@@ -62,7 +63,7 @@ public class ProcessMatchedParticipantsAction extends SecureAction
 			{
 				final boolean delStatus = ParticipantManagerUtility.deleteProcessedParticipant(Long
 						.valueOf(particicipantId));
-				setStatusMessage(request, delStatus);
+				setDelStatusMessage(request, delStatus);
 			}
 
 			final ParticipantMatchingBizLogic bizLogic = new ParticipantMatchingBizLogic();
@@ -135,6 +136,17 @@ public class ProcessMatchedParticipantsAction extends SecureAction
 		request.setAttribute(Constants.SPREADSHEET_DATA_LIST, list);
 		request.setAttribute(edu.wustl.common.util.global.Constants.SPREADSHEET_COLUMN_LIST,
 				columnNames);
+		setStatusMessage(request);
+	}
+
+	private void setStatusMessage(HttpServletRequest request){
+		ActionMessages messages = (ActionMessages) request.getAttribute(Globals.MESSAGE_KEY);
+		if (messages == null)
+		{
+			messages = new ActionMessages();
+		}
+		messages.add("org.apache.struts.action.GLOBAL_MESSAGE", new ActionMessage("process.participant.message"));
+		saveMessages(request, messages);
 	}
 
 	/**
@@ -143,7 +155,7 @@ public class ProcessMatchedParticipantsAction extends SecureAction
 	 * @param request the request
 	 * @param delStatus the del status
 	 */
-	private void setStatusMessage(final HttpServletRequest request, final boolean delStatus)
+	private void setDelStatusMessage(final HttpServletRequest request, final boolean delStatus)
 	{
 		final ActionMessages actionMsgs = new ActionMessages();
 		if (delStatus)

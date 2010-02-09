@@ -97,8 +97,9 @@ public class ParticipantMatchingBizLogic
 			String raceValues = null;
 			String mrnValue = "";
 			PatientInformation patientInformation = null;
+			LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = null;
 			LinkedList<ColumnValueBean> columnValueBeanList = null;
-			LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
+
  			for (int i = 0; i < matchPartpantLst.size(); i++)
 			{
 				patientInformation = (PatientInformation) matchPartpantLst.get(i);
@@ -106,6 +107,7 @@ public class ParticipantMatchingBizLogic
 				mrnValue = getMRNValues(patientInformation
 						.getParticipantMedicalIdentifierCollection());
 				columnValueBeanList = new LinkedList<ColumnValueBean>();
+				columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
 				columnValueBeanList.add(new ColumnValueBean("PARTICIPANT_ID", patientInformation
 						.getId(), 22));
 				columnValueBeanList.add(new ColumnValueBean("EMPI_ID", patientInformation.getUpi(),
@@ -170,10 +172,11 @@ public class ParticipantMatchingBizLogic
 				}
 				columnValueBeans.add(columnValueBeanList);
 				dao.executeUpdate(query, columnValueBeans);
+				dao.commit();
 			}
 
 			updateMatchedPartiMapping(dao, participant.getId().longValue(), matchPartpantLst.size());
-			dao.commit();
+
 		}
 		catch (DAOException e)
 		{

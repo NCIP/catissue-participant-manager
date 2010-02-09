@@ -352,6 +352,7 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 		request.setAttribute(Constants.SPREADSHEET_DATA_LIST, pcpantDisplayLst);
 		final HttpSession session = request.getSession();
 		session.setAttribute("MatchedParticpant", matchPartpantLst);
+		request.setAttribute(Constants.MATCHED_PARTICIPANTS_FOUND_FROM_EMPI,Constants.TRUE);
 		if (request.getAttribute("continueLookup") == null)
 		{
 			saveMessages(request, messages);
