@@ -187,7 +187,7 @@ public class ParticipantEMPIGenerationAction extends CommonAddEditAction
 			// Process participant for CIDER participant matching.
 			ParticipantManagerUtility.addParticipantToProcessMessageQueue(sessionDataBean
 					.getUserId(), participantForm.getId());
-			setStatusMessage(request);
+			//setStatusMessage(request);
 		}
 		catch (DAOException e)
 		{

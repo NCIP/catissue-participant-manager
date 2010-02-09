@@ -157,8 +157,6 @@ public class Constants
 	/** The Constant EMPIMAXNOOFPATIENS. */
 	public static final String EMPIMAXNOOFPATIENS = "empi.MaxNoOfPatients";
 
-
-
 	/** The Constant PARTICIPANT_EMPI_ID. */
 	public static final String PARTICIPANT_EMPI_ID = "EMPIID";
 
@@ -265,5 +263,6 @@ public class Constants
 	public static final String IS_DELETE_PARTICIPANT = "isDelete";
 
 	public static final String TRUE = "true";
+	public static final String MATCHED_PARTICIPANTS_FOUND_FROM_EMPI = "matchedParticipantFromEMPI";
 
 }
