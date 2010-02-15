@@ -22,7 +22,7 @@ import edu.wustl.common.participant.utility.ParticipantManagerUtility;
  * @author suhas_khot
  *
  */
-public class ProcessNextEMPIParticipant extends SecureAction
+public class ProcessNextEMPIParticipantsAction extends SecureAction
 {
 
 
