@@ -265,4 +265,9 @@ public class Constants
 	public static final String TRUE = "true";
 	public static final String MATCHED_PARTICIPANTS_FOUND_FROM_EMPI = "matchedParticipantFromEMPI";
 
+	public static final String NEXT_PART_ID_TO_PROCESS = "nextParticipantIdToProcess";
+
+	public static final String PAGE_OF = "pageOf";
+
+	public static final String SUCCESS = "success";
 }

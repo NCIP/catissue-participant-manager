@@ -1256,4 +1256,40 @@ public class ParticipantManagerUtility
 		return status;
 	}
 
+	/**
+	 * @return List of matching participant Ids for EMPI generation
+	 * @throws DAOException
+	 */
+	public static List<Long> getProcessedMatchedParticipantIds(Long userId) throws DAOException
+	{
+		JDBCDAO dao = null;
+		List<Long> particpantIdColl = new ArrayList<Long>();
+		try
+		{
+
+			dao = ParticipantManagerUtility.getJDBCDAO();
+			String query = "SELECT SEARCHED_PARTICIPANT_ID FROM MATCHED_PARTICIPANT_MAPPING  PARTIMAPPING "
+				+ "WHERE PARTI"
+				+ "MAPPING.USER_ID='"
+				+ userId
+				+ "' AND PARTIMAPPING.NO_OF_MATCHED_PARTICIPANTS!='-1'";
+
+			List resultSet = dao.executeQuery(query, null, null);
+
+			for(Object object : resultSet)
+			{
+				ArrayList particpantIdList = (ArrayList) object;
+				if(particpantIdList!= null && !particpantIdList.isEmpty())
+				{
+					particpantIdColl.add(Long.valueOf(particpantIdList.get(0).toString()));
+				}
+			}
+		}
+		finally
+		{
+			dao.closeSession();
+		}
+		return particpantIdColl;
+	}
+
 }
