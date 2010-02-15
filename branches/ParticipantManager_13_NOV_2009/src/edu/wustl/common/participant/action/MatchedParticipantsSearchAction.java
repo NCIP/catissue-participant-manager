@@ -58,6 +58,10 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 	{
 		ActionForward forward = null;
 		final AbstractActionForm participantForm = (AbstractActionForm) form;
+		final SessionDataBean sessionDataBean = (SessionDataBean) request.getSession()
+		.getAttribute(edu.wustl.common.util.global.Constants.SESSION_DATA);
+		final Long userId = sessionDataBean.getUserId();
+		List<Long> participantIds = ParticipantManagerUtility.getProcessedMatchedParticipantIds(userId);
 		try
 		{
 			forward = super.executeXSS(mapping, participantForm, request, response);
@@ -71,6 +75,18 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 					identifier = Long
 							.valueOf(edu.wustl.common.util.global.Constants.SYSTEM_IDENTIFIER);
 				}
+				int indexOfCurrentPart = 0;
+				int nextMatchedParticpantIndex = 0;
+				if(participantIds.contains(identifier))
+				{
+					indexOfCurrentPart = participantIds.indexOf(identifier);
+				}
+
+				if(indexOfCurrentPart >= 0 && ((participantIds.size()-1) > indexOfCurrentPart))
+				{
+					nextMatchedParticpantIndex = indexOfCurrentPart + 1;
+				}
+				request.getSession().setAttribute(Constants.NEXT_PART_ID_TO_PROCESS, participantIds.get(nextMatchedParticpantIndex));
 				// fetch the stored matched participant for the participant in the message board
 				fetchMatchedParticipantsFromDB(identifier.longValue(), request);
 			}

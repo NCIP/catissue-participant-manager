@@ -58,6 +58,10 @@ public class ProcessMatchedParticipantsAction extends SecureAction
 			final List<String> columnNames = getColumnList();
 			final Long userId = getUserId(request);
 
+			if(session.getAttribute(Constants.NEXT_PART_ID_TO_PROCESS)!=null)
+			{
+				session.removeAttribute(Constants.NEXT_PART_ID_TO_PROCESS);
+			}
 			if (isDelete != null && isDelete != "" && isDelete.equalsIgnoreCase(Constants.YES)
 					&& particicipantId != null && particicipantId != "")
 			{
