@@ -6,12 +6,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-
 
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
@@ -20,7 +20,6 @@ import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 
 import edu.wustl.common.action.CommonSearchAction;
-
 import edu.wustl.common.actionForm.AbstractActionForm;
 import edu.wustl.common.beans.SessionDataBean;
 import edu.wustl.common.exception.ApplicationException;
@@ -34,9 +33,10 @@ import edu.wustl.common.participant.utility.Constants;
 import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.util.Utility;
 import edu.wustl.common.util.logger.Logger;
-
 import edu.wustl.dao.JDBCDAO;
 import edu.wustl.dao.exception.DAOException;
+import edu.wustl.dao.query.generator.ColumnValueBean;
+import edu.wustl.dao.query.generator.DBTypes;
 
 /**
  * @author geeta_jaggal
@@ -49,12 +49,15 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 {
 
 	/** The Constant logger. */
-	private static final  Logger LOGGER = Logger.getCommonLogger(MatchedParticipantsSearchAction.class);
+	private static final Logger LOGGER = Logger
+			.getCommonLogger(MatchedParticipantsSearchAction.class);
+
 	/**
 	 * For displaying the matched participants from eMPI
 	 */
-	public ActionForward executeXSS(final ActionMapping mapping,final ActionForm form,
-			final HttpServletRequest request, final HttpServletResponse response) throws ApplicationException
+	public ActionForward executeXSS(final ActionMapping mapping, final ActionForm form,
+			final HttpServletRequest request, final HttpServletResponse response)
+			throws ApplicationException
 	{
 		ActionForward forward = null;
 		final AbstractActionForm participantForm = (AbstractActionForm) form;
@@ -123,8 +126,9 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 	 * @throws Exception the exception
 	 * @throws DAOException the DAO exception
 	 */
-	private void fetchMatchedParticipantsFromDB(final long participantId, final HttpServletRequest request)
-			throws DAOException, BizLogicException, ParseException
+	private void fetchMatchedParticipantsFromDB(final long participantId,
+			final HttpServletRequest request) throws DAOException, BizLogicException,
+			ParseException
 	{
 		JDBCDAO dao = null;
 		List<DefaultLookupResult> matchPartpantLst = null;
@@ -132,8 +136,12 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 		{
 			dao = ParticipantManagerUtility.getJDBCDAO();
 
-			final String query = getSelectQuery(participantId);
-			final List matchPartpantLstTemp = dao.executeQuery(query);
+			final String query = "SELECT * FROM CATISSUE_MATCHED_PARTICIPANT WHERE SEARCHED_PARTICIPANT_ID=?";
+
+			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
+			columnValueBeanList.add(new ColumnValueBean("SEARCHED_PARTICIPANT_ID", participantId,
+					DBTypes.LONG));
+			final List matchPartpantLstTemp = dao.executeQuery(query, null, columnValueBeanList);
 			if (matchPartpantLstTemp != null && !matchPartpantLstTemp.isEmpty())
 			{
 				matchPartpantLst = populateParticipantList(matchPartpantLstTemp);
@@ -219,8 +227,8 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 	 * @throws ParseException the parse exception
 	 * @throws Exception the exception
 	 */
-	private IParticipant getParticipantObj(final List participantValueList) throws BizLogicException,
-			ParseException
+	private IParticipant getParticipantObj(final List participantValueList)
+			throws BizLogicException, ParseException
 	{
 		final IParticipant participant = (IParticipant) ParticipantManagerUtility
 				.getParticipantInstance();
@@ -303,7 +311,10 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 		{
 			final String value = values[i];
 			final IParticipantMedicalIdentifier<IParticipant, ISite> participantMedicalIdentifier = getParticipantMedicalIdentifierObj(value);
-			partiMediIdColn.add(participantMedicalIdentifier);
+			if (participantMedicalIdentifier != null)
+			{
+				partiMediIdColn.add(participantMedicalIdentifier);
+			}
 		}
 
 		return partiMediIdColn;
@@ -323,14 +334,18 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 			final String value) throws BizLogicException
 
 	{
-		final IParticipantMedicalIdentifier<IParticipant, ISite> participantMedicalIdentifier = (IParticipantMedicalIdentifier<IParticipant, ISite>) ParticipantManagerUtility
-				.getPMIInstance();
+		IParticipantMedicalIdentifier<IParticipant, ISite> participantMedicalIdentifier = null;
 		final String values[] = value.split(":");
 		final String mrn = values[0];
 		final String facilityId = values[1];
 		final ISite siteObj = ParticipantManagerUtility.getSiteObject(facilityId);
-		participantMedicalIdentifier.setMedicalRecordNumber(mrn);
-		participantMedicalIdentifier.setSite(siteObj);
+		if (siteObj != null)
+		{
+			participantMedicalIdentifier = (IParticipantMedicalIdentifier<IParticipant, ISite>) ParticipantManagerUtility
+					.getPMIInstance();
+			participantMedicalIdentifier.setMedicalRecordNumber(mrn);
+			participantMedicalIdentifier.setSite(siteObj);
+		}
 		return participantMedicalIdentifier;
 	}
 
@@ -356,8 +371,8 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 	 *
 	 * @throws DAOException the DAO exception
 	 */
-	private void storeLists(final HttpServletRequest request, final List<DefaultLookupResult> matchPartpantLst)
-			throws DAOException
+	private void storeLists(final HttpServletRequest request,
+			final List<DefaultLookupResult> matchPartpantLst) throws DAOException
 	{
 		final ActionMessages messages = new ActionMessages();
 		final List<String> columnList = ParticipantManagerUtility.getColumnHeadingList();
@@ -368,7 +383,7 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 		request.setAttribute(Constants.SPREADSHEET_DATA_LIST, pcpantDisplayLst);
 		final HttpSession session = request.getSession();
 		session.setAttribute("MatchedParticpant", matchPartpantLst);
-		request.setAttribute(Constants.MATCHED_PARTICIPANTS_FOUND_FROM_EMPI,Constants.TRUE);
+		request.setAttribute(Constants.MATCHED_PARTICIPANTS_FOUND_FROM_EMPI, Constants.TRUE);
 		if (request.getAttribute("continueLookup") == null)
 		{
 			saveMessages(request, messages);

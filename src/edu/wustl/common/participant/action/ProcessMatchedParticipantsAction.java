@@ -71,6 +71,7 @@ public class ProcessMatchedParticipantsAction extends SecureAction
 			}
 
 			final ParticipantMatchingBizLogic bizLogic = new ParticipantMatchingBizLogic();
+
 			final List list = bizLogic.getProcessedMatchedParticipants(userId);
 
 			storeList(request, session, columnNames, list, recordsPerPage);

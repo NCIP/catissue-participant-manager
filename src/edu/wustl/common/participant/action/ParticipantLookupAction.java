@@ -128,52 +128,6 @@ public class ParticipantLookupAction extends SecureAction
 		return matchPartpantLst;
 	}
 
-	/*
-	private String processListForMatchWithinCS(HttpServletRequest request,
-			List<DefaultLookupResult> matchPartpantLst, Long csId) throws DAOException
-	{
-		String target = null;
-		if (ParticipantManagerUtility.isParticipantMatchWithinCSCPEnable(csId))
-		{
-			List idList = ParticipantManagerUtility.getPartcipantIdsList(csId);
-
-			if (!idList.isEmpty() && idList.get(0) != null && String.valueOf(idList.get(0)) != "")
-			{
-				matchPartpantLst = filerMatchedList(matchPartpantLst, idList);
-			}
-		}
-		if (!matchPartpantLst.isEmpty())
-		{
-			target = edu.wustl.common.util.global.Constants.SUCCESS;
-			storeLists(request, matchPartpantLst);
-		}
-		else
-		{
-			//request.setAttribute("matchNotFoundWithinCS", Constants.TRUE);
-			target = Constants.PARTICIPANT_ADD_FORWARD;
-		}
-		return target;
-	}
-
-	private List<DefaultLookupResult> filerMatchedList(List<DefaultLookupResult> matchPartpantLst,
-			List idList)
-	{
-
-		List<DefaultLookupResult> matchPartpantLstFiltred = new ArrayList<DefaultLookupResult>();
-		Iterator<DefaultLookupResult> itr = matchPartpantLst.iterator();
-		List participantIdList=(List)idList.get(0);
-		while (itr.hasNext())
-		{
-			DefaultLookupResult result = (DefaultLookupResult) itr.next();
-			IParticipant participant = (IParticipant) result.getObject();
-			if ((participantIdList).contains(String.valueOf(participant.getId().longValue())))
-			{
-				matchPartpantLstFiltred.add(result);
-			}
-		}
-		return matchPartpantLstFiltred;
-	}
-	*/
 	/**
 	 * Store lists.
 	 *
