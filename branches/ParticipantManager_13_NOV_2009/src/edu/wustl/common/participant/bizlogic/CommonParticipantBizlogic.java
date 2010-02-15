@@ -483,7 +483,7 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 	 *
 	 * @throws DAOException the DAO exception
 	 */
-	public static void postInsert(Object obj, SessionDataBean sessionDataBean) throws DAOException
+	public static void postInsert(Object obj, LinkedHashSet<Long> userIdSet) throws DAOException
 	{
 		final IParticipant participant = (IParticipant) obj;
 		// if for CS eMPI is enable then set the eMPI status as pending if its eligible
@@ -493,8 +493,7 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 					participant.getFirstName(), participant.getBirthDate()))
 			{
 				// Process participant for CIDER participant matching.
-				ParticipantManagerUtility.addParticipantToProcessMessageQueue(sessionDataBean
-						.getUserId(), participant.getId());
+				ParticipantManagerUtility.addParticipantToProcessMessageQueue(userIdSet, participant.getId());
 			}
 		}
 

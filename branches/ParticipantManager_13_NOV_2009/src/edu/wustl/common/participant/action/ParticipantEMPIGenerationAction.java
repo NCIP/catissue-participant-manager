@@ -4,6 +4,8 @@
 
 package edu.wustl.common.participant.action;
 
+import java.util.LinkedHashSet;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -31,7 +33,6 @@ import edu.wustl.common.util.Utility;
 import edu.wustl.common.util.logger.Logger;
 import edu.wustl.dao.exception.DAOException;
 
-
 /**
  * The Class ParticipantEMPIGenerationAction.
  *
@@ -42,7 +43,8 @@ public class ParticipantEMPIGenerationAction extends CommonAddEditAction
 {
 
 	/** The logger. */
-	private static final  Logger LOGGER = Logger.getCommonLogger(ParticipantEMPIGenerationAction.class);
+	private static final Logger LOGGER = Logger
+			.getCommonLogger(ParticipantEMPIGenerationAction.class);
 
 	/**
 	 *  Method for generating eMPI id for the participant.
@@ -65,8 +67,8 @@ public class ParticipantEMPIGenerationAction extends CommonAddEditAction
 				{
 					participantForm.setOperation(edu.wustl.common.util.global.Constants.EDIT);
 					participantForm.setEmpiIdStatus(Constants.EMPI_ID_PENDING);
-					forward = super.executeXSS(mapping, (AbstractActionForm) participantForm, request,
-							response);
+					forward = super.executeXSS(mapping, (AbstractActionForm) participantForm,
+							request, response);
 					if (!forward.getName().equals(edu.wustl.common.util.global.Constants.FAILURE))
 					{
 						// Send the registration message to CDR.
@@ -82,12 +84,14 @@ public class ParticipantEMPIGenerationAction extends CommonAddEditAction
 			{
 				// chech the status first if its waiting for generating eMPI thn
 				// can't edit it util it get eMPi id.
-				final String eMPIStatus = ParticipantManagerUtility.getPartiEMPIStatus(participantForm
-						.getId());
+				final String eMPIStatus = ParticipantManagerUtility
+						.getPartiEMPIStatus(participantForm.getId());
 				if (eMPIStatus.equals(Constants.EMPI_ID_PENDING))
 				{
-					forward= mapping.findForward(edu.wustl.common.util.global.Constants.SUCCESS);
-				}else{
+					forward = mapping.findForward(edu.wustl.common.util.global.Constants.SUCCESS);
+				}
+				else
+				{
 					generateEMPI(request, participantForm);
 					forward = mapping.findForward(edu.wustl.common.util.global.Constants.SUCCESS);
 				}
@@ -112,8 +116,8 @@ public class ParticipantEMPIGenerationAction extends CommonAddEditAction
 	 * @throws BizLogicException the biz logic exception
 	 * @throws AssignDataException the assign data exception
 	 */
-	private void registerPatientToEMPI(final HttpServletRequest request, final IParticipantForm participantForm)
-			throws BizLogicException, AssignDataException
+	private void registerPatientToEMPI(final HttpServletRequest request,
+			final IParticipantForm participantForm) throws BizLogicException, AssignDataException
 	{
 		final IParticipant participant = (IParticipant) ParticipantManagerUtility
 				.getParticipantInstance();
@@ -177,16 +181,19 @@ public class ParticipantEMPIGenerationAction extends CommonAddEditAction
 	 *
 	 * @throws DAOException the DAO exception
 	 */
-	private void generateEMPI(final HttpServletRequest request, final IParticipantForm participantForm)
-			throws DAOException
+	private void generateEMPI(final HttpServletRequest request,
+			final IParticipantForm participantForm) throws DAOException
 	{
-		final SessionDataBean sessionDataBean = (SessionDataBean) request.getSession().getAttribute(
-				Constants.SESSION_DATA);
+		final SessionDataBean sessionDataBean = (SessionDataBean) request.getSession()
+				.getAttribute(Constants.SESSION_DATA);
 		try
 		{
+			LinkedHashSet<Long> userIdSet = new LinkedHashSet<Long>();
+			userIdSet.add(sessionDataBean.getUserId());
+			//getPIUserId(participantForm.getId());
 			// Process participant for CIDER participant matching.
-			ParticipantManagerUtility.addParticipantToProcessMessageQueue(sessionDataBean
-					.getUserId(), participantForm.getId());
+			ParticipantManagerUtility.addParticipantToProcessMessageQueue(userIdSet,
+					participantForm.getId());
 			//setStatusMessage(request);
 		}
 		catch (DAOException e)
@@ -194,22 +201,4 @@ public class ParticipantEMPIGenerationAction extends CommonAddEditAction
 			throw new DAOException(e.getErrorKey(), e, e.getMessage());
 		}
 	}
-
-	/**
-	 * Sets the message.
-	 *
-	 * @param request the new message
-	 */
-	private void setStatusMessage(final HttpServletRequest request)
-	{
-		ActionMessages actionMsgs = (ActionMessages) request.getAttribute(Globals.MESSAGE_KEY);
-		if (actionMsgs == null)
-		{
-			actionMsgs = new ActionMessages();
-		}
-		actionMsgs.add(ActionErrors.GLOBAL_MESSAGE, new ActionMessage(
-				"participant.empiid.generation.message"));
-		saveMessages(request, actionMsgs);
-	}
-
 }

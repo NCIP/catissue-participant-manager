@@ -1,5 +1,8 @@
 package edu.wustl.common.participant.actionForm;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 // TODO: Auto-generated Javadoc
 /**
  * @author geeta_jaggal
@@ -114,4 +117,7 @@ public interface IParticipantForm {
 	 * @param cpId Set cpId
 	 */
 	void setCpId(long cpId);
+
+	public void setCollectionProtocolRegistrationValues(Map colProtoRegnVals);
+	public Map getCollectionProtocolRegistrationValues();
 }

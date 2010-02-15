@@ -17,7 +17,7 @@ import edu.wustl.common.util.logger.Logger;
 import edu.wustl.dao.JDBCDAO;
 import edu.wustl.dao.exception.DAOException;
 import edu.wustl.dao.query.generator.ColumnValueBean;
-
+import edu.wustl.dao.query.generator.DBTypes;
 
 /**
  * The listener interface for receiving EMPIParticipantMergeMessage events.
@@ -36,7 +36,6 @@ public class EMPIParticipantMergeMessageListener implements MessageListener
 	/** The Constant logger. */
 	private static final Logger logger = Logger
 			.getCommonLogger(EMPIParticipantMergeMessageListener.class);
-
 
 	/**
 	 *
@@ -130,16 +129,19 @@ public class EMPIParticipantMergeMessageListener implements MessageListener
 	 *
 	 * @throws DAOException the DAO exception
 	 */
-	private boolean isEMPIIdExists(final JDBCDAO jdbcdao, final String pidEmpiId, final String mrgEmpiId)
-			throws DAOException
+	private boolean isEMPIIdExists(final JDBCDAO jdbcdao, final String pidEmpiId,
+			final String mrgEmpiId) throws DAOException
 	{
 		boolean isIdExists = false;
 		try
 		{
-			final String query = (new StringBuilder()).append(
-					"SELECT EMPI_ID FROM CATISSUE_PARTICIPANT WHERE EMPI_ID IN ('").append(
-					pidEmpiId).append("','").append(mrgEmpiId).append("')").toString();
-			final List empiIdList = jdbcdao.executeQuery(query);
+			final String query = "SELECT EMPI_ID FROM CATISSUE_PARTICIPANT WHERE EMPI_ID IN (?,?)";
+			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
+			columnValueBeanList.add(new ColumnValueBean("CATISSUE_PARTICIPANT", pidEmpiId,
+					DBTypes.VARCHAR));
+			columnValueBeanList.add(new ColumnValueBean("CATISSUE_PARTICIPANT", mrgEmpiId,
+					DBTypes.VARCHAR));
+			final List empiIdList = jdbcdao.executeQuery(query,null,columnValueBeanList);
 			if (!empiIdList.isEmpty() && !((List) empiIdList.get(0)).isEmpty())
 			{
 				isIdExists = true;
@@ -198,8 +200,9 @@ public class EMPIParticipantMergeMessageListener implements MessageListener
 	 *
 	 * @throws DAOException the DAO exception
 	 */
-	private void storeMergeMessage(final JDBCDAO jdbcdao, final String hl7Message, final String messageType,
-			final String pidEmpiId, final String mrgEmpiId) throws DAOException
+	private void storeMergeMessage(final JDBCDAO jdbcdao, final String hl7Message,
+			final String messageType, final String pidEmpiId, final String mrgEmpiId)
+			throws DAOException
 	{
 		long idenifier = 0L;
 		String insQuery = "";
@@ -207,7 +210,7 @@ public class EMPIParticipantMergeMessageListener implements MessageListener
 		try
 		{
 			String query = "SELECT MAX(IDENTIFIER) from PARTICIPANT_MERGE_MESSAGES";
-			List maxIdList = jdbcdao.executeQuery(query);
+			List maxIdList = jdbcdao.executeQuery(query,null,null);
 			if (!maxIdList.isEmpty())
 			{
 				List idList = (List) maxIdList.get(0);
@@ -226,11 +229,11 @@ public class EMPIParticipantMergeMessageListener implements MessageListener
 			insQuery = "INSERT INTO PARTICIPANT_MERGE_MESSAGES VALUES(?,?,?,?,?)";
 			LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
 			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
-			columnValueBeanList.add(new ColumnValueBean("IDENTIFIER", Long.valueOf(idenifier), 3));
-			columnValueBeanList.add(new ColumnValueBean("MESSAGE_TYPE", messageType, 21));
-			columnValueBeanList.add(new ColumnValueBean("MESSAGE_DATE", date, 13));
-			columnValueBeanList.add(new ColumnValueBean("HL7_MESSAGE", hl7Message, 21));
-			columnValueBeanList.add(new ColumnValueBean("MESSAGE_STATUS", "false", 21));
+			columnValueBeanList.add(new ColumnValueBean("IDENTIFIER", Long.valueOf(idenifier),DBTypes.INTEGER));
+			columnValueBeanList.add(new ColumnValueBean("MESSAGE_TYPE", messageType, DBTypes.VARCHAR));
+			columnValueBeanList.add(new ColumnValueBean("MESSAGE_DATE", date, DBTypes.DATE));
+			columnValueBeanList.add(new ColumnValueBean("HL7_MESSAGE", hl7Message,DBTypes.VARCHAR));
+			columnValueBeanList.add(new ColumnValueBean("MESSAGE_STATUS", "false", DBTypes.VARCHAR));
 			columnValueBeans.add(columnValueBeanList);
 			jdbcdao.executeUpdate(insQuery, columnValueBeans);
 			jdbcdao.commit();

@@ -15,6 +15,7 @@ import edu.wustl.common.util.logger.Logger;
 import edu.wustl.dao.JDBCDAO;
 import edu.wustl.dao.exception.DAOException;
 import edu.wustl.dao.query.generator.ColumnValueBean;
+import edu.wustl.dao.query.generator.DBTypes;
 import edu.wustl.patientLookUp.domain.PatientInformation;
 
 // TODO: Auto-generated Javadoc
@@ -26,7 +27,6 @@ public class ParticipantMatchingBizLogic
 
 	/** The Constant logger. */
 	private static final Logger logger = Logger.getCommonLogger(ParticipantMatchingBizLogic.class);
-
 
 	/**
 	 * Per form participant match.
@@ -54,7 +54,7 @@ public class ParticipantMatchingBizLogic
 					{
 						List matchPartpantLst = ParticipantManagerUtility
 								.getListOfMatchingParticipants(participant, null,
-										Constants.PARTICIPANT_LOOKUP_ALGO_EMPI,null);
+										Constants.PARTICIPANT_LOOKUP_ALGO_EMPI, null);
 						if (matchPartpantLst.size() == 0
 								&& ParticipantManagerUtility.isParticipantValidForEMPI(participant
 										.getLastName(), participant.getFirstName(), participant
@@ -100,7 +100,7 @@ public class ParticipantMatchingBizLogic
 			LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = null;
 			LinkedList<ColumnValueBean> columnValueBeanList = null;
 
- 			for (int i = 0; i < matchPartpantLst.size(); i++)
+			for (int i = 0; i < matchPartpantLst.size(); i++)
 			{
 				patientInformation = (PatientInformation) matchPartpantLst.get(i);
 				raceValues = getRaceValues(patientInformation.getRaceCollection());
@@ -109,28 +109,28 @@ public class ParticipantMatchingBizLogic
 				columnValueBeanList = new LinkedList<ColumnValueBean>();
 				columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
 				columnValueBeanList.add(new ColumnValueBean("PARTICIPANT_ID", patientInformation
-						.getId(), 22));
+						.getId(), DBTypes.LONG));
 				columnValueBeanList.add(new ColumnValueBean("EMPI_ID", patientInformation.getUpi(),
-						11));
+						 DBTypes.VARCHAR));
 				columnValueBeanList.add(new ColumnValueBean("LAST_NAME", patientInformation
-						.getLastName(), 11));
+						.getLastName(),DBTypes.VARCHAR));
 				columnValueBeanList.add(new ColumnValueBean("FIRST_NAME", patientInformation
-						.getFirstName(), 11));
+						.getFirstName(), DBTypes.VARCHAR));
 				columnValueBeanList.add(new ColumnValueBean("MIDDLE_NAME", patientInformation
-						.getMiddleName(), 11));
+						.getMiddleName(), DBTypes.VARCHAR));
 				columnValueBeanList.add(new ColumnValueBean("GENDER", patientInformation
-						.getGender(), 11));
+						.getGender(), DBTypes.VARCHAR));
 				columnValueBeanList.add(new ColumnValueBean("SOCIAL_SECURITY_NUMBER",
-						patientInformation.getSsn(), 11));
+						patientInformation.getSsn(), DBTypes.VARCHAR));
 				columnValueBeanList.add(new ColumnValueBean("ACTIVITY_STATUS", patientInformation
-						.getActivityStatus(), 11));
+						.getActivityStatus(), DBTypes.VARCHAR));
 				columnValueBeanList.add(new ColumnValueBean("VITAL_STATUS", patientInformation
-						.getVitalStatus(), 11));
-				columnValueBeanList.add(new ColumnValueBean("PARTICIPANT_MRN", mrnValue, 11));
-				columnValueBeanList.add(new ColumnValueBean("PARTICIPANT_RACE", raceValues, 11));
+						.getVitalStatus(), DBTypes.VARCHAR));
+				columnValueBeanList.add(new ColumnValueBean("PARTICIPANT_MRN", mrnValue, DBTypes.VARCHAR));
+				columnValueBeanList.add(new ColumnValueBean("PARTICIPANT_RACE", raceValues, DBTypes.VARCHAR));
 				//columnValueBeanList.add(new ColumnValueBean("IS_FROM_EMPI", patientInformation.getIsFromEMPI(), 11));
 				columnValueBeanList.add(new ColumnValueBean("SEARCHED_PARTICIPANT_ID", participant
-						.getId(), 22));
+						.getId(), DBTypes.LONG));
 				if (patientInformation.getDob() == null
 						&& patientInformation.getDeathDate() == null)
 				{
@@ -147,7 +147,7 @@ public class ParticipantMatchingBizLogic
 							+ "ICIPANT_MRN,PARTICIPANT_RACE,SEARCHED_PARTICIPANT_ID,DEATH_DATE) VA"
 							+ "LUES(?,?,?,?,?,?,?,?,?,?,?,?,?)";
 					columnValueBeanList.add(new ColumnValueBean("DEATH_DATE", patientInformation
-							.getDeathDate(), 13));
+							.getDeathDate(),  DBTypes.DATE));
 				}
 				else if (patientInformation.getDob() != null
 						&& patientInformation.getDeathDate() == null)
@@ -157,7 +157,7 @@ public class ParticipantMatchingBizLogic
 							+ "ICIPANT_MRN,PARTICIPANT_RACE,SEARCHED_PARTICIPANT_ID,BIRTH_DATE) VA"
 							+ "LUES(?,?,?,?,?,?,?,?,?,?,?,?,?)";
 					columnValueBeanList.add(new ColumnValueBean("BIRTH_DATE", patientInformation
-							.getDob(), 13));
+							.getDob(),  DBTypes.DATE));
 				}
 				else
 				{
@@ -166,9 +166,9 @@ public class ParticipantMatchingBizLogic
 							+ "ICIPANT_MRN,PARTICIPANT_RACE,SEARCHED_PARTICIPANT_ID,BIRTH_DATE,DEA"
 							+ "TH_DATE) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 					columnValueBeanList.add(new ColumnValueBean("BIRTH_DATE", patientInformation
-							.getDob(), 13));
+							.getDob(),DBTypes.DATE));
 					columnValueBeanList.add(new ColumnValueBean("DEATH_DATE", patientInformation
-							.getDeathDate(), 13));
+							.getDeathDate(),DBTypes.DATE));
 				}
 				columnValueBeans.add(columnValueBeanList);
 				dao.executeUpdate(query, columnValueBeans);
@@ -208,7 +208,8 @@ public class ParticipantMatchingBizLogic
 		columnValueBeanList.add(new ColumnValueBean(searchPartiId));
 		columnValueBeans.add(columnValueBeanList);
 		String query = (new StringBuilder()).append(
-				"UPDATE MATCHED_PARTICIPANT_MAPPING SET NO_OF_MATCHED_PARTICIPANTS = ?").append(" WHERE SEARCHED_PARTICIPANT_ID=?").toString();
+				"UPDATE MATCHED_PARTICIPANT_MAPPING SET NO_OF_MATCHED_PARTICIPANTS = ?").append(
+				" WHERE SEARCHED_PARTICIPANT_ID=?").toString();
 		try
 		{
 			jdbcdao.executeUpdate(query, columnValueBeans);
@@ -271,7 +272,7 @@ public class ParticipantMatchingBizLogic
 				mrnId = (String) iterator.next();
 				siteId = (String) iterator.next();
 				siteName = (String) iterator.next();
-				mrn = mrnId+":"+siteId+":"+siteName;
+				mrn = mrnId + ":" + siteId + ":" + siteName;
 				if (mrnValue.length() == 0)
 				{
 					mrnValue.append(mrn);
@@ -324,12 +325,10 @@ public class ParticipantMatchingBizLogic
 	 */
 	private String getClinicalStudyNames(Long participantId, JDBCDAO dao) throws DAOException
 	{
-		String query = (new StringBuilder())
-				.append(
-						"SELECT SHORT_TITLE FROM CATISSUE_CLINICAL_STUDY_REG CSR JOIN CATISSUE_SPECIMEN_P"
-								+ "ROTOCOL CSP ON CSR.CLINICAL_STUDY_ID=CSP.IDENTIFIER WHERE PARTICIPANT_ID='")
-				.append(participantId).append("'").toString();
-		List list = dao.executeQuery(query);
+		String query ="SELECT SHORT_TITLE FROM CATISSUE_CLINICAL_STUDY_REG CSR JOIN CATISSUE_SPECIMEN_PROTOCOL CSP ON CSR.CLINICAL_STUDY_ID=CSP.IDENTIFIER WHERE PARTICIPANT_ID=?";
+		LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
+		columnValueBeanList.add(new ColumnValueBean("PARTICIPANT_ID",participantId,DBTypes.LONG));
+		List list = dao.executeQuery(query,null,columnValueBeanList);
 		StringBuffer csNames = new StringBuffer();
 		if (!list.isEmpty())
 		{
@@ -346,8 +345,7 @@ public class ParticipantMatchingBizLogic
 				}
 				else
 				{
-					csNames.append((new StringBuilder()).append(",").append(clinStuNameLst.get(0))
-							.toString());
+					csNames.append(clinStuNameLst.get(0));
 				}
 			}
 
@@ -366,19 +364,32 @@ public class ParticipantMatchingBizLogic
 	 */
 	public List getProcessedMatchedParticipants(Long userId) throws DAOException
 	{
-
 		JDBCDAO dao = null;
 		List list = null;
+		String query= null;
 		try
 		{
 			dao = ParticipantManagerUtility.getJDBCDAO();
+/*
 			String query = "SELECT SEARCHED_PARTICIPANT_ID,LAST_NAME,FIRST_NAME,CREATION_DATE,NO_OF_MATCHED_"
 					+ "PARTICIPANTS FROM MATCHED_PARTICIPANT_MAPPING  PARTIMAPPING JOIN CATISSUE_PARTIC"
 					+ "IPANT PARTI ON PARTI.IDENTIFIER=PARTIMAPPING.SEARCHED_PARTICIPANT_ID WHERE PARTI"
 					+ "MAPPING.USER_ID='"
 					+ userId
 					+ "' AND PARTIMAPPING.NO_OF_MATCHED_PARTICIPANTS!='-1'";
-			list = dao.executeQuery(query);
+
+*/
+			query = "SELECT SEARCHED_PARTICIPANT_ID,LAST_NAME,FIRST_NAME,CREATION_DATE,NO_OF_MATCHED_PARTICIPANTS FROM "
+			    + " MATCHED_PARTICIPANT_MAPPING PARTIMAPPING JOIN CATISSUE_PARTICIPANT PARTI ON PARTI.IDENTIFIER=PARTIMAPPING.SEARCHED_PARTICIPANT_ID "
+			    + " JOIN EMPI_PARTICIPANT_USER_MAPPING ON PARTIMAPPING.SEARCHED_PARTICIPANT_ID=EMPI_PARTICIPANT_USER_MAPPING.PARTICIPANT_ID"
+			    + " WHERE EMPI_PARTICIPANT_USER_MAPPING.USER_ID=? AND PARTIMAPPING.NO_OF_MATCHED_PARTICIPANTS!=?";
+
+
+			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
+			columnValueBeanList.add(new ColumnValueBean("USER_ID", userId, DBTypes.LONG));
+			columnValueBeanList.add(new ColumnValueBean("NO_OF_MATCHED_PARTICIPANTS", "-1",
+					DBTypes.INTEGER));
+			list = dao.executeQuery(query, null, columnValueBeanList);
 			populateListWithCSName(list, dao);
 		}
 		finally
