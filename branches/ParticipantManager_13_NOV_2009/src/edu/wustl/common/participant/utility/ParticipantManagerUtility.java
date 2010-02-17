@@ -202,7 +202,7 @@ public class ParticipantManagerUtility
 		String whColCondn[] = {"="};
 		DefaultBizLogic bizLogic = new DefaultBizLogic();
 		ISite site = null;
-		Object whereColumnValue[] = {'?'};
+		Object whereColumnValue[] = {facilityId};
 		List siteObject = bizLogic.retrieve(sourceObjectName, selectColumnNames, whereColumnName,
 				whColCondn, whereColumnValue, null);
 		if (siteObject != null && siteObject.size() > 0)
@@ -355,6 +355,8 @@ public class ParticipantManagerUtility
 	 *
 	 * @param matchPartpantLst the match partpant lst
 	 * @param csId the cs id
+	 *
+	 * @return the list
 	 *
 	 * @throws DAOException the DAO exception
 	 */
@@ -1037,8 +1039,8 @@ public class ParticipantManagerUtility
 	/**
 	 * Adds the participant to process message queue.
 	 *
-	 * @param userId the user id
 	 * @param participantId the participant id
+	 * @param userIdSet the user id set
 	 *
 	 * @throws DAOException the DAO exception
 	 */
@@ -1096,6 +1098,15 @@ public class ParticipantManagerUtility
 		}
 	}
 
+	/**
+	 * Update participant user mapping.
+	 *
+	 * @param jdbcdao the jdbcdao
+	 * @param userIdSet the user id set
+	 * @param participantId the participant id
+	 *
+	 * @throws DAOException the DAO exception
+	 */
 	private static void updateParticipantUserMapping(JDBCDAO jdbcdao,
 			LinkedHashSet<Long> userIdSet, Long participantId) throws DAOException
 	{
@@ -1262,6 +1273,15 @@ public class ParticipantManagerUtility
 		return oldParticipant;
 	}
 
+	/**
+	 * Checks if is participant is processing.
+	 *
+	 * @param id the id
+	 *
+	 * @return true, if is participant is processing
+	 *
+	 * @throws DAOException the DAO exception
+	 */
 	public static boolean isParticipantIsProcessing(Long id) throws DAOException
 	{
 
@@ -1296,24 +1316,34 @@ public class ParticipantManagerUtility
 	}
 
 	/**
+	 * Gets the processed matched participant ids.
+	 *
+	 * @param userId the user id
+	 *
 	 * @return List of matching participant Ids for EMPI generation
-	 * @throws DAOException
+	 *
+	 * @throws DAOException the DAO exception
 	 */
 	public static List<Long> getProcessedMatchedParticipantIds(Long userId) throws DAOException
 	{
 		JDBCDAO dao = null;
 		List<Long> particpantIdColl = new ArrayList<Long>();
+		List list = null;
 		try
 		{
 
 			dao = ParticipantManagerUtility.getJDBCDAO();
-			String query = "SELECT SEARCHED_PARTICIPANT_ID FROM MATCHED_PARTICIPANT_MAPPING  PARTIMAPPING "
-				+ "WHERE PARTI"
-				+ "MAPPING.USER_ID='"
-				+ userId
-				+ "' AND PARTIMAPPING.NO_OF_MATCHED_PARTICIPANTS!='-1'";
 
-			List resultSet = dao.executeQuery(query, null, null);
+			String query = "SELECT SEARCHED_PARTICIPANT_ID FROM  MATCHED_PARTICIPANT_MAPPING PARTIMAPPING  "
+			    + " JOIN EMPI_PARTICIPANT_USER_MAPPING ON PARTIMAPPING.SEARCHED_PARTICIPANT_ID=EMPI_PARTICIPANT_USER_MAPPING.PARTICIPANT_ID"
+			    + " WHERE EMPI_PARTICIPANT_USER_MAPPING.USER_ID=? AND PARTIMAPPING.NO_OF_MATCHED_PARTICIPANTS!=?";
+
+			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
+			columnValueBeanList.add(new ColumnValueBean("USER_ID", userId, DBTypes.LONG));
+			columnValueBeanList.add(new ColumnValueBean("NO_OF_MATCHED_PARTICIPANTS", "-1",
+					DBTypes.INTEGER));
+
+			List resultSet = dao.executeQuery(query, null, columnValueBeanList);
 
 			for(Object object : resultSet)
 			{

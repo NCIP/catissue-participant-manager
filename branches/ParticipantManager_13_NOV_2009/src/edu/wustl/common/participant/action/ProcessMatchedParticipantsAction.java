@@ -58,7 +58,7 @@ public class ProcessMatchedParticipantsAction extends SecureAction
 			final List<String> columnNames = getColumnList();
 			final Long userId = getUserId(request);
 
-			if(session.getAttribute(Constants.NEXT_PART_ID_TO_PROCESS)!=null)
+			if (session.getAttribute(Constants.NEXT_PART_ID_TO_PROCESS) != null)
 			{
 				session.removeAttribute(Constants.NEXT_PART_ID_TO_PROCESS);
 			}
@@ -87,6 +87,11 @@ public class ProcessMatchedParticipantsAction extends SecureAction
 		}
 	}
 
+	/**
+	 * Gets the column list.
+	 *
+	 * @return the column list
+	 */
 	private List<String> getColumnList()
 	{
 		final List<String> columnNames = new ArrayList<String>();
@@ -95,10 +100,17 @@ public class ProcessMatchedParticipantsAction extends SecureAction
 		columnNames.add("First Name");
 		columnNames.add("Creation Date");
 		columnNames.add("Matched Participants Count");
-		columnNames.add("Clinical Stydy Name");
+		columnNames.add("Clinical Study Name");
 		return columnNames;
 	}
 
+	/**
+	 * Gets the records per page.
+	 *
+	 * @param session the session
+	 *
+	 * @return the records per page
+	 */
 	private int getRecordsPerPage(final HttpSession session)
 	{
 		int recordsPerPage = 0;
@@ -118,6 +130,13 @@ public class ProcessMatchedParticipantsAction extends SecureAction
 		return recordsPerPage;
 	}
 
+	/**
+	 * Gets the user id.
+	 *
+	 * @param request the request
+	 *
+	 * @return the user id
+	 */
 	private Long getUserId(final HttpServletRequest request)
 	{
 		final SessionDataBean sessionDataBean = (SessionDataBean) request.getSession()
@@ -126,6 +145,15 @@ public class ProcessMatchedParticipantsAction extends SecureAction
 		return userId;
 	}
 
+	/**
+	 * Store list.
+	 *
+	 * @param request the request
+	 * @param session the session
+	 * @param columnNames the column names
+	 * @param list the list
+	 * @param recordsPerPage the records per page
+	 */
 	private void storeList(final HttpServletRequest request, final HttpSession session,
 			final List<String> columnNames, final List list, final int recordsPerPage)
 	{
@@ -144,13 +172,20 @@ public class ProcessMatchedParticipantsAction extends SecureAction
 		setStatusMessage(request);
 	}
 
-	private void setStatusMessage(HttpServletRequest request){
+	/**
+	 * Sets the status message.
+	 *
+	 * @param request the new status message
+	 */
+	private void setStatusMessage(HttpServletRequest request)
+	{
 		ActionMessages messages = (ActionMessages) request.getAttribute(Globals.MESSAGE_KEY);
 		if (messages == null)
 		{
 			messages = new ActionMessages();
 		}
-		messages.add("org.apache.struts.action.GLOBAL_MESSAGE", new ActionMessage("process.participant.message"));
+		messages.add("org.apache.struts.action.GLOBAL_MESSAGE", new ActionMessage(
+				"process.participant.message"));
 		saveMessages(request, messages);
 	}
 
