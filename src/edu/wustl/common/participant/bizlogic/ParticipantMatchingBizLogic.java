@@ -347,7 +347,7 @@ public class ParticipantMatchingBizLogic
 				}
 				else
 				{
-					csNames.append(',');
+					csNames.append(",");
 					csNames.append(clinStuNameLst.get(0));
 				}
 			}
