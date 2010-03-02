@@ -237,9 +237,14 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 
 		participant.setId(Long.valueOf((String) participantValueList.get(0)));
 		participant.setEmpiId((String) participantValueList.get(1));
-		participant.setLastName((String) participantValueList.get(2));
-		participant.setFirstName((String) participantValueList.get(3));
-		participant.setMiddleName((String) participantValueList.get(4));
+
+		String lastName = (String) participantValueList.get(2);
+		String firstName = (String) participantValueList.get(3);
+		String middleName = (String) participantValueList.get(4);
+
+		participant.setLastName(ParticipantManagerUtility.modifyNameWithProperCase(lastName));
+		participant.setFirstName(ParticipantManagerUtility.modifyNameWithProperCase(firstName));
+		participant.setMiddleName(ParticipantManagerUtility.modifyNameWithProperCase(middleName));
 		if (participantValueList.get(5) != null && participantValueList.get(5) != "")
 		{
 			final String dateStr = (String) participantValueList.get(5);
@@ -343,7 +348,7 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 		final ISite siteObj = ParticipantManagerUtility.getSiteObject(facilityId);
 		if (siteObj != null)
 		{
-			participantMedicalIdentifier = (IParticipantMedicalIdentifier<IParticipant, ISite>) ParticipantManagerUtility
+			participantMedicalIdentifier = ParticipantManagerUtility
 					.getPMIInstance();
 			participantMedicalIdentifier.setMedicalRecordNumber(mrn);
 			participantMedicalIdentifier.setSite(siteObj);

@@ -197,7 +197,7 @@ public class Constants
 	public static final String HL7_MERGE_EVENT_TYPE_A30 = "A30";
 
 	/** The Constant GENERATE_EMPI_ID. */
-	public static final String GENERATE_EMPI_ID = "Generate EMPI";
+	public static final String GENERATE_EMPI_ID = "Generate eMPI";
 
 	/** The Constant EMPI_DEMOGRAPHIC_XML_GENDER. */
 	public static final String EMPI_DEMOGRAPHIC_XML_GENDER = "gender";
@@ -209,7 +209,7 @@ public class Constants
 	public static final String CLINPORTAL_FACILITY_ID = "6B";
 
 	/** The Constant REGENERATE_EMPI_ID. */
-	public static final String REGENERATE_EMPI_ID = "ReGenerate EMPI";
+	public static final String REGENERATE_EMPI_ID = "Regenerate eMPI";
 
 	/** The Constant NOT_REPORTED. */
 	public static final String NOT_REPORTED = "Not Reported";
