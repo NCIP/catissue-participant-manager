@@ -66,7 +66,10 @@ public class ParticipantMatchingBizLogic
 									Constants.EMPI_ID_PENDING);
 							bizLogic.registerPatientToeMPI(participant);
 						}
-						storeMatchedParticipant(participant, matchPartpantLst);
+						else
+						{
+							storeMatchedParticipant(participant, matchPartpantLst);
+						}
 					}
 				}
 			}
@@ -319,7 +322,7 @@ public class ParticipantMatchingBizLogic
 						logger.error("Error while parsing date", e);
 					}
 
-					if(values.get(0) != "")
+					if (values.get(0) != "")
 					{
 						Long partiId = Long.valueOf((String) values.get(0));
 						String clinstdyNames = getClinicalStudyNames(partiId, dao);
