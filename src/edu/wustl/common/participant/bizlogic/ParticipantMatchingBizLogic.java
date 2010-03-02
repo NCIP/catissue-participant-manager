@@ -3,6 +3,7 @@ package edu.wustl.common.participant.bizlogic;
 
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -11,6 +12,7 @@ import edu.wustl.common.exception.ApplicationException;
 import edu.wustl.common.participant.domain.IParticipant;
 import edu.wustl.common.participant.utility.Constants;
 import edu.wustl.common.participant.utility.ParticipantManagerUtility;
+import edu.wustl.common.util.Utility;
 import edu.wustl.common.util.logger.Logger;
 import edu.wustl.dao.JDBCDAO;
 import edu.wustl.dao.exception.DAOException;
@@ -303,12 +305,27 @@ public class ParticipantMatchingBizLogic
 			for (int i = 0; i < list.size(); i++)
 			{
 				List values = (List) list.get(i);
-				if (!values.isEmpty() && values.get(0) != "")
+				if (!values.isEmpty())
 				{
-					Long partiId = Long.valueOf((String) values.get(0));
-					String clinstdyNames = getClinicalStudyNames(partiId, dao);
-					values.add(0, Integer.valueOf(0));
-					values.add(values.size(), clinstdyNames);
+					String dt = (String) values.get(3);
+					try
+					{
+						Date date = Utility.parseDate(dt, Constants.TIMESTAMP_PATTERN);
+						dt = Utility.parseDateToString(date, Constants.DATE_FORMAT);
+						values.set(3, dt);
+					}
+					catch (java.text.ParseException e)
+					{
+						logger.error("Error while parsing date", e);
+					}
+
+					if(values.get(0) != "")
+					{
+						Long partiId = Long.valueOf((String) values.get(0));
+						String clinstdyNames = getClinicalStudyNames(partiId, dao);
+						values.add(0, Integer.valueOf(0));
+						values.add(values.size(), clinstdyNames);
+					}
 				}
 			}
 

@@ -177,7 +177,7 @@ public class ParticipantManagerUtility
 		IParticipantMedicalIdentifier<IParticipant, ISite> participantMedicalIdentifier = null;
 		if (site != null)
 		{
-			participantMedicalIdentifier = (IParticipantMedicalIdentifier<IParticipant, ISite>) getPMIInstance();
+			participantMedicalIdentifier = getPMIInstance();
 			participantMedicalIdentifier.setMedicalRecordNumber(mrn);
 			participantMedicalIdentifier.setSite(site);
 		}
@@ -207,7 +207,7 @@ public class ParticipantManagerUtility
 				whColCondn, whereColumnValue, null);
 		if (siteObject != null && siteObject.size() > 0)
 		{
-			Object siteList[] = (Object[]) (Object[]) siteObject.get(0);
+			Object siteList[] = (Object[]) siteObject.get(0);
 			Long siteId = (Long) siteList[0];
 			String siteName = (String) siteList[1];
 			site = (ISite) ParticipantManagerUtility.getSiteInstance();
@@ -387,10 +387,10 @@ public class ParticipantManagerUtility
 		Iterator<DefaultLookupResult> itr = matchPartpantLst.iterator();
 		if (!idList.isEmpty() && idList.get(0) != null && String.valueOf(idList.get(0)) != "")
 		{
-			List participantIdList = (List) idList;
+			List participantIdList = idList;
 			while (itr.hasNext())
 			{
-				DefaultLookupResult result = (DefaultLookupResult) itr.next();
+				DefaultLookupResult result = itr.next();
 				IParticipant participant = (IParticipant) result.getObject();
 				if ((participantIdList).contains(String.valueOf(participant.getId().longValue())))
 				{
@@ -471,7 +471,7 @@ public class ParticipantManagerUtility
 			{
 				for (Iterator<List> itr = idListArray.iterator(); itr.hasNext();)
 				{
-					idList.add(String.valueOf(((List) itr.next()).get(0)));
+					idList.add(String.valueOf((itr.next()).get(0)));
 				}
 			}
 		}
@@ -921,7 +921,7 @@ public class ParticipantManagerUtility
 		List<String> columnList = Arrays.asList(columnHeaderList);
 
 		List<String> displayList = new ArrayList<String>();
-		displayList.add("EMPIID");
+		displayList.add("eMPI Id");
 		List<String> displayListTemp = getColumnList(columnList);
 		displayList.addAll(displayListTemp);
 		return displayList;
@@ -943,15 +943,15 @@ public class ParticipantManagerUtility
 		List<String> participantInfo;
 		for (; itr.hasNext(); pcpantDisplaylst.add(participantInfo))
 		{
-			DefaultLookupResult result = (DefaultLookupResult) itr.next();
+			DefaultLookupResult result = itr.next();
 			IParticipant participant = (IParticipant) result.getObject();
 			participantInfo = new ArrayList<String>();
 			participantInfo.add(participant.getEmpiId());
 			participantInfo.add(Utility.toString(participant.getLastName()));
 			participantInfo.add(Utility.toString(participant.getFirstName()));
 			participantInfo.add(Utility.toString(participant.getMiddleName()));
-			participantInfo.add(Utility.toString(participant.getBirthDate()));
-			participantInfo.add(Utility.toString(participant.getDeathDate()));
+			participantInfo.add(Utility.parseDateToString(participant.getBirthDate(), Constants.DATE_FORMAT));
+			participantInfo.add(Utility.parseDateToString(participant.getDeathDate(), Constants.DATE_FORMAT));
 			participantInfo.add(Utility.toString(participant.getVitalStatus()));
 			participantInfo.add(Utility.toString(participant.getGender()));
 			participantInfo.add(Utility.toString(participant.getSocialSecurityNumber()));
@@ -988,9 +988,9 @@ public class ParticipantManagerUtility
 				IParticipantMedicalIdentifier<IParticipant, ISite> participantMedicalIdentifier = (IParticipantMedicalIdentifier<IParticipant, ISite>) pmiItr
 						.next();
 				if (participantMedicalIdentifier.getSite() != null
-						&& ((ISite) participantMedicalIdentifier.getSite()).getId() != null)
+						&& (participantMedicalIdentifier.getSite()).getId() != null)
 				{
-					String siteName = ((ISite) participantMedicalIdentifier.getSite()).getName();
+					String siteName = (participantMedicalIdentifier.getSite()).getName();
 					mrn.append(participantMedicalIdentifier.getMedicalRecordNumber());
 					mrn.append(':');
 					mrn.append(siteName);
@@ -1175,7 +1175,7 @@ public class ParticipantManagerUtility
 					participantInfoMedicalIdentifierCollection.add(participantMedicalIdentifier
 							.getMedicalRecordNumber());
 					participantInfoMedicalIdentifierCollection.add(String
-							.valueOf(((ISite) participantMedicalIdentifier.getSite()).getId()));
+							.valueOf((participantMedicalIdentifier.getSite()).getId()));
 					//participantInfoMedicalIdentifierCollection.add(((ISite) participantMedicalIdentifier.getSite()).getName());
 				}
 			}
@@ -1360,5 +1360,22 @@ public class ParticipantManagerUtility
 		}
 		return particpantIdColl;
 	}
+
+	/**
+	 *
+	 * @param name
+	 * @return
+	 */
+	public static String modifyNameWithProperCase(String name)
+	{
+		String modifiedName = "";
+		if (name != null && !"".equals(name))
+		{
+			modifiedName = name.substring(0, 1).toUpperCase()
+					+ name.substring(1, name.length()).toLowerCase();
+		}
+		return modifiedName;
+	}
+
 
 }
