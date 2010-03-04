@@ -179,11 +179,11 @@ public class ParticipantMatchingBizLogic
 				}
 				columnValueBeans.add(columnValueBeanList);
 				dao.executeUpdate(query, columnValueBeans);
-				dao.commit();
+
 			}
 
 			updateMatchedPartiMapping(dao, participant.getId().longValue(), matchPartpantLst.size());
-
+			dao.commit();
 		}
 		catch (DAOException e)
 		{
@@ -220,7 +220,7 @@ public class ParticipantMatchingBizLogic
 		try
 		{
 			jdbcdao.executeUpdate(query, columnValueBeans);
-			jdbcdao.commit();
+			//jdbcdao.commit();
 		}
 		catch (DAOException e)
 		{
@@ -308,8 +308,17 @@ public class ParticipantMatchingBizLogic
 			for (int i = 0; i < list.size(); i++)
 			{
 				List values = (List) list.get(i);
+
+
 				if (!values.isEmpty())
 				{
+
+
+					String lastName = ParticipantManagerUtility.modifyNameWithProperCase((String) values.get(1));
+					String firstName = ParticipantManagerUtility.modifyNameWithProperCase((String) values.get(2));
+					values.set(1, lastName);
+					values.set(2, firstName);
+
 					String dt = (String) values.get(3);
 					try
 					{

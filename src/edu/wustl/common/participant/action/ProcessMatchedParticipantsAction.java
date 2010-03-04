@@ -9,6 +9,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.struts.Globals;
+import org.apache.struts.action.ActionError;
+import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
@@ -24,6 +26,7 @@ import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.util.XMLPropertyHandler;
 import edu.wustl.common.util.global.QuerySessionData;
 import edu.wustl.common.util.logger.Logger;
+import edu.wustl.dao.exception.DAOException;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -65,9 +68,8 @@ public class ProcessMatchedParticipantsAction extends SecureAction
 			if (isDelete != null && isDelete != "" && isDelete.equalsIgnoreCase(Constants.YES)
 					&& particicipantId != null && particicipantId != "")
 			{
-				final boolean delStatus = ParticipantManagerUtility.deleteProcessedParticipant(Long
-						.valueOf(particicipantId));
-				setDelStatusMessage(request, delStatus);
+				ParticipantManagerUtility.deleteProcessedParticipant(Long.valueOf(particicipantId));
+				setStatusMessage(request, "participant.processed.delete.success");
 			}
 
 			final ParticipantMatchingBizLogic bizLogic = new ParticipantMatchingBizLogic();
@@ -79,6 +81,12 @@ public class ProcessMatchedParticipantsAction extends SecureAction
 			target = edu.wustl.common.util.global.Constants.SUCCESS;
 
 			return mapping.findForward(target);
+		}
+		catch (DAOException daoExp)
+		{
+			setErrorMessage(request);
+			LOGGER.info(daoExp.getMessage());
+			throw new ApplicationException(null, daoExp, daoExp.getMessage());
 		}
 		catch (Exception e)
 		{
@@ -169,7 +177,7 @@ public class ProcessMatchedParticipantsAction extends SecureAction
 		request.setAttribute(Constants.SPREADSHEET_DATA_LIST, list);
 		request.setAttribute(edu.wustl.common.util.global.Constants.SPREADSHEET_COLUMN_LIST,
 				columnNames);
-		setStatusMessage(request);
+		setStatusMessage(request, "process.participant.message");
 	}
 
 	/**
@@ -177,15 +185,14 @@ public class ProcessMatchedParticipantsAction extends SecureAction
 	 *
 	 * @param request the new status message
 	 */
-	private void setStatusMessage(HttpServletRequest request)
+	private void setStatusMessage(HttpServletRequest request, String key)
 	{
 		ActionMessages messages = (ActionMessages) request.getAttribute(Globals.MESSAGE_KEY);
 		if (messages == null)
 		{
 			messages = new ActionMessages();
 		}
-		messages.add("org.apache.struts.action.GLOBAL_MESSAGE", new ActionMessage(
-				"process.participant.message"));
+		messages.add("org.apache.struts.action.GLOBAL_MESSAGE", new ActionMessage(key));
 		saveMessages(request, messages);
 	}
 
@@ -195,19 +202,15 @@ public class ProcessMatchedParticipantsAction extends SecureAction
 	 * @param request the request
 	 * @param delStatus the del status
 	 */
-	private void setDelStatusMessage(final HttpServletRequest request, final boolean delStatus)
+	private void setErrorMessage(final HttpServletRequest request)
 	{
-		final ActionMessages actionMsgs = new ActionMessages();
-		if (delStatus)
+		ActionErrors actionErrors = (ActionErrors) request.getAttribute(Globals.ERROR_KEY);
+		if (actionErrors == null)
 		{
-			actionMsgs.add("GLOBAL_MESSAGE", new ActionMessage(
-					"participant.processed.delete.success"));
+			actionErrors = new ActionErrors();
 		}
-		else
-		{
-			actionMsgs.add("GLOBAL_MESSAGE", new ActionMessage(
-					"participant.processed.delete.failure"));
-		}
-		saveMessages(request, actionMsgs);
+		final ActionError actionError = new ActionError("participant.processed.delete.failure");
+		actionErrors.add(ActionErrors.GLOBAL_ERROR, actionError);
+		saveErrors(request, actionErrors);
 	}
 }
