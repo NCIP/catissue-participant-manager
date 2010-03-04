@@ -947,11 +947,16 @@ public class ParticipantManagerUtility
 			IParticipant participant = (IParticipant) result.getObject();
 			participantInfo = new ArrayList<String>();
 			participantInfo.add(participant.getEmpiId());
-			participantInfo.add(Utility.toString(participant.getLastName()));
-			participantInfo.add(Utility.toString(participant.getFirstName()));
-			participantInfo.add(Utility.toString(participant.getMiddleName()));
-			participantInfo.add(Utility.parseDateToString(participant.getBirthDate(), Constants.DATE_FORMAT));
-			participantInfo.add(Utility.parseDateToString(participant.getDeathDate(), Constants.DATE_FORMAT));
+			participantInfo.add(ParticipantManagerUtility.modifyNameWithProperCase(participant
+					.getLastName()));
+			participantInfo.add(ParticipantManagerUtility.modifyNameWithProperCase(participant
+					.getFirstName()));
+			participantInfo.add(ParticipantManagerUtility.modifyNameWithProperCase(participant
+					.getMiddleName()));
+			participantInfo.add(Utility.parseDateToString(participant.getBirthDate(),
+					Constants.DATE_FORMAT));
+			participantInfo.add(Utility.parseDateToString(participant.getDeathDate(),
+					Constants.DATE_FORMAT));
 			participantInfo.add(Utility.toString(participant.getVitalStatus()));
 			participantInfo.add(Utility.toString(participant.getGender()));
 			participantInfo.add(Utility.toString(participant.getSocialSecurityNumber()));
@@ -1215,10 +1220,8 @@ public class ParticipantManagerUtility
 	 *
 	 * @throws DAOException the DAO exception
 	 */
-	public static boolean deleteProcessedParticipant(Long id) throws DAOException
+	public static void deleteProcessedParticipant(Long id) throws DAOException
 	{
-		boolean status;
-		status = false;
 
 		JDBCDAO jdbcdao = null;
 		try
@@ -1233,6 +1236,7 @@ public class ParticipantManagerUtility
 					.toString();
 			jdbcdao.executeUpdate(query, columnValueBeans);
 			jdbcdao.commit();
+
 		}
 		catch (DAOException e)
 		{
@@ -1243,8 +1247,6 @@ public class ParticipantManagerUtility
 		{
 			jdbcdao.closeSession();
 		}
-
-		return status;
 	}
 
 	/**
@@ -1335,8 +1337,8 @@ public class ParticipantManagerUtility
 			dao = ParticipantManagerUtility.getJDBCDAO();
 
 			String query = "SELECT SEARCHED_PARTICIPANT_ID FROM  MATCHED_PARTICIPANT_MAPPING PARTIMAPPING  "
-			    + " JOIN EMPI_PARTICIPANT_USER_MAPPING ON PARTIMAPPING.SEARCHED_PARTICIPANT_ID=EMPI_PARTICIPANT_USER_MAPPING.PARTICIPANT_ID"
-			    + " WHERE EMPI_PARTICIPANT_USER_MAPPING.USER_ID=? AND PARTIMAPPING.NO_OF_MATCHED_PARTICIPANTS!=?";
+					+ " JOIN EMPI_PARTICIPANT_USER_MAPPING ON PARTIMAPPING.SEARCHED_PARTICIPANT_ID=EMPI_PARTICIPANT_USER_MAPPING.PARTICIPANT_ID"
+					+ " WHERE EMPI_PARTICIPANT_USER_MAPPING.USER_ID=? AND PARTIMAPPING.NO_OF_MATCHED_PARTICIPANTS!=?";
 
 			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
 			columnValueBeanList.add(new ColumnValueBean("USER_ID", userId, DBTypes.LONG));
@@ -1345,10 +1347,10 @@ public class ParticipantManagerUtility
 
 			List resultSet = dao.executeQuery(query, null, columnValueBeanList);
 
-			for(Object object : resultSet)
+			for (Object object : resultSet)
 			{
 				ArrayList particpantIdList = (ArrayList) object;
-				if(particpantIdList!= null && !particpantIdList.isEmpty())
+				if (particpantIdList != null && !particpantIdList.isEmpty())
 				{
 					particpantIdColl.add(Long.valueOf(particpantIdList.get(0).toString()));
 				}
@@ -1376,6 +1378,5 @@ public class ParticipantManagerUtility
 		}
 		return modifiedName;
 	}
-
 
 }
