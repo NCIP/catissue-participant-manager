@@ -65,6 +65,7 @@ public class ParticipantMatchingBizLogic
 							ParticipantManagerUtility.setEMPIIdStatus(participant.getId(),
 									Constants.EMPI_ID_PENDING);
 							bizLogic.registerPatientToeMPI(participant);
+							ParticipantManagerUtility.deleteProcessedParticipant(participant.getId());
 						}
 						else
 						{
