@@ -58,14 +58,15 @@ public class ParticipantMatchingBizLogic
 								.getListOfMatchingParticipants(participant, null,
 										Constants.PARTICIPANT_LOOKUP_ALGO_EMPI, null);
 						if (matchPartpantLst.size() == 0
-								&& ParticipantManagerUtility.isParticipantValidForEMPI(participant
-										.getLastName(), participant.getFirstName(), participant
-										.getBirthDate()))
+								&& (participant.getBirthDate() != null
+								|| (participant.getSocialSecurityNumber() != null && !""
+										.equals(participant.getSocialSecurityNumber()))))
 						{
 							ParticipantManagerUtility.setEMPIIdStatus(participant.getId(),
 									Constants.EMPI_ID_PENDING);
 							bizLogic.registerPatientToeMPI(participant);
-							ParticipantManagerUtility.deleteProcessedParticipant(participant.getId());
+							ParticipantManagerUtility.deleteProcessedParticipant(participant
+									.getId());
 						}
 						else
 						{
@@ -310,13 +311,13 @@ public class ParticipantMatchingBizLogic
 			{
 				List values = (List) list.get(i);
 
-
 				if (!values.isEmpty())
 				{
 
-
-					String lastName = ParticipantManagerUtility.modifyNameWithProperCase((String) values.get(1));
-					String firstName = ParticipantManagerUtility.modifyNameWithProperCase((String) values.get(2));
+					String lastName = ParticipantManagerUtility
+							.modifyNameWithProperCase((String) values.get(1));
+					String firstName = ParticipantManagerUtility
+							.modifyNameWithProperCase((String) values.get(2));
 					values.set(1, lastName);
 					values.set(2, firstName);
 

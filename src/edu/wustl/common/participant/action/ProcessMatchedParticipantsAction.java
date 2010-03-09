@@ -65,8 +65,8 @@ public class ProcessMatchedParticipantsAction extends SecureAction
 			{
 				session.removeAttribute(Constants.NEXT_PART_ID_TO_PROCESS);
 			}
-			if (isDelete != null && isDelete != "" && isDelete.equalsIgnoreCase(Constants.YES)
-					&& particicipantId != null && particicipantId != "")
+			if (isDelete != null && !"".equals(isDelete) && Constants.YES.equals(isDelete)
+					&& particicipantId != null && !"".equals(particicipantId))
 			{
 				ParticipantManagerUtility.deleteProcessedParticipant(Long.valueOf(particicipantId));
 				setStatusMessage(request, "participant.processed.delete.success");
@@ -128,8 +128,7 @@ public class ProcessMatchedParticipantsAction extends SecureAction
 		{
 			recordsPerPage = Integer.parseInt(XMLPropertyHandler
 					.getValue(Constants.NO_OF_RECORDS_PER_PAGE));
-			session.setAttribute(edu.wustl.common.util.global.Constants.RESULTS_PER_PAGE,
-					(new StringBuilder()).append(recordsPerPage).append("").toString());
+			session.setAttribute(edu.wustl.common.util.global.Constants.RESULTS_PER_PAGE,String.valueOf(recordsPerPage));
 		}
 		else
 		{
@@ -185,7 +184,7 @@ public class ProcessMatchedParticipantsAction extends SecureAction
 	 *
 	 * @param request the new status message
 	 */
-	private void setStatusMessage(HttpServletRequest request, String key)
+	private void setStatusMessage(final HttpServletRequest request, final String key)
 	{
 		ActionMessages messages = (ActionMessages) request.getAttribute(Globals.MESSAGE_KEY);
 		if (messages == null)

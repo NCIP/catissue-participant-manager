@@ -27,7 +27,7 @@ public class RaceGenderCodesProperyHandler
 
 	/** The document. */
 	private static Document document = null;
-	private static final Logger logger = Logger
+	private static final Logger LOGGER = Logger
 			.getCommonLogger(RaceGenderCodesProperyHandler.class);
 
 	/**
@@ -37,17 +37,18 @@ public class RaceGenderCodesProperyHandler
 	 *
 	 * @throws Exception the exception
 	 */
-	public static void init(String path) throws ApplicationException
+	public static void init(final String path) throws ApplicationException
 	{
+
 		try
 		{
-			java.io.InputStream iStream = Thread.currentThread().getContextClassLoader()
+			final java.io.InputStream iStream = Thread.currentThread().getContextClassLoader()
 					.getResourceAsStream(path);
 			if (iStream != null)
 			{
 				raceGenderCodesProp = new Properties();
-				DocumentBuilderFactory dbfactory = DocumentBuilderFactory.newInstance();
-				DocumentBuilder dbuilder = dbfactory.newDocumentBuilder();
+				final DocumentBuilderFactory dbfactory = DocumentBuilderFactory.newInstance();
+				final DocumentBuilder dbuilder = dbfactory.newDocumentBuilder();
 				document = dbuilder.parse(iStream);
 				populateProperyFile(document);
 			}
@@ -58,12 +59,12 @@ public class RaceGenderCodesProperyHandler
 		}
 		catch (FileNotFoundException e)
 		{
-			logger.info(e.getMessage());
+			LOGGER.info(e.getMessage());
 			throw new ApplicationException(null, e, " HL7MesRaceGenderCodes.xml fiel not found \n");
 		}
 		catch (Exception e)
 		{
-			logger.info(e.getMessage());
+			LOGGER.info(e.getMessage());
 			throw new ApplicationException(null, e,
 					" Error in initialising RaceGenderCodesProperyHandler class");
 		}
@@ -75,23 +76,23 @@ public class RaceGenderCodesProperyHandler
 	 *
 	 * @param document the document
 	 */
-	private static void populateProperyFile(Document document)
+	private static void populateProperyFile(final Document document)
 	{
-		Element root = document.getDocumentElement();
-		NodeList children = root.getChildNodes();
+		final Element root = document.getDocumentElement();
+		final NodeList children = root.getChildNodes();
 		for (int i = 0; i < children.getLength(); i++)
 		{
-			Node child = children.item(i);
+			final Node child = children.item(i);
 			if (!(child instanceof Element))
 			{
 				continue;
 			}
-			NodeList subChildNodes = child.getChildNodes();
+			final NodeList subChildNodes = child.getChildNodes();
 			String pName = null;
 			for (int j = 0; j < subChildNodes.getLength(); j++)
 			{
-				Node subchildNode = subChildNodes.item(j);
-				String subNodeName = subchildNode.getNodeName();
+				final Node subchildNode = subChildNodes.item(j);
+				final String subNodeName = subchildNode.getNodeName();
 				if ("name".equals(subNodeName))
 				{
 					pName = subchildNode.getFirstChild().getNodeValue();
@@ -121,7 +122,7 @@ public class RaceGenderCodesProperyHandler
 	 *
 	 * @throws Exception the exception
 	 */
-	public static String getValue(String propertyName) throws ApplicationException
+	public static String getValue(final String propertyName) throws ApplicationException
 	{
 		String value = null;
 
