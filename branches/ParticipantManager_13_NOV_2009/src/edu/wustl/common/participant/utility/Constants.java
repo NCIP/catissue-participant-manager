@@ -270,4 +270,12 @@ public class Constants
 	public static final String PAGE_OF = "pageOf";
 
 	public static final String SUCCESS = "success";
+
+	public static final String PARTICIPANT_MEDICAL_IDENTIFIER_MEDICAL_NUMBER = "_medicalRecordNumber";
+
+	public static final String PARTICIPANT_MEDICAL_IDENTIFIER = "ParticipantMedicalIdentifier:";
+
+	public static final String IS_GENERATE_EMPI_PAGE = "isGenerateeMPIPage";
+
+	public static final String EMPI_GENERATION_FIELDS_INSUFFICIENT = "empiGenerationFieldsInsufficient";
 }

@@ -1,7 +1,6 @@
 
 package edu.wustl.common.participant.utility;
 
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -62,7 +61,7 @@ public class ParticipantManagerUtility
 {
 
 	/** The logger. */
-	private static final Logger logger = Logger.getCommonLogger(ParticipantManagerUtility.class);
+	private static final Logger LOGGER = Logger.getCommonLogger(ParticipantManagerUtility.class);
 
 	/**
 	 * Register wmq listener.
@@ -84,66 +83,66 @@ public class ParticipantManagerUtility
 			qmgName = XMLPropertyHandler.getValue(Constants.WMQ_QMG_NAME);
 			channel = XMLPropertyHandler.getValue(Constants.WMQ_CHANNEL);
 			if (XMLPropertyHandler.getValue(Constants.WMQ_PORT) != null
-					&& XMLPropertyHandler.getValue(Constants.WMQ_PORT) != "")
+					&& !"".equals(XMLPropertyHandler.getValue(Constants.WMQ_PORT)))
 			{
 				port = Integer.parseInt(XMLPropertyHandler.getValue(Constants.WMQ_PORT));
 			}
 
-			logger.info("WMQ_SERVER_NAME ----------- : " + hostName);
-			logger.info("WMQ_QMG_NAME ----------- : " + qmgName);
-			logger.info("WMQ_CHANNEL ----------- : " + channel);
-			logger.info("WMQ_PORT ----------- : " + port);
+			LOGGER.info("WMQ_SERVER_NAME ----------- : " + hostName);
+			LOGGER.info("WMQ_QMG_NAME ----------- : " + qmgName);
+			LOGGER.info("WMQ_CHANNEL ----------- : " + channel);
+			LOGGER.info("WMQ_PORT ----------- : " + port);
 
-			MQQueueConnectionFactory factory = new MQQueueConnectionFactory();
+			final MQQueueConnectionFactory factory = new MQQueueConnectionFactory();
 			factory.setTransportType(JMSC.MQJMS_TP_CLIENT_MQ_TCPIP);
 			factory.setQueueManager(qmgName);
 			factory.setHostName(hostName);
 			factory.setChannel(channel);
 			factory.setPort(port);
 
-			QueueConnection connection = factory.createQueueConnection();
+			final QueueConnection connection = factory.createQueueConnection();
 
 			connection.start();
 
-			QueueSession session = connection.createQueueSession(false,
+			final QueueSession session = connection.createQueueSession(false,
 					javax.jms.Session.AUTO_ACKNOWLEDGE);
 			inBoundQueueName = XMLPropertyHandler.getValue(Constants.IN_BOUND_QUEUE_NAME);
-			Queue inBoundQueue = session.createQueue("queue:///" + inBoundQueueName);
+			final Queue inBoundQueue = session.createQueue("queue:///" + inBoundQueueName);
 
-			logger.info("IN_BOUND_QUEUE_NAME ----------- : " + inBoundQueueName);
+			LOGGER.info("IN_BOUND_QUEUE_NAME ----------- : " + inBoundQueueName);
 
 			QueueReceiver queueReceiver = session.createReceiver(inBoundQueue);
 
-			EMPIParticipantListener listener = new EMPIParticipantListener();
+			final EMPIParticipantListener listener = new EMPIParticipantListener();
 
 			queueReceiver.setMessageListener(listener);
 
 			// Set the merge message queue listener.
 			mergeMessageQueueName = XMLPropertyHandler.getValue(Constants.MERGE_MESSAGE_QUEUE);
-			Queue mrgMessageQueue = session.createQueue("queue:///" + mergeMessageQueueName);
+			final Queue mrgMessageQueue = session.createQueue("queue:///" + mergeMessageQueueName);
 			queueReceiver = session.createReceiver(mrgMessageQueue);
-			EMPIParticipantMergeMessageListener mrgMesListener = new EMPIParticipantMergeMessageListener();
+			final EMPIParticipantMergeMessageListener mrgMesListener = new EMPIParticipantMergeMessageListener();
 			queueReceiver.setMessageListener(mrgMesListener);
 		}
 		catch (JMSException e)
 		{
 
-			logger
+			LOGGER
 					.error(" -------------  ERROR WHILE INITIALISING THE MESSAGE QUEUES \n \n ------------- ");
-			logger.error(e.getMessage());
-			logger.error(e.getStackTrace());
+			LOGGER.error(e.getMessage());
+			LOGGER.error(e.getStackTrace());
 			e.printStackTrace();
 			e.getLinkedException();
-			logger.error(e.getLinkedException());
-			logger.error(e.getLinkedException().getMessage());
-			logger.error(e.getLinkedException().getStackTrace());
+			LOGGER.error(e.getLinkedException());
+			LOGGER.error(e.getLinkedException().getMessage());
+			LOGGER.error(e.getLinkedException().getStackTrace());
 			throw e;
 
 		}
 		catch (Exception e)
 		{
 			e.printStackTrace();
-			logger.error(e.getMessage());
+			LOGGER.error(e.getMessage());
 		}
 	}
 
@@ -152,9 +151,9 @@ public class ParticipantManagerUtility
 	 */
 	public static void initialiseParticiapntMatchScheduler()
 	{
-		ParticipantMatchingTimerTask timerTask = new ParticipantMatchingTimerTask();
-		Timer scheduleTime = new Timer();
-		String delay = XMLPropertyHandler.getValue(Constants.PARTICIPANT_MATCHING_SCHEDULAR_DELAY);
+		final ParticipantMatchingTimerTask timerTask = new ParticipantMatchingTimerTask();
+		final Timer scheduleTime = new Timer();
+		final String delay = XMLPropertyHandler.getValue(Constants.PARTICIPANT_MATCHING_SCHEDULAR_DELAY);
 		scheduleTime.schedule(timerTask, 0x1d4c0L, Long.parseLong(delay));
 	}
 
@@ -165,23 +164,24 @@ public class ParticipantManagerUtility
 	 * @param facilityId the facility id
 	 *
 	 * @return the participant medical identifier obj
+	 * @throws BizLogicException
 	 *
 	 * @throws Exception the exception
 	 */
 	public static IParticipantMedicalIdentifier<IParticipant, ISite> getParticipantMedicalIdentifierObj(
-			String mrn, String facilityId) throws Exception
+			final String mrn, final String facilityId) throws BizLogicException
 	{
 
 		ISite site = null;
 		site = getSiteObject(facilityId);
-		IParticipantMedicalIdentifier<IParticipant, ISite> participantMedicalIdentifier = null;
+		IParticipantMedicalIdentifier<IParticipant, ISite> partiMedId = null;
 		if (site != null)
 		{
-			participantMedicalIdentifier = getPMIInstance();
-			participantMedicalIdentifier.setMedicalRecordNumber(mrn);
-			participantMedicalIdentifier.setSite(site);
+			partiMedId = getPMIInstance();
+			partiMedId.setMedicalRecordNumber(mrn);
+			partiMedId.setSite(site);
 		}
-		return participantMedicalIdentifier;
+		return partiMedId;
 	}
 
 	/**
@@ -194,7 +194,7 @@ public class ParticipantManagerUtility
 	 * @throws BizLogicException the biz logic exception
 	 * @throws Exception the exception
 	 */
-	public static ISite getSiteObject(String facilityId) throws BizLogicException
+	public static ISite getSiteObject(final String facilityId) throws BizLogicException
 	{
 		String sourceObjectName = ISite.class.getName();
 		String selectColumnNames[] = {"id", "name"};
@@ -226,7 +226,7 @@ public class ParticipantManagerUtility
 	 *
 	 * @throws BizLogicException the biz logic exception
 	 */
-	public static Object getObject(String bizLogicFactoryName) throws BizLogicException
+	public static Object getObject(final String bizLogicFactoryName) throws BizLogicException
 	{
 		try
 		{
@@ -236,19 +236,19 @@ public class ParticipantManagerUtility
 		}
 		catch (IllegalAccessException e)
 		{
-			logger.info(e.getMessage());
+			LOGGER.info(e.getMessage());
 			throw new BizLogicException(null, null, "IllegalAccessException",
 					"IllegalAccessException");
 		}
 		catch (InstantiationException e)
 		{
-			logger.info(e.getMessage());
+			LOGGER.info(e.getMessage());
 			throw new BizLogicException(null, null, "InstantiationException",
 					"InstantiationException");
 		}
 		catch (ClassNotFoundException e)
 		{
-			logger.info(e.getMessage());
+			LOGGER.info(e.getMessage());
 			throw new BizLogicException(null, null, "ClassNotFoundException",
 					"ClassNotFoundException");
 		}
@@ -265,7 +265,7 @@ public class ParticipantManagerUtility
 	 *
 	 * @throws BizLogicException the biz logic exception
 	 * @throws Exception 	 */
-	public static IParticipant getParticipantById(Long identifier) throws BizLogicException
+	public static IParticipant getParticipantById(final Long identifier) throws BizLogicException
 	{
 		// Initializing instance of IBizLogic
 		IFactory factory = AbstractFactoryConfig.getInstance().getBizLogicFactory();
@@ -287,22 +287,72 @@ public class ParticipantManagerUtility
 	 *
 	 * @return true, if is participant valid for empi
 	 */
-	public static boolean isParticipantValidForEMPI(String LName, String FName, Date dob)
+	public static boolean isParticipantValidForEMPI(final String LName,final  String FName, final Date dob,
+			final String ssn, final String mrn)
 	{
-		boolean isValid = true;
-		if (LName == null || LName == "")
+		/*
+			boolean isValid = true;
+			if (LName == null || "".equals(LName))
+			{
+				isValid = false;
+			}
+			else if (FName == null || "".equals(FName))
+			{
+				isValid = false;
+			}
+			else if (dob == null)
+			{
+				isValid = false;
+			}
+		*/
+		boolean isValid = false;
+		if ((LName != null && !"".equals(LName)) && (FName != null && !"".equals(FName)))
 		{
-			isValid = false;
-		}
-		else if (FName == null || FName == "")
-		{
-			isValid = false;
-		}
-		else if (dob == null)
-		{
-			isValid = false;
+			if (dob != null)
+			{
+				isValid = true;
+			}
+			if (ssn != null && !"".equals(ssn))
+			{
+				isValid = true;
+			}
+			if (mrn != null && !"".equals(mrn))
+			{
+				isValid = true;
+			}
 		}
 		return isValid;
+	}
+
+	/**
+	 * Generates key for ParticipantMedicalIdentifierMap.
+	 *
+	 * @param idx serial number
+	 * @param keyFor Attribute based on which respective key is to generate
+	 *
+	 * @return key for map attribute
+	 */
+	public static String getParticipantMedicalIdentifierKeyFor(int idx, String keyFor)
+	{
+		return (Constants.PARTICIPANT_MEDICAL_IDENTIFIER + idx + keyFor);
+	}
+
+	public static String getMrnValue(Collection medIdcol)
+	{
+		String mrn = null;
+
+		if (medIdcol != null && !medIdcol.isEmpty())
+		{
+			Iterator iterator = medIdcol.iterator();
+			while (iterator.hasNext())
+			{
+				IParticipantMedicalIdentifier<IParticipant, ISite> partMedId = (IParticipantMedicalIdentifier<IParticipant, ISite>) iterator
+						.next();
+				mrn = partMedId.getMedicalRecordNumber();
+				break;
+			}
+		}
+		return mrn;
 	}
 
 	/**
@@ -385,14 +435,14 @@ public class ParticipantManagerUtility
 
 		List<DefaultLookupResult> matchPartpantLstFiltred = new ArrayList<DefaultLookupResult>();
 		Iterator<DefaultLookupResult> itr = matchPartpantLst.iterator();
-		if (!idList.isEmpty() && idList.get(0) != null && String.valueOf(idList.get(0)) != "")
+		if (!idList.isEmpty() && idList.get(0) != null && !"".equals(String.valueOf(idList.get(0))))
 		{
 			List participantIdList = idList;
 			while (itr.hasNext())
 			{
 				DefaultLookupResult result = itr.next();
 				IParticipant participant = (IParticipant) result.getObject();
-				if ((participantIdList).contains(String.valueOf(participant.getId().longValue())))
+				if (participantIdList.contains(String.valueOf(participant.getId().longValue())))
 				{
 					matchPartpantLstFiltred.add(result);
 				}
@@ -422,7 +472,7 @@ public class ParticipantManagerUtility
 			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
 			columnValueBeanList.add(new ColumnValueBean("IDENTIFIER", id, DBTypes.LONG));
 			List list = dao.executeQuery(query, null, columnValueBeanList);
-			if (!list.isEmpty() && list.get(0) != "")
+			if (!list.isEmpty() && !"".equals(list.get(0)))
 			{
 				List statusList = (List) list.get(0);
 				if (!statusList.isEmpty() && ((String) statusList.get(0)).equals("1"))
@@ -433,7 +483,7 @@ public class ParticipantManagerUtility
 		}
 		catch (DAOException exp)
 		{
-			logger.info("ERROR WHILE GETTING THE EMPI STATUS");
+			LOGGER.info("ERROR WHILE GETTING THE EMPI STATUS");
 			throw new DAOException(exp.getErrorKey(), exp, exp.getMsgValues());
 		}
 		finally
@@ -467,11 +517,11 @@ public class ParticipantManagerUtility
 			columnValueBeanList.add(new ColumnValueBean("CLINICAL_STUDY_ID", id, DBTypes.LONG));
 
 			idListArray = dao.executeQuery(query, null, columnValueBeanList);
-			if (!idListArray.isEmpty() && idListArray.get(0) != "")
+			if (!idListArray.isEmpty() && !"".equals(idListArray.get(0)))
 			{
 				for (Iterator<List> itr = idListArray.iterator(); itr.hasNext();)
 				{
-					idList.add(String.valueOf((itr.next()).get(0)));
+					idList.add(String.valueOf(itr.next().get(0)));
 				}
 			}
 		}
@@ -592,7 +642,7 @@ public class ParticipantManagerUtility
 		}
 		catch (Exception e)
 		{
-			logger.info(e.getStackTrace());
+			LOGGER.info(e.getStackTrace());
 			throw new BizLogicException(null, e,
 					"Error while get value from PatientInfoLookUpService.properties");
 		}
@@ -618,15 +668,13 @@ public class ParticipantManagerUtility
 			columnValueBeanList.add(new ColumnValueBean(status));
 			columnValueBeanList.add(new ColumnValueBean(participantId));
 			columnValueBeans.add(columnValueBeanList);
-			String sql = (new StringBuilder()).append(
-					"UPDATE CATISSUE_PARTICIPANT SET EMPI_ID_STATUS=?").append(
-					" WHERE IDENTIFIER=?").toString();
+			String sql = "UPDATE CATISSUE_PARTICIPANT SET EMPI_ID_STATUS=? WHERE IDENTIFIER=?";
 			jdbcDao.executeUpdate(sql, columnValueBeans);
 			jdbcDao.commit();
 		}
 		catch (DAOException e)
 		{
-			logger.info("ERROE WHILE UPDATING THE PARTICIPANT EMPI STATUS");
+			LOGGER.info("ERROE WHILE UPDATING THE PARTICIPANT EMPI STATUS");
 			throw new DAOException(e.getErrorKey(), e, e.getMsgValues());
 		}
 		finally
@@ -669,8 +717,7 @@ public class ParticipantManagerUtility
 		{
 			return ssn;
 		}
-		ssn = (new StringBuilder()).append(ssnA).append("-").append(ssnB).append("-").append(ssnC)
-				.toString();
+		ssn = ssnA + "-" + ssnB + "-" + ssnC;
 		return ssn;
 	}
 
@@ -698,7 +745,7 @@ public class ParticipantManagerUtility
 					+ "D_TABLE_ID = columnData.TABLE_ID and relationData.PARENT_TABLE_ID = tableData.TA"
 					+ "BLE_ID and relationData.RELATIONSHIP_ID = displayData.RELATIONSHIP_ID and column"
 					+ "Data.IDENTIFIER = displayData.COL_ID and tableData.ALIAS_NAME = 'Participant'";
-			logger.debug("DATA ELEMENT SQL : " + sql);
+			LOGGER.debug("DATA ELEMENT SQL : " + sql);
 			List list = jdbcDao.executeQuery(sql, null, null);
 			for (Iterator iterator1 = columnList.iterator(); iterator1.hasNext();)
 			{
@@ -746,7 +793,7 @@ public class ParticipantManagerUtility
 		}
 		catch (Exception e)
 		{
-			logger.info(e.getMessage());
+			LOGGER.info(e.getMessage());
 			throw new DAOException(null, e,
 					"Error while get value from PatientInfoLookUpService.properties");
 		}
@@ -770,10 +817,10 @@ public class ParticipantManagerUtility
 			columnValueBeanList.add(new ColumnValueBean("PARTICIPANT_Id", participantId,
 					DBTypes.LONG));
 			List statusList = dao.executeQuery(query, null, columnValueBeanList);
-			if (!statusList.isEmpty() && statusList.get(0) != "")
+			if (!statusList.isEmpty() && !"".equals(statusList.get(0)))
 			{
 				List idList = (List) statusList.get(0);
-				if (!idList.isEmpty() && ((String) idList.get(0)) != "")
+				if (!idList.isEmpty() && !"".equals(((String) idList.get(0))))
 				{
 					for (int i = 0; i < idList.size(); i++)
 					{
@@ -804,39 +851,42 @@ public class ParticipantManagerUtility
 	 * @throws ParseException the parse exception
 	 * @throws DAOException the DAO exception
 	 */
-	public static void updatePartiEMPIId(long participantId, String lastName, String firstName,
-			Date dob) throws ParseException, DAOException
-	{
-		if (isParticipantValidForEMPI(lastName, firstName, dob))
+
+	/*
+		public static void updatePartiEMPIId(long participantId, String lastName, String firstName,
+				Date dob) throws ParseException, DAOException
 		{
-			JDBCDAO dao = null;
-			try
+			if (isParticipantValidForEMPI(lastName, firstName, dob))
 			{
-				dao = getJDBCDAO();
-				LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
-				LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
-				columnValueBeanList.add(new ColumnValueBean(participantId));
-				columnValueBeans.add(columnValueBeanList);
-				String query = (new StringBuilder())
-						.append(
-								"UPDATE CATISSUE_PARTICIPANT SET EMPI_ID_STATUS='PENDING' WHERE IDENTIFIER=?")
-						.toString();
-				dao.executeUpdate(query, columnValueBeans);
-				dao.commit();
+				JDBCDAO dao = null;
+				try
+				{
+					dao = getJDBCDAO();
+					LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
+					LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
+					columnValueBeanList.add(new ColumnValueBean(participantId));
+					columnValueBeans.add(columnValueBeanList);
+					String query = (new StringBuilder())
+							.append(
+									"UPDATE CATISSUE_PARTICIPANT SET EMPI_ID_STATUS='PENDING' WHERE IDENTIFIER=?")
+							.toString();
+					dao.executeUpdate(query, columnValueBeans);
+					dao.commit();
+
+				}
+				catch (DAOException exp)
+				{
+					LOGGER.info("ERROR WHILE UPDATING THE EMPI STATUS");
+					throw new DAOException(exp.getErrorKey(), exp, exp.getMsgValues());
+				}
+				finally
+				{
+					dao.closeSession();
+				}
 
 			}
-			catch (DAOException exp)
-			{
-				logger.info("ERROR WHILE UPDATING THE EMPI STATUS");
-				throw new DAOException(exp.getErrorKey(), exp, exp.getMsgValues());
-			}
-			finally
-			{
-				dao.closeSession();
-			}
-
 		}
-	}
+	*/
 
 	/**
 	 * Gets the parti empi status.
@@ -860,7 +910,7 @@ public class ParticipantManagerUtility
 			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
 			columnValueBeanList.add(new ColumnValueBean("IDENTIFIER", participantId, DBTypes.LONG));
 			List list = dao.executeQuery(query, null, columnValueBeanList);
-			if (!list.isEmpty() && list.get(0) != "")
+			if (!list.isEmpty() && !"".equals(list.get(0)))
 			{
 				List statusList = (List) list.get(0);
 				if (!statusList.isEmpty())
@@ -872,7 +922,7 @@ public class ParticipantManagerUtility
 		}
 		catch (DAOException exp)
 		{
-			logger.info("ERROR WHILE GETTING THE EMPI STATUS");
+			LOGGER.info("ERROR WHILE GETTING THE EMPI STATUS");
 			throw new DAOException(exp.getErrorKey(), exp, exp.getMsgValues());
 		}
 		finally
@@ -995,7 +1045,7 @@ public class ParticipantManagerUtility
 				if (participantMedicalIdentifier.getSite() != null
 						&& (participantMedicalIdentifier.getSite()).getId() != null)
 				{
-					String siteName = (participantMedicalIdentifier.getSite()).getName();
+					String siteName = participantMedicalIdentifier.getSite().getName();
 					mrn.append(participantMedicalIdentifier.getMedicalRecordNumber());
 					mrn.append(':');
 					mrn.append(siteName);
@@ -1069,7 +1119,7 @@ public class ParticipantManagerUtility
 			LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
 			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
 
-			if (!idList.isEmpty() && idList.get(0) != "")
+			if (!idList.isEmpty() && !"".equals(idList.get(0)))
 			{
 				query = "UPDATE MATCHED_PARTICIPANT_MAPPING SET SEARCHED_PARTICIPANT_ID=?,NO_OF_MATCHED_PARTICIPANTS=?,CREATION_DATE=? WHERE SEARCHED_PARTICIPANT_ID =?";
 				columnValueBeanList.add(new ColumnValueBean("SEARCHED_PARTICIPANT_ID",
@@ -1152,8 +1202,8 @@ public class ParticipantManagerUtility
 		{
 			String ssnValue[] = ssn.split("-");
 			ssn = ssnValue[0];
-			ssn = (new StringBuilder()).append(ssn).append(ssnValue[1]).toString();
-			ssn = (new StringBuilder()).append(ssn).append(ssnValue[2]).toString();
+			ssn = ssn + ssnValue[1];
+			ssn = ssn + ssnValue[2];
 		}
 		patientInformation.setSsn(ssn);
 		if (participant.getBirthDate() != null)
@@ -1231,9 +1281,7 @@ public class ParticipantManagerUtility
 			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
 			columnValueBeanList.add(new ColumnValueBean(id));
 			columnValueBeans.add(columnValueBeanList);
-			String query = (new StringBuilder()).append(
-					"DELETE FROM MATCHED_PARTICIPANT_MAPPING WHERE SEARCHED_PARTICIPANT_ID=?")
-					.toString();
+			String query = "DELETE FROM MATCHED_PARTICIPANT_MAPPING WHERE SEARCHED_PARTICIPANT_ID=?";
 			jdbcdao.executeUpdate(query, columnValueBeans);
 			jdbcdao.commit();
 
@@ -1269,7 +1317,7 @@ public class ParticipantManagerUtility
 		}
 		catch (DAOException e)
 		{
-			logger.debug(e.getMessage(), e);
+			LOGGER.debug(e.getMessage(), e);
 			throw new BizLogicException(e.getErrorKey(), e, e.getMsgValues());
 		}
 		return oldParticipant;
@@ -1292,22 +1340,22 @@ public class ParticipantManagerUtility
 		String query = null;
 		try
 		{
-			query = "SELECT * FROM MATCHED_PARTICIPANT_MAPPING WHERE SEARCHED_PARTICIPANT_ID=? AND NO_OF_MATCHED_PARTICIPANTS!=?";
+			//query = "SELECT * FROM MATCHED_PARTICIPANT_MAPPING WHERE SEARCHED_PARTICIPANT_ID=? AND NO_OF_MATCHED_PARTICIPANTS!=?";
+			query = "SELECT * FROM MATCHED_PARTICIPANT_MAPPING WHERE SEARCHED_PARTICIPANT_ID=?";
 			dao = getJDBCDAO();
 			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
 			columnValueBeanList
 					.add(new ColumnValueBean("SEARCHED_PARTICIPANT_ID", id, DBTypes.LONG));
-			columnValueBeanList.add(new ColumnValueBean("NO_OF_MATCHED_PARTICIPANTS", 0,
-					DBTypes.INTEGER));
+			//columnValueBeanList.add(new ColumnValueBean("NO_OF_MATCHED_PARTICIPANTS", 0,DBTypes.INTEGER));
 			List list = dao.executeQuery(query, null, columnValueBeanList);
-			if (!list.isEmpty() && list.get(0) != "")
+			if (!list.isEmpty() && !"".equals(list.get(0)))
 			{
 				status = true;
 			}
 		}
 		catch (DAOException exp)
 		{
-			logger.info("ERROR WHILE GETTING THE EMPI STATUS");
+			LOGGER.info("ERROR WHILE GETTING THE EMPI STATUS");
 			throw new DAOException(exp.getErrorKey(), exp, exp.getMsgValues());
 		}
 		finally
@@ -1330,7 +1378,6 @@ public class ParticipantManagerUtility
 	{
 		JDBCDAO dao = null;
 		List<Long> particpantIdColl = new ArrayList<Long>();
-		List list = null;
 		try
 		{
 

@@ -12,19 +12,18 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
-
 import edu.wustl.common.action.CommonSearchAction;
 import edu.wustl.common.actionForm.AbstractActionForm;
 import edu.wustl.common.beans.SessionDataBean;
 import edu.wustl.common.exception.ApplicationException;
 import edu.wustl.common.exception.BizLogicException;
 import edu.wustl.common.lookup.DefaultLookupResult;
+import edu.wustl.common.participant.actionForm.IParticipantForm;
 import edu.wustl.common.participant.domain.IParticipant;
 import edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
 import edu.wustl.common.participant.domain.IRace;
@@ -64,7 +63,7 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 		final SessionDataBean sessionDataBean = (SessionDataBean) request.getSession()
 				.getAttribute(edu.wustl.common.util.global.Constants.SESSION_DATA);
 		final Long userId = sessionDataBean.getUserId();
-		List<Long> participantIds = ParticipantManagerUtility
+		final List<Long> participantIds = ParticipantManagerUtility
 				.getProcessedMatchedParticipantIds(userId);
 		try
 		{
@@ -93,7 +92,10 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 				request.getSession().setAttribute(Constants.NEXT_PART_ID_TO_PROCESS,
 						participantIds.get(nextMatchedParticpantIndex));
 				// fetch the stored matched participant for the participant in the message board
-				fetchMatchedParticipantsFromDB(identifier.longValue(), request);
+				final IParticipantForm partiForm = (IParticipantForm) form;
+				fetchMatchedParticipantsFromDB(identifier.longValue(), request,partiForm);
+
+
 			}
 		}
 		catch (Exception e)
@@ -129,18 +131,22 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 	 * @throws DAOException the DAO exception
 	 */
 	private void fetchMatchedParticipantsFromDB(final long participantId,
-			final HttpServletRequest request) throws DAOException, BizLogicException,
+			final HttpServletRequest request,final IParticipantForm partiForm) throws DAOException, BizLogicException,
 			ParseException
 	{
 		JDBCDAO dao = null;
 		List<DefaultLookupResult> matchPartpantLst = null;
 		try
 		{
+			final String ssn = partiForm.getSocialSecurityNumberPartA().concat(
+					partiForm.getSocialSecurityNumberPartB()).concat(
+					partiForm.getSocialSecurityNumberPartC());
+
 			dao = ParticipantManagerUtility.getJDBCDAO();
 
 			final String query = "SELECT * FROM CATISSUE_MATCHED_PARTICIPANT WHERE SEARCHED_PARTICIPANT_ID=?";
 
-			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
+			final LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
 			columnValueBeanList.add(new ColumnValueBean("SEARCHED_PARTICIPANT_ID", participantId,
 					DBTypes.LONG));
 			final List matchPartpantLstTemp = dao.executeQuery(query, null, columnValueBeanList);
@@ -151,9 +157,16 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 			}
 			else
 			{
-				setStatusMessage(request);
-				ParticipantManagerUtility.deleteProcessedParticipant(Long.valueOf(participantId));
+				setStatusMessage(request,"participant.empiid.zero.match.message");
+				if ((partiForm.getBirthDate() == null || "".equals(partiForm.getBirthDate()))
+						&& (ssn == null || "".equals(ssn)))
+				{
+					request.setAttribute(Constants.EMPI_GENERATION_FIELDS_INSUFFICIENT,
+							Constants.TRUE);
+					setStatusMessage(request, "participant.empiid.generation.incomplete.detail");
+				}
 			}
+			request.setAttribute(Constants.IS_GENERATE_EMPI_PAGE, Constants.TRUE);
 
 		}
 		catch (DAOException e)
@@ -174,7 +187,7 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 	 *
 	 * @throws DAOException the DAO exception
 	 */
-	private void setStatusMessage(final HttpServletRequest request) throws DAOException
+	private void setStatusMessage(final HttpServletRequest request,String key) throws DAOException
 	{
 		ActionMessages actionMsgs = (ActionMessages) request
 				.getAttribute("org.apache.struts.action.ACTION_MESSAGE");
@@ -183,7 +196,7 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 			actionMsgs = new ActionMessages();
 		}
 		actionMsgs.add("org.apache.struts.action.GLOBAL_MESSAGE", new ActionMessage(
-				"participant.empiid.match.message"));
+				key));
 		saveMessages(request, actionMsgs);
 	}
 
@@ -206,8 +219,8 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 		for (int i = 0; i < matchPartpantLstTmp.size(); i++)
 		{
 			final List participantValueList = (List) matchPartpantLstTmp.get(i);
-			if (!participantValueList.isEmpty() && !participantValueList.get(0).equals(null)
-					&& !participantValueList.get(0).equals(""))
+			if (!participantValueList.isEmpty() && participantValueList.get(0) != null
+					&& !"".equals(participantValueList.get(0)))
 			{
 				final IParticipant participant = getParticipantObj(participantValueList);
 				final DefaultLookupResult result = new DefaultLookupResult();
@@ -238,14 +251,14 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 		participant.setId(Long.valueOf((String) participantValueList.get(0)));
 		participant.setEmpiId((String) participantValueList.get(1));
 
-		String lastName = (String) participantValueList.get(2);
-		String firstName = (String) participantValueList.get(3);
-		String middleName = (String) participantValueList.get(4);
+		final String lastName = (String) participantValueList.get(2);
+		final String firstName = (String) participantValueList.get(3);
+		final String middleName = (String) participantValueList.get(4);
 
 		participant.setLastName(ParticipantManagerUtility.modifyNameWithProperCase(lastName));
 		participant.setFirstName(ParticipantManagerUtility.modifyNameWithProperCase(firstName));
 		participant.setMiddleName(ParticipantManagerUtility.modifyNameWithProperCase(middleName));
-		if (participantValueList.get(5) != null && participantValueList.get(5) != "")
+		if (participantValueList.get(5) != null && !"".equals(participantValueList.get(5)))
 		{
 			final String dateStr = (String) participantValueList.get(5);
 			final Date date = Utility.parseDate(dateStr, Constants.DATE_FORMAT);
@@ -254,7 +267,7 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 		participant.setGender((String) participantValueList.get(6));
 		participant.setSocialSecurityNumber((String) participantValueList.get(7));
 		participant.setActivityStatus((String) participantValueList.get(8));
-		if (participantValueList.get(9) != null && participantValueList.get(9) != "")
+		if (participantValueList.get(9) != null && !("".equals(participantValueList.get(9))))
 		{
 			final String dateStr = (String) participantValueList.get(9);
 			final Date date = Utility.parseDate(dateStr, Constants.DATE_FORMAT);
@@ -262,13 +275,13 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 		}
 		participant.setVitalStatus((String) participantValueList.get(10));
 		final String mrnString = (String) participantValueList.get(11);
-		if (mrnString != null && mrnString != "")
+		if (mrnString != null && !"".equals(mrnString))
 		{
 			final Collection partiMediIdColn = getPartiMediIdColnCollection(mrnString);
 			participant.setParticipantMedicalIdentifierCollection(partiMediIdColn);
 		}
 		final String raceString = (String) participantValueList.get(12);
-		if (raceString != null && raceString != "")
+		if (raceString != null && !"".equals(raceString))
 		{
 			final Collection raceCollection = getRaceCollection(raceString);
 			participant.setRaceCollection(raceCollection);
@@ -348,26 +361,11 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 		final ISite siteObj = ParticipantManagerUtility.getSiteObject(facilityId);
 		if (siteObj != null)
 		{
-			participantMedicalIdentifier = ParticipantManagerUtility
-					.getPMIInstance();
+			participantMedicalIdentifier = ParticipantManagerUtility.getPMIInstance();
 			participantMedicalIdentifier.setMedicalRecordNumber(mrn);
 			participantMedicalIdentifier.setSite(siteObj);
 		}
 		return participantMedicalIdentifier;
-	}
-
-	/**
-	 * Gets the select query.
-	 *
-	 * @param identifier the identifier
-	 *
-	 * @return the select query
-	 */
-	private String getSelectQuery(final long identifier)
-	{
-		return "SELECT * FROM CATISSUE_MATCHED_PARTICIPANT WHERE SEARCHED_PARTICIPANT_ID='"
-				+ identifier + "'";
-
 	}
 
 	/**

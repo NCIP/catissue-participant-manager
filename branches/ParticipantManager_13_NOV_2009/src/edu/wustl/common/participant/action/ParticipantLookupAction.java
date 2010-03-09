@@ -38,16 +38,16 @@ public class ParticipantLookupAction extends SecureAction
 	/**
 	 * Method for performing participant look up.
 	 */
-	public ActionForward executeSecureAction(ActionMapping mapping, ActionForm form,
-			HttpServletRequest request, HttpServletResponse response) throws ApplicationException
+	public ActionForward executeSecureAction(final ActionMapping mapping, final ActionForm form,
+			final HttpServletRequest request, final HttpServletResponse response) throws ApplicationException
 	{
-		AbstractActionForm abstractForm = (AbstractActionForm) form;
+		final AbstractActionForm abstractForm = (AbstractActionForm) form;
 
-		IParticipantForm participantForm = (IParticipantForm) form;
+		final IParticipantForm participantForm = (IParticipantForm) form;
 		String target = null;
 		try
 		{
-			boolean isForward = checkForwardToParticipantSelectAction(request, abstractForm
+			final boolean isForward = checkForwardToParticipantSelectAction(request, abstractForm
 					.isAddOperation());
 			if (isForward)
 			{
@@ -59,14 +59,14 @@ public class ParticipantLookupAction extends SecureAction
 
 				domainObjectFactory = AbstractFactoryConfig.getInstance().getDomainObjectFactory();
 
-				edu.wustl.common.domain.AbstractDomainObject abstractDomain = domainObjectFactory
+				final edu.wustl.common.domain.AbstractDomainObject abstractDomain = domainObjectFactory
 						.getDomainObject(abstractForm.getFormId(), abstractForm);
-				IParticipant participant = (IParticipant) abstractDomain;
-				boolean isCallToLkupLgic = ParticipantManagerUtility
+				final IParticipant participant = (IParticipant) abstractDomain;
+				final boolean isCallToLkupLgic = ParticipantManagerUtility
 						.isCallToLookupLogicNeeded(participant);
 				if (isCallToLkupLgic)
 				{
-					List<DefaultLookupResult> matchPartpantLst = getListOfMatchingParticipants(
+					final List<DefaultLookupResult> matchPartpantLst = getListOfMatchingParticipants(
 							participant, request, participantForm.getCpId());
 
 					if (!matchPartpantLst.isEmpty())
@@ -118,12 +118,12 @@ public class ParticipantLookupAction extends SecureAction
 	 *
 	 * @throws Exception the exception
 	 */
-	private List<DefaultLookupResult> getListOfMatchingParticipants(IParticipant participant,
-			HttpServletRequest request, Long csId) throws Exception
+	private List<DefaultLookupResult> getListOfMatchingParticipants(final IParticipant participant,
+			final HttpServletRequest request, final Long csId) throws Exception
 
 	{
-		edu.wustl.common.beans.SessionDataBean sessionDataBean = getSessionData(request);
-		List<DefaultLookupResult> matchPartpantLst = ParticipantManagerUtility
+		final edu.wustl.common.beans.SessionDataBean sessionDataBean = getSessionData(request);
+		final List<DefaultLookupResult> matchPartpantLst = ParticipantManagerUtility
 				.getListOfMatchingParticipants(participant, sessionDataBean, null, csId);
 		return matchPartpantLst;
 	}
@@ -136,20 +136,20 @@ public class ParticipantLookupAction extends SecureAction
 	 *
 	 * @throws DAOException the DAO exception
 	 */
-	private void storeLists(HttpServletRequest request, List<DefaultLookupResult> matchPartpantLst)
+	private void storeLists(final HttpServletRequest request, final List<DefaultLookupResult> matchPartpantLst)
 			throws DAOException
 	{
-		ActionMessages messages = new ActionMessages();
+		final ActionMessages messages = new ActionMessages();
 		messages.add("org.apache.struts.action.GLOBAL_MESSAGE", new ActionMessage(
 				"participant.lookup.success",
 				"Submit was not successful because some matching participants found."));
-		List columnList = ParticipantManagerUtility.getColumnHeadingList();
+		final List columnList = ParticipantManagerUtility.getColumnHeadingList();
 		request.setAttribute(edu.wustl.common.util.global.Constants.SPREADSHEET_COLUMN_LIST,
 				columnList);
-		List pcpantDisplayLst = ParticipantManagerUtility
+		final List pcpantDisplayLst = ParticipantManagerUtility
 				.getParticipantDisplayList(matchPartpantLst);
 		request.setAttribute(Constants.SPREADSHEET_DATA_LIST, pcpantDisplayLst);
-		HttpSession session = request.getSession();
+		final HttpSession session = request.getSession();
 		session.setAttribute("MatchedParticpant", matchPartpantLst);
 		if (request.getAttribute("continueLookup") == null)
 		{
@@ -165,11 +165,11 @@ public class ParticipantLookupAction extends SecureAction
 	 *
 	 * @return true, if successful
 	 */
-	private boolean checkForwardToParticipantSelectAction(HttpServletRequest request,
-			boolean isAddOperation)
+	private boolean checkForwardToParticipantSelectAction(final HttpServletRequest request,
+			final boolean isAddOperation)
 	{
 		boolean isForward = false;
-		String participantId = "participantId";
+		final String participantId = "participantId";
 		if (request.getParameter("continueLookup") == null
 				&& request.getAttribute("continueLookup") == null)
 		{
@@ -202,7 +202,7 @@ public class ParticipantLookupAction extends SecureAction
 	 *
 	 * @param request the new request attributes
 	 */
-	private void setRequestAttributes(HttpServletRequest request)
+	private void setRequestAttributes(final HttpServletRequest request)
 	{
 		if (request.getParameter(edu.wustl.common.util.global.Constants.SUBMITTED_FOR) != null
 				&& !request.getParameter(edu.wustl.common.util.global.Constants.SUBMITTED_FOR)

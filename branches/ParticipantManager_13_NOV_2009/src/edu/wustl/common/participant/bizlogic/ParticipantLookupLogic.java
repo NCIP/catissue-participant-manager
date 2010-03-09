@@ -139,7 +139,7 @@ public class ParticipantLookupLogic implements LookupLogic
 					partcipantNew.setGender(patientInfo.getGender());
 					partcipantNew.setEmpiId(patientInfo.getUpi());
 					partcipantNew.setActivityStatus(patientInfo.getActivityStatus());
-					if (patientInfo.getSsn() != null && patientInfo.getSsn() != "")
+					if (patientInfo.getSsn() != null && !"".equals(patientInfo.getSsn()))
 					{
 						final String ssn = ParticipantManagerUtility.getSSN(patientInfo.getSsn());
 						partcipantNew.setSocialSecurityNumber(ssn);
@@ -160,7 +160,7 @@ public class ParticipantLookupLogic implements LookupLogic
 							Long siteId = null;
 							final String siteName = (String) iterator.next();
 							final ISite site = (ISite) ParticipantManagerUtility.getSiteInstance();
-							if (siteIdStr != null && siteIdStr != "")
+							if (siteIdStr != null && !"".equals(siteIdStr))
 							{
 								siteId = Long.valueOf(siteIdStr);
 							}

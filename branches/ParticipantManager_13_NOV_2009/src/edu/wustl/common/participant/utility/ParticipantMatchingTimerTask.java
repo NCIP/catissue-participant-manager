@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.TimerTask;
 
 import edu.wustl.common.participant.bizlogic.ParticipantMatchingBizLogic;
-import edu.wustl.common.util.logger.Logger;
 import edu.wustl.dao.JDBCDAO;
 import edu.wustl.dao.exception.DAOException;
 import edu.wustl.dao.query.generator.ColumnValueBean;
@@ -19,8 +18,6 @@ import edu.wustl.dao.query.generator.DBTypes;
  */
 public class ParticipantMatchingTimerTask extends TimerTask
 {
-
-	private static final Logger logger = Logger.getCommonLogger(ParticipantMatchingTimerTask.class);
 
 	/* (non-Javadoc)
 	 * @see java.util.TimerTask#run()
@@ -46,10 +43,10 @@ public class ParticipantMatchingTimerTask extends TimerTask
 	 */
 	private void perFormParticipantMatch() throws Exception
 	{
-		List participantIdList = fetchSearchParticipantIds();
-		if (!participantIdList.isEmpty() && participantIdList.get(0) != "")
+		final List participantIdList = fetchSearchParticipantIds();
+		if (!participantIdList.isEmpty() && !"".equals(participantIdList.get(0)))
 		{
-			ParticipantMatchingBizLogic bizLogic = new ParticipantMatchingBizLogic();
+			final ParticipantMatchingBizLogic bizLogic = new ParticipantMatchingBizLogic();
 			bizLogic.perFormParticipantMatch(participantIdList);
 		}
 	}
@@ -69,8 +66,8 @@ public class ParticipantMatchingTimerTask extends TimerTask
 		try
 		{
 			dao = ParticipantManagerUtility.getJDBCDAO();
-			String query = "SELECT SEARCHED_PARTICIPANT_ID FROM MATCHED_PARTICIPANT_MAPPING WHERE NO_OF_MATCHED_PARTICIPANTS=?";
-			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
+			final String query = "SELECT SEARCHED_PARTICIPANT_ID FROM MATCHED_PARTICIPANT_MAPPING WHERE NO_OF_MATCHED_PARTICIPANTS=?";
+			final LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
 			columnValueBeanList.add(new ColumnValueBean("NO_OF_MATCHED_PARTICIPANTS", "-1",
 					DBTypes.INTEGER));
 			idList = dao.executeQuery(query, null, columnValueBeanList);

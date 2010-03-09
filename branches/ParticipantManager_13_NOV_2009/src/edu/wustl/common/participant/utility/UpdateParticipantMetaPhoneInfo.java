@@ -63,22 +63,25 @@ public final class UpdateParticipantMetaPhoneInfo
 	{
 
 		String lNameMetaPhone = null;
-		String sql = "select identifier,last_name from catissue_participant";
-		Metaphone metaPhoneObj = new Metaphone();
-
+		String sql = null;
+		sql="select identifier,last_name from catissue_participant";
+		final Metaphone metaPhoneObj = new Metaphone();
+		String identifier= null;
 		JDBCDAO dao = null;
+		List idNameList = null;
+		String lastName = null;
 		try
 		{
 			dao = ParticipantManagerUtility.getJDBCDAO();
 
-			List list = dao.executeQuery(sql);
+			final List list = dao.executeQuery(sql,null,null);
 			if (list != null && !list.isEmpty())
 			{
 				for (int i = 0; i < list.size(); i++)
 				{
-					List idNameList = (List) list.get(i);
-					String identifier = (String) idNameList.get(0);
-					String lastName = (String) idNameList.get(1);
+					idNameList = (List) list.get(i);
+					identifier = (String) idNameList.get(0);
+					lastName = (String) idNameList.get(1);
 					lNameMetaPhone = metaPhoneObj.metaphone(lastName);
 					updateMetaPhone(dao, identifier, lNameMetaPhone);
 				}
@@ -109,16 +112,16 @@ public final class UpdateParticipantMetaPhoneInfo
 	 * @throws DAOException
 	 *             the DAO exception
 	 */
-	private static void updateMetaPhone(JDBCDAO dao, String identifier, String lNameMetaPhone)
+	private static void updateMetaPhone(final JDBCDAO dao, final String identifier,final  String lNameMetaPhone)
 			throws DAOException
 	{
-		LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
-		LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
-		columnValueBeanList.add(new ColumnValueBean(lNameMetaPhone));
-		columnValueBeanList.add(new ColumnValueBean(identifier));
-		columnValueBeans.add(columnValueBeanList);
-		String query = (new StringBuilder()).append(
-				"update catissue_participant set lName_metaPhone=? where identifier=?").toString();
-		dao.executeUpdate(query, columnValueBeans);
+		String query = null;
+		final LinkedList<LinkedList<ColumnValueBean>> colValBeans = new LinkedList<LinkedList<ColumnValueBean>>();
+		final LinkedList<ColumnValueBean> colValBeanLst = new LinkedList<ColumnValueBean>();
+		colValBeanLst.add(new ColumnValueBean(lNameMetaPhone));
+		colValBeanLst.add(new ColumnValueBean(identifier));
+		colValBeans.add(colValBeanLst);
+		query = "update catissue_participant set lName_metaPhone=? where identifier=?";
+		dao.executeUpdate(query, colValBeans);
 	}
 }

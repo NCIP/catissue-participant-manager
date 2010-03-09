@@ -56,14 +56,25 @@ public class ParticipantEMPIGenerationAction extends CommonAddEditAction
 		final IParticipantForm participantForm = (IParticipantForm) form;
 		final String isGenerateHL7 = (String) request.getParameter("isGenerateHL7");
 		final String isGenerateEMPID = request.getParameter("isGenerateEMPIID");
+		String mrn = null;
+		final String key = ParticipantManagerUtility.getParticipantMedicalIdentifierKeyFor(1,
+				Constants.PARTICIPANT_MEDICAL_IDENTIFIER_MEDICAL_NUMBER);
+		if (participantForm.getValues() != null && !participantForm.getValues().isEmpty())
+		{
+			mrn = (String) participantForm.getValues().get(key);
+		}
+		final String ssn = participantForm.getSocialSecurityNumberPartA().concat(
+				participantForm.getSocialSecurityNumberPartB()).concat(
+				participantForm.getSocialSecurityNumberPartC());
 		try
 		{
 			// If user selects ignore and generate the eMPI
 			if (isGenerateHL7.equalsIgnoreCase(Constants.YES))
 			{
+
 				if (ParticipantManagerUtility.isParticipantValidForEMPI(participantForm
 						.getLastName(), participantForm.getFirstName(), Utility
-						.parseDate(participantForm.getBirthDate())))
+						.parseDate(participantForm.getBirthDate()), ssn, mrn))
 				{
 					participantForm.setOperation(edu.wustl.common.util.global.Constants.EDIT);
 					participantForm.setEmpiIdStatus(Constants.EMPI_ID_PENDING);
@@ -188,7 +199,7 @@ public class ParticipantEMPIGenerationAction extends CommonAddEditAction
 				.getAttribute(Constants.SESSION_DATA);
 		try
 		{
-			LinkedHashSet<Long> userIdSet = new LinkedHashSet<Long>();
+			final LinkedHashSet<Long> userIdSet = new LinkedHashSet<Long>();
 			userIdSet.add(sessionDataBean.getUserId());
 			//getPIUserId(participantForm.getId());
 			// Process participant for CIDER participant matching.
