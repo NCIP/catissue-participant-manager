@@ -290,21 +290,6 @@ public class ParticipantManagerUtility
 	public static boolean isParticipantValidForEMPI(final String LName,final  String FName, final Date dob,
 			final String ssn, final String mrn)
 	{
-		/*
-			boolean isValid = true;
-			if (LName == null || "".equals(LName))
-			{
-				isValid = false;
-			}
-			else if (FName == null || "".equals(FName))
-			{
-				isValid = false;
-			}
-			else if (dob == null)
-			{
-				isValid = false;
-			}
-		*/
 		boolean isValid = false;
 		if ((LName != null && !"".equals(LName)) && (FName != null && !"".equals(FName)))
 		{
@@ -1127,15 +1112,15 @@ public class ParticipantManagerUtility
 			}
 			else
 			{
-				query = "INSERT INTO MATCHED_PARTICIPANT_MAPPING VALUES(?,?,?)";
+				query = "INSERT INTO MATCHED_PARTICIPANT_MAPPING(NO_OF_MATCHED_PARTICIPANTS,CREATION_DATE,SEARCHED_PARTICIPANT_ID) VALUES(?,?,?)";
 			}
 
-			columnValueBeanList.add(new ColumnValueBean("SEARCHED_PARTICIPANT_ID", participantId,
-					DBTypes.LONG));
+
 			columnValueBeanList.add(new ColumnValueBean("NO_OF_MATCHED_PARTICIPANTS", Integer
 					.valueOf(-1), DBTypes.LONG));
-			//columnValueBeanList.add(new ColumnValueBean("USER_ID", userId, 3));
 			columnValueBeanList.add(new ColumnValueBean("CREATION_DATE", date, DBTypes.DATE));
+			columnValueBeanList.add(new ColumnValueBean("SEARCHED_PARTICIPANT_ID", participantId,
+					DBTypes.LONG));
 			columnValueBeans.add(columnValueBeanList);
 			jdbcdao.executeUpdate(query, columnValueBeans);
 			jdbcdao.commit();

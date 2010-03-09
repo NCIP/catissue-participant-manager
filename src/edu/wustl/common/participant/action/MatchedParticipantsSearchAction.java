@@ -154,6 +154,13 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 			{
 				matchPartpantLst = populateParticipantList(matchPartpantLstTemp);
 				storeLists(request, matchPartpantLst);
+
+				if ((partiForm.getBirthDate() == null || "".equals(partiForm.getBirthDate()))
+						&& (ssn == null || "".equals(ssn)))
+				{
+					request.setAttribute(Constants.EMPI_GENERATION_FIELDS_INSUFFICIENT,
+							Constants.TRUE);
+				}
 			}
 			else
 			{
@@ -161,9 +168,8 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 				if ((partiForm.getBirthDate() == null || "".equals(partiForm.getBirthDate()))
 						&& (ssn == null || "".equals(ssn)))
 				{
-					request.setAttribute(Constants.EMPI_GENERATION_FIELDS_INSUFFICIENT,
-							Constants.TRUE);
 					setStatusMessage(request, "participant.empiid.generation.incomplete.detail");
+					ParticipantManagerUtility.deleteProcessedParticipant(Long.valueOf(participantId));
 				}
 			}
 			request.setAttribute(Constants.IS_GENERATE_EMPI_PAGE, Constants.TRUE);

@@ -468,22 +468,36 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 			throws DAOException
 	{
 		final IParticipant participant = (IParticipant) obj;
-		String mrn = null;
 		// if for CS eMPI is enable then set the eMPI status as pending if its eligible
 		if (ParticipantManagerUtility.isEMPIEnable(participant.getId()))
 		{
+			insertParticipantToProcessingQue(participant, userIdSet);
+		}
 
-			mrn = ParticipantManagerUtility.getMrnValue(participant
-					.getParticipantMedicalIdentifierCollection());
+	}
 
-			if (ParticipantManagerUtility.isParticipantValidForEMPI(participant.getLastName(),
-					participant.getFirstName(), participant.getBirthDate(), participant
-							.getSocialSecurityNumber(), mrn))
-			{
-				// Process participant for CIDER participant matching.
-				ParticipantManagerUtility.addParticipantToProcessMessageQueue(userIdSet,
-						participant.getId());
-			}
+	/**
+	 * Insert participant to processing que.
+	 *
+	 * @param participant the participant
+	 * @param userIdSet the user id set
+	 *
+	 * @throws DAOException the DAO exception
+	 */
+	private static void insertParticipantToProcessingQue(final IParticipant participant,
+			LinkedHashSet<Long> userIdSet) throws DAOException
+	{
+
+		String mrn = null;
+		mrn = ParticipantManagerUtility.getMrnValue(participant
+				.getParticipantMedicalIdentifierCollection());
+
+		if (ParticipantManagerUtility.isParticipantValidForEMPI(participant.getLastName(),
+				participant.getFirstName(), participant.getBirthDate(), participant
+						.getSocialSecurityNumber(), mrn))
+		{
+			// Process participant for CIDER participant matching.
+			 ParticipantManagerUtility.addParticipantToProcessMessageQueue(userIdSet, participant.getId());
 		}
 
 	}
@@ -530,15 +544,28 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 	 *
 	 * @throws BizLogicException the biz logic exception
 	 */
-	public static void postUpdate(Object obj, SessionDataBean sessionDataBean)
+	public static void postUpdate(Object currentObj, Object oldObj,
+			SessionDataBean sessionDataBean, LinkedHashSet<Long> userIdSet)
 			throws BizLogicException
 	{
-		final IParticipant participant = (IParticipant) obj;
+		final IParticipant oldParticipant = (IParticipant) oldObj;
+		final IParticipant participant = (IParticipant) currentObj;
 		try
 		{
+
 			if (ParticipantManagerUtility.isEMPIEnable(participant.getId()))
 			{
-				regNewPatientToEMPI(participant);
+				if (Constants.EMPI_ID_CREATED.equals(oldParticipant.getEmpiIdStatus())
+						&& Constants.EMPI_ID_PENDING.equals(participant.getEmpiIdStatus()))
+				{
+					regNewPatientToEMPI(participant);
+				}
+
+			  /*if (participant.getEmpiIdStatus() == null
+						|| "".equals(participant.getEmpiIdStatus()))
+				{
+					insertParticipantToProcessingQue(participant, userIdSet);
+				}*/
 			}
 		}
 		catch (Exception e)
