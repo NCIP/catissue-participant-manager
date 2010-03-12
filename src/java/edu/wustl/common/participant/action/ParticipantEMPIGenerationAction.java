@@ -2,8 +2,13 @@
  *  Class For generating EMPI for the participant
  */
 
-package edu.wustl.common.participant.action;
+package java.edu.wustl.common.participant.action;
 
+import java.edu.wustl.common.participant.actionForm.IParticipantForm;
+import java.edu.wustl.common.participant.bizlogic.EMPIParticipantRegistrationBizLogic;
+import java.edu.wustl.common.participant.domain.IParticipant;
+import java.edu.wustl.common.participant.utility.Constants;
+import java.edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import java.util.LinkedHashSet;
 
 import javax.servlet.http.HttpServletRequest;
@@ -24,11 +29,6 @@ import edu.wustl.common.beans.SessionDataBean;
 import edu.wustl.common.domain.AbstractDomainObject;
 import edu.wustl.common.exception.AssignDataException;
 import edu.wustl.common.exception.BizLogicException;
-import edu.wustl.common.participant.actionForm.IParticipantForm;
-import edu.wustl.common.participant.bizlogic.EMPIParticipantRegistrationBizLogic;
-import edu.wustl.common.participant.domain.IParticipant;
-import edu.wustl.common.participant.utility.Constants;
-import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.util.Utility;
 import edu.wustl.common.util.logger.Logger;
 import edu.wustl.dao.exception.DAOException;

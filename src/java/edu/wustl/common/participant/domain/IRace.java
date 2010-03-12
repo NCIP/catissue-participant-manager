@@ -1,5 +1,5 @@
 
-package edu.wustl.common.participant.domain;
+package java.edu.wustl.common.participant.domain;
 
 
 /**

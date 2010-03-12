@@ -1,6 +1,9 @@
 
-package edu.wustl.common.participant.action;
+package java.edu.wustl.common.participant.action;
 
+import java.edu.wustl.common.participant.bizlogic.ParticipantMatchingBizLogic;
+import java.edu.wustl.common.participant.utility.Constants;
+import java.edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,9 +23,6 @@ import org.apache.struts.action.ActionMessages;
 import edu.wustl.common.action.SecureAction;
 import edu.wustl.common.beans.SessionDataBean;
 import edu.wustl.common.exception.ApplicationException;
-import edu.wustl.common.participant.bizlogic.ParticipantMatchingBizLogic;
-import edu.wustl.common.participant.utility.Constants;
-import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.util.XMLPropertyHandler;
 import edu.wustl.common.util.global.QuerySessionData;
 import edu.wustl.common.util.logger.Logger;

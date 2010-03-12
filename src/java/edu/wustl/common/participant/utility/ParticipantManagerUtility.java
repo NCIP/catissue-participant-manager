@@ -1,6 +1,12 @@
 
-package edu.wustl.common.participant.utility;
+package java.edu.wustl.common.participant.utility;
 
+import java.edu.wustl.common.participant.domain.IParticipant;
+import java.edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
+import java.edu.wustl.common.participant.domain.IRace;
+import java.edu.wustl.common.participant.domain.ISite;
+import java.edu.wustl.common.participant.listener.EMPIParticipantListener;
+import java.edu.wustl.common.participant.listener.EMPIParticipantMergeMessageListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -33,12 +39,6 @@ import edu.wustl.common.factory.IFactory;
 import edu.wustl.common.lookup.DefaultLookupParameters;
 import edu.wustl.common.lookup.DefaultLookupResult;
 import edu.wustl.common.lookup.LookupLogic;
-import edu.wustl.common.participant.domain.IParticipant;
-import edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
-import edu.wustl.common.participant.domain.IRace;
-import edu.wustl.common.participant.domain.ISite;
-import edu.wustl.common.participant.listener.EMPIParticipantListener;
-import edu.wustl.common.participant.listener.EMPIParticipantMergeMessageListener;
 import edu.wustl.common.util.Utility;
 import edu.wustl.common.util.XMLPropertyHandler;
 import edu.wustl.common.util.global.CommonServiceLocator;

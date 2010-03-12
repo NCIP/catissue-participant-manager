@@ -1,6 +1,11 @@
 
-package edu.wustl.common.participant.bizlogic;
+package java.edu.wustl.common.participant.bizlogic;
 
+import java.edu.wustl.common.participant.domain.IParticipant;
+import java.edu.wustl.common.participant.domain.IRace;
+import java.edu.wustl.common.participant.utility.Constants;
+import java.edu.wustl.common.participant.utility.MQMessageWriter;
+import java.edu.wustl.common.participant.utility.RaceGenderCodesProperyHandler;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collection;
@@ -10,11 +15,6 @@ import java.util.List;
 import java.util.Locale;
 
 import edu.wustl.common.exception.ApplicationException;
-import edu.wustl.common.participant.domain.IParticipant;
-import edu.wustl.common.participant.domain.IRace;
-import edu.wustl.common.participant.utility.Constants;
-import edu.wustl.common.participant.utility.MQMessageWriter;
-import edu.wustl.common.participant.utility.RaceGenderCodesProperyHandler;
 import edu.wustl.common.util.Utility;
 import edu.wustl.common.util.XMLPropertyHandler;
 import edu.wustl.common.util.global.CommonServiceLocator;
