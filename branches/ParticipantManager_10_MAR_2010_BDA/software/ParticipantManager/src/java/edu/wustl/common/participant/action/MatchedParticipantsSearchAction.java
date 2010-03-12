@@ -1,6 +1,13 @@
 
-package edu.wustl.common.participant.action;
+package java.edu.wustl.common.participant.action;
 
+import java.edu.wustl.common.participant.actionForm.IParticipantForm;
+import java.edu.wustl.common.participant.domain.IParticipant;
+import java.edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
+import java.edu.wustl.common.participant.domain.IRace;
+import java.edu.wustl.common.participant.domain.ISite;
+import java.edu.wustl.common.participant.utility.Constants;
+import java.edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -12,24 +19,19 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
+
 import edu.wustl.common.action.CommonSearchAction;
 import edu.wustl.common.actionForm.AbstractActionForm;
 import edu.wustl.common.beans.SessionDataBean;
 import edu.wustl.common.exception.ApplicationException;
 import edu.wustl.common.exception.BizLogicException;
 import edu.wustl.common.lookup.DefaultLookupResult;
-import edu.wustl.common.participant.actionForm.IParticipantForm;
-import edu.wustl.common.participant.domain.IParticipant;
-import edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
-import edu.wustl.common.participant.domain.IRace;
-import edu.wustl.common.participant.domain.ISite;
-import edu.wustl.common.participant.utility.Constants;
-import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.util.Utility;
 import edu.wustl.common.util.logger.Logger;
 import edu.wustl.dao.JDBCDAO;

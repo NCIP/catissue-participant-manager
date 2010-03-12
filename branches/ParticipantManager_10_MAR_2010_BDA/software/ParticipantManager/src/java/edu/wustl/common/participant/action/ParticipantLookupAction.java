@@ -1,6 +1,10 @@
 
-package edu.wustl.common.participant.action;
+package java.edu.wustl.common.participant.action;
 
+import java.edu.wustl.common.participant.actionForm.IParticipantForm;
+import java.edu.wustl.common.participant.domain.IParticipant;
+import java.edu.wustl.common.participant.utility.Constants;
+import java.edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -19,10 +23,6 @@ import edu.wustl.common.exception.ApplicationException;
 import edu.wustl.common.factory.AbstractFactoryConfig;
 import edu.wustl.common.factory.IDomainObjectFactory;
 import edu.wustl.common.lookup.DefaultLookupResult;
-import edu.wustl.common.participant.actionForm.IParticipantForm;
-import edu.wustl.common.participant.domain.IParticipant;
-import edu.wustl.common.participant.utility.Constants;
-import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.util.logger.Logger;
 import edu.wustl.dao.exception.DAOException;
 

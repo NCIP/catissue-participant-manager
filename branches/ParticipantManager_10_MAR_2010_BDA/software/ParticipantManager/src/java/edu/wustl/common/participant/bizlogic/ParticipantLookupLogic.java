@@ -1,23 +1,23 @@
 
-package edu.wustl.common.participant.bizlogic;
+package java.edu.wustl.common.participant.bizlogic;
 
+import java.edu.wustl.common.participant.domain.IParticipant;
+import java.edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
+import java.edu.wustl.common.participant.domain.ISite;
+import java.edu.wustl.common.participant.utility.Constants;
+import java.edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 
-
+import edu.wustl.common.exception.ApplicationException;
 import edu.wustl.common.exception.BizLogicException;
 import edu.wustl.common.lookup.DefaultLookupParameters;
 import edu.wustl.common.lookup.DefaultLookupResult;
 import edu.wustl.common.lookup.LookupLogic;
 import edu.wustl.common.lookup.LookupParameters;
-import edu.wustl.common.participant.domain.IParticipant;
-import edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
-import edu.wustl.common.participant.domain.ISite;
-import edu.wustl.common.participant.utility.Constants;
-import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.util.XMLPropertyHandler;
 import edu.wustl.dao.JDBCDAO;
 import edu.wustl.dao.exception.DAOException;

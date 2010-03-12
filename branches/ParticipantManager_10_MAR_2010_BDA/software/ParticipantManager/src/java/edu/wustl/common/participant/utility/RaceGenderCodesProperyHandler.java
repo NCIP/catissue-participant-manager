@@ -1,5 +1,5 @@
 
-package edu.wustl.common.participant.utility;
+package java.edu.wustl.common.participant.utility;
 
 import java.io.FileNotFoundException;
 import java.util.Properties;
