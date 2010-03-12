@@ -1,11 +1,11 @@
 
-package edu.wustl.common.participant.utility;
+package java.edu.wustl.common.participant.utility;
 
+import java.edu.wustl.common.participant.bizlogic.ParticipantMatchingBizLogic;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.TimerTask;
 
-import edu.wustl.common.participant.bizlogic.ParticipantMatchingBizLogic;
 import edu.wustl.dao.JDBCDAO;
 import edu.wustl.dao.exception.DAOException;
 import edu.wustl.dao.query.generator.ColumnValueBean;

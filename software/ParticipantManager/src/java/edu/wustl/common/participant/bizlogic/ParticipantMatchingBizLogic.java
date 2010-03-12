@@ -1,6 +1,9 @@
 
-package edu.wustl.common.participant.bizlogic;
+package java.edu.wustl.common.participant.bizlogic;
 
+import java.edu.wustl.common.participant.domain.IParticipant;
+import java.edu.wustl.common.participant.utility.Constants;
+import java.edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -9,9 +12,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import edu.wustl.common.exception.ApplicationException;
-import edu.wustl.common.participant.domain.IParticipant;
-import edu.wustl.common.participant.utility.Constants;
-import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.util.Utility;
 import edu.wustl.common.util.logger.Logger;
 import edu.wustl.dao.JDBCDAO;

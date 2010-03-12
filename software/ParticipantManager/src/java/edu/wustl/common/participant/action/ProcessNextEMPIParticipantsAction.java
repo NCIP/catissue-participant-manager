@@ -2,8 +2,10 @@
  *
  */
 
-package edu.wustl.common.participant.action;
+package java.edu.wustl.common.participant.action;
 
+import java.edu.wustl.common.participant.utility.Constants;
+import java.edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -15,8 +17,6 @@ import org.apache.struts.action.ActionMapping;
 
 import edu.wustl.common.action.SecureAction;
 import edu.wustl.common.beans.SessionDataBean;
-import edu.wustl.common.participant.utility.Constants;
-import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 
 /**
  * @author suhas_khot

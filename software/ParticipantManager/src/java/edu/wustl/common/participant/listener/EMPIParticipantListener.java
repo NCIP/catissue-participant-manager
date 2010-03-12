@@ -1,6 +1,15 @@
 
-package edu.wustl.common.participant.listener;
+package java.edu.wustl.common.participant.listener;
 
+import java.edu.wustl.common.participant.bizlogic.CommonParticipantBizlogic;
+import java.edu.wustl.common.participant.bizlogic.EMPIParticipantRegistrationBizLogic;
+import java.edu.wustl.common.participant.domain.IParticipant;
+import java.edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
+import java.edu.wustl.common.participant.domain.IRace;
+import java.edu.wustl.common.participant.domain.ISite;
+import java.edu.wustl.common.participant.domain.IUser;
+import java.edu.wustl.common.participant.utility.Constants;
+import java.edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import java.io.IOException;
 import java.io.StringReader;
 import java.sql.ResultSet;
@@ -30,15 +39,6 @@ import edu.wustl.common.beans.SessionDataBean;
 import edu.wustl.common.bizlogic.DefaultBizLogic;
 import edu.wustl.common.exception.ApplicationException;
 import edu.wustl.common.exception.BizLogicException;
-import edu.wustl.common.participant.bizlogic.CommonParticipantBizlogic;
-import edu.wustl.common.participant.bizlogic.EMPIParticipantRegistrationBizLogic;
-import edu.wustl.common.participant.domain.IParticipant;
-import edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
-import edu.wustl.common.participant.domain.IRace;
-import edu.wustl.common.participant.domain.ISite;
-import edu.wustl.common.participant.domain.IUser;
-import edu.wustl.common.participant.utility.Constants;
-import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.util.XMLPropertyHandler;
 import edu.wustl.common.util.logger.Logger;
 import edu.wustl.dao.JDBCDAO;
@@ -339,7 +339,7 @@ public class EMPIParticipantListener implements MessageListener
 			processPartiMedIdColl(partiMedIdColl, partcipantObj);
 			participant = partcipantObj;
 			partcipantObj.setEmpiId(personUpi);
-			partcipantObj.setEmpiIdStatus(Constants.ACTIVITY_STATUS_ACTIVE);
+			partcipantObj.setEmpiIdStatus(Constants.EMPI_ID_CREATED);
 			partcipantObj.setParticipantMedicalIdentifierCollection(partiMedIdColl);
 			final CommonParticipantBizlogic bizlogic = new CommonParticipantBizlogic();
 			bizlogic.update(partcipantObj, participant, sessionData);
