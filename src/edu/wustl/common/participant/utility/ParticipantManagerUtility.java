@@ -1364,9 +1364,11 @@ public class ParticipantManagerUtility
 	}
 
 	/**
+	 * Modify name with proper case.
 	 *
-	 * @param name
-	 * @return
+	 * @param name the name
+	 *
+	 * @return string
 	 */
 	public static String modifyNameWithProperCase(String name)
 	{
@@ -1379,4 +1381,256 @@ public class ParticipantManagerUtility
 		return modifiedName;
 	}
 
+	/**
+	 * Check whether the object has been changed.
+	 *
+	 * @param oldParticipant the old participant
+	 * @param currentParticipant the current participant
+	 *
+	 * @return boolean
+	 */
+	public static boolean isParticipantEdited(IParticipant oldParticipant,
+			IParticipant currentParticipant)
+	{
+		boolean isEdited = false;
+
+		isEdited = isLastNameEdited(currentParticipant, oldParticipant);
+		if (isEdited)
+		{
+			return isEdited;
+		}
+		isEdited = isFirstNameEdited(currentParticipant, oldParticipant);
+		if (isEdited)
+		{
+			return isEdited;
+		}
+		isEdited = isMiddelNameEdited(currentParticipant, oldParticipant);
+		if (isEdited)
+		{
+			return isEdited;
+		}
+		isEdited = isSSNEdited(currentParticipant, oldParticipant);
+		if (isEdited)
+		{
+			return isEdited;
+		}
+		isEdited = isGenderEdited(currentParticipant, oldParticipant);
+		if (isEdited)
+		{
+			return isEdited;
+		}
+
+		isEdited = isRaceChanged(currentParticipant.getRaceCollection(), oldParticipant
+				.getRaceCollection());
+
+		return isEdited;
+	}
+
+	/**
+	 * Checks if is gender edited.
+	 *
+	 * @param currentParticipant the current participant
+	 * @param oldParticipant the old participant
+	 *
+	 * @return true, if is gender edited
+	 */
+	private static boolean isGenderEdited(IParticipant currentParticipant,
+			IParticipant oldParticipant)
+	{
+		if (currentParticipant.getGender() != null && !"".equals(currentParticipant.getGender()))
+		{
+			if (!currentParticipant.getGender().equals(oldParticipant.getGender()))
+			{
+				return true;
+			}
+		}
+		else if (oldParticipant.getGender() != null && !"".equals(oldParticipant.getGender()))
+		{
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Checks if is sSN edited.
+	 *
+	 * @param currentParticipant the current participant
+	 * @param oldParticipant the old participant
+	 *
+	 * @return true, if is sSN edited
+	 */
+	private static boolean isSSNEdited(IParticipant currentParticipant, IParticipant oldParticipant)
+	{
+
+		if (currentParticipant.getSocialSecurityNumber() != null
+				&& !"".equals(currentParticipant.getSocialSecurityNumber()))
+		{
+			if (!currentParticipant.getSocialSecurityNumber().equals(
+					oldParticipant.getSocialSecurityNumber()))
+			{
+				return true;
+			}
+		}
+		else if (oldParticipant.getSocialSecurityNumber() != null
+				&& !"".equals(oldParticipant.getSocialSecurityNumber()))
+		{
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Checks if is dOB edited.
+	 *
+	 * @param currentParticipant the current participant
+	 * @param oldParticipant the old participant
+	 *
+	 * @return true, if is dOB edited
+	 */
+	private static boolean isDOBEdited(IParticipant currentParticipant, IParticipant oldParticipant)
+	{
+
+		if (currentParticipant.getBirthDate() != null
+				&& !"".equals(currentParticipant.getBirthDate()))
+		{
+			if (!currentParticipant.getBirthDate().equals(oldParticipant.getBirthDate()))
+			{
+				return true;
+			}
+		}
+		else if (oldParticipant.getBirthDate() != null && !"".equals(oldParticipant.getBirthDate()))
+		{
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Checks if is middel name edited.
+	 *
+	 * @param currentParticipant the current participant
+	 * @param oldParticipant the old participant
+	 *
+	 * @return true, if is middel name edited
+	 */
+	private static boolean isMiddelNameEdited(IParticipant currentParticipant,
+			IParticipant oldParticipant)
+	{
+		if (currentParticipant.getMiddleName() != null
+				&& !"".equals(currentParticipant.getMiddleName()))
+		{
+			if (!currentParticipant.getMiddleName().equals(oldParticipant.getMiddleName()))
+			{
+				return true;
+			}
+		}
+		else if (oldParticipant.getMiddleName() != null
+				&& !"".equals(oldParticipant.getMiddleName()))
+		{
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Checks if is first name edited.
+	 *
+	 * @param currentParticipant the current participant
+	 * @param oldParticipant the old participant
+	 *
+	 * @return true, if is first name edited
+	 */
+	private static boolean isFirstNameEdited(IParticipant currentParticipant,
+			IParticipant oldParticipant)
+	{
+		if (currentParticipant.getFirstName() != null
+				&& !"".equals(currentParticipant.getFirstName()))
+		{
+			if (!currentParticipant.getFirstName().equals(oldParticipant.getFirstName()))
+			{
+				return true;
+			}
+		}
+		else if (oldParticipant.getFirstName() != null && !"".equals(oldParticipant.getFirstName()))
+		{
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Checks if is last name edited.
+	 *
+	 * @param currentParticipant the current participant
+	 * @param oldParticipant the old participant
+	 *
+	 * @return true, if is last name edited
+	 */
+	private static boolean isLastNameEdited(IParticipant currentParticipant,
+			IParticipant oldParticipant)
+	{
+		if (currentParticipant.getLastName() != null
+				&& !"".equals(currentParticipant.getLastName()))
+		{
+			if (!currentParticipant.getLastName().equals(oldParticipant.getLastName()))
+			{
+				return true;
+			}
+		}
+		else if (oldParticipant.getLastName() != null && !"".equals(oldParticipant.getLastName()))
+		{
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Checks whether race value has been changed.
+	 *
+	 * @param raceColNew the race col new
+	 * @param raceColOld the race col old
+	 *
+	 * @return boolean
+	 */
+	private static boolean isRaceChanged(Collection raceColNew, Collection raceColOld)
+	{
+
+		String raceNameNew = null;
+		String raceNameOld = null;
+		boolean found = false;
+		if (raceColNew != null && !raceColNew.isEmpty())
+		{
+
+			if (raceColOld == null || raceColOld.isEmpty())
+			{
+				return true;
+			}
+			if ((raceColNew.size() > raceColOld.size()) || (raceColOld.size() > raceColNew.size()))
+			{
+				return true;
+			}
+			Iterator<IRace<IParticipant>> iterNew = raceColNew.iterator();
+			while (iterNew.hasNext())
+			{
+				IRace<IParticipant> raceNew = (IRace<IParticipant>) iterNew.next();
+				raceNameNew = raceNew.getRaceName();
+				Iterator<IRace<IParticipant>> iterOld = raceColOld.iterator();
+				found = false;
+				while (iterOld.hasNext())
+				{
+					IRace<IParticipant> raceOld = (IRace<IParticipant>) iterOld.next();
+					raceNameOld = raceOld.getRaceName();
+					if (raceNameNew.equals(raceNameOld))
+					{
+						found = true;
+					}
+				}
+				if (!found)
+				{
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 }
