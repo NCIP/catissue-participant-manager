@@ -1,5 +1,5 @@
 
-package java.edu.wustl.common.participant.utility;
+package edu.wustl.common.participant.utility;
 
 import java.io.IOException;
 import java.sql.SQLException;
