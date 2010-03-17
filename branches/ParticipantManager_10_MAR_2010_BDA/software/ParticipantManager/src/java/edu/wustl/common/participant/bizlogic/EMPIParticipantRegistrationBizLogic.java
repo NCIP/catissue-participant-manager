@@ -1,12 +1,8 @@
 
 package edu.wustl.common.participant.bizlogic;
 
-import edu.wustl.common.participant.domain.IParticipant;
-import edu.wustl.common.participant.domain.IRace;
-import edu.wustl.common.participant.utility.Constants;
-import edu.wustl.common.participant.utility.MQMessageWriter;
-import edu.wustl.common.participant.utility.RaceGenderCodesProperyHandler;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -15,6 +11,11 @@ import java.util.List;
 import java.util.Locale;
 
 import edu.wustl.common.exception.ApplicationException;
+import edu.wustl.common.participant.domain.IParticipant;
+import edu.wustl.common.participant.domain.IRace;
+import edu.wustl.common.participant.utility.Constants;
+import edu.wustl.common.participant.utility.MQMessageWriter;
+import edu.wustl.common.participant.utility.RaceGenderCodesProperyHandler;
 import edu.wustl.common.util.Utility;
 import edu.wustl.common.util.XMLPropertyHandler;
 import edu.wustl.common.util.global.CommonServiceLocator;
@@ -23,6 +24,7 @@ import edu.wustl.dao.DAO;
 import edu.wustl.dao.daofactory.DAOConfigFactory;
 import edu.wustl.dao.daofactory.IDAOFactory;
 import edu.wustl.dao.exception.DAOException;
+import edu.wustl.dao.query.generator.ColumnValueBean;
 import edu.wustl.patientLookUp.util.PropertyHandler;
 
 
@@ -462,11 +464,16 @@ public class EMPIParticipantRegistrationBizLogic
 			dao = daoFactory.getDAO();
 			dao.openSession(null);
 
-			final String hql = getQuery(participant.getId().longValue());
-			final List csPINameColl = dao.executeQuery(hql);
+			//final String hql = getQuery(participant.getId().longValue());
+			final String hql = getQuery();
+			List<ColumnValueBean> columnValueBeans = new ArrayList<ColumnValueBean>();
+			columnValueBeans.add(new ColumnValueBean(participant.getId().longValue()));
+
+			//final List csPINameColl = dao.executeQuery(hql);
+			final List csPINameColl = dao.executeQuery(hql, columnValueBeans);
 			if (csPINameColl != null && !csPINameColl.isEmpty())
 			{
-				final Object names[] = (Object[]) (Object[]) csPINameColl.get(0);
+				final Object names[] = (Object[]) csPINameColl.get(0);
 				csPIFirstName = (String) names[0];
 				csPILastName = (String) names[1];
 			}
@@ -506,7 +513,7 @@ public class EMPIParticipantRegistrationBizLogic
 	 *
 	 * @throws DAOException the DAO exception
 	 */
-	private String getQuery(final long csId) throws DAOException
+	private String getQuery() throws DAOException
 	{
 		String application = null;
 		try
@@ -525,7 +532,7 @@ public class EMPIParticipantRegistrationBizLogic
 			hql
 					.append("select CSReg.clinicalStudy.principalInvestigator.firstName,CSReg.clinicalStudy.p"
 							+ "rincipalInvestigator.lastName from edu.wustl.clinportal.domain.ClinicalStudyRegistration "
-							+ " CSReg where CSReg.participant.id="+csId);
+							+ " CSReg where CSReg.participant.id= ? ");
 		}
 		else
 		{
@@ -533,7 +540,7 @@ public class EMPIParticipantRegistrationBizLogic
 					.append("select CSReg.clinicalStudy.principalInvestigator.firstName,CSReg.clinicalStudy.p"
 							+ "rincipalInvestigator.lastName from "
 							+ " edu.wustl.catissuecore.domain.ClinicalStudyRegistration"
-							+ " CSReg where CSReg.participant.id="+csId);
+							+ " CSReg where CSReg.participant.id= ?");
 		}
 		return hql.toString();
 	}
@@ -740,7 +747,7 @@ public class EMPIParticipantRegistrationBizLogic
 			final Iterator<IRace<IParticipant>> itr = participantRaceCollection.iterator();
 			while (itr.hasNext())
 			{
-				race = (IRace<IParticipant>) itr.next();
+				race = itr.next();
 				if (race != null)
 				{
 					raceName = race.getRaceName();
