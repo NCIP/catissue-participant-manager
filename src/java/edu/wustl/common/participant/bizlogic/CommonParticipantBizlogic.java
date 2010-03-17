@@ -1,12 +1,7 @@
 
 package edu.wustl.common.participant.bizlogic;
 
-import edu.wustl.common.participant.domain.IParticipant;
-import edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
-import edu.wustl.common.participant.domain.IRace;
-import edu.wustl.common.participant.domain.ISite;
-import edu.wustl.common.participant.utility.Constants;
-import edu.wustl.common.participant.utility.ParticipantManagerUtility;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -19,6 +14,12 @@ import edu.wustl.common.beans.SessionDataBean;
 import edu.wustl.common.cde.CDEManager;
 import edu.wustl.common.exception.BizLogicException;
 import edu.wustl.common.exception.ErrorKey;
+import edu.wustl.common.participant.domain.IParticipant;
+import edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
+import edu.wustl.common.participant.domain.IRace;
+import edu.wustl.common.participant.domain.ISite;
+import edu.wustl.common.participant.utility.Constants;
+import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.util.Utility;
 import edu.wustl.common.util.global.ApplicationProperties;
 import edu.wustl.common.util.global.CommonServiceLocator;
@@ -26,6 +27,7 @@ import edu.wustl.common.util.global.Status;
 import edu.wustl.common.util.global.Validator;
 import edu.wustl.common.util.logger.Logger;
 import edu.wustl.dao.DAO;
+import edu.wustl.dao.HibernateDAO;
 import edu.wustl.dao.JDBCDAO;
 import edu.wustl.dao.QueryWhereClause;
 import edu.wustl.dao.condition.EqualClause;
@@ -75,7 +77,7 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 				.iterator();
 		while (iterator.hasNext())
 		{
-			final IParticipantMedicalIdentifier<IParticipant, ISite> pmIdentifier = (IParticipantMedicalIdentifier<IParticipant, ISite>) iterator
+			final IParticipantMedicalIdentifier<IParticipant, ISite> pmIdentifier = iterator
 					.next();
 			pmIdentifier.setParticipant(participant);
 		}
@@ -99,7 +101,7 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 				.iterator();
 		while (pmiIterator.hasNext())
 		{
-			final IParticipantMedicalIdentifier<IParticipant, ISite> pmIdentifier = (IParticipantMedicalIdentifier<IParticipant, ISite>) pmiIterator
+			final IParticipantMedicalIdentifier<IParticipant, ISite> pmIdentifier = pmiIterator
 					.next();
 			if (pmIdentifier.getSite() != null && pmIdentifier.getSite().getId() == null
 					&& pmIdentifier.getSite().getName() != null)
@@ -108,9 +110,14 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 				final String sourceObjectName = ISite.class.getName();
 				final String[] selectColumnName = {"id"};
 				final QueryWhereClause queryWhereClause = new QueryWhereClause(sourceObjectName);
-				queryWhereClause.addCondition(new EqualClause("name", site.getName()));
-				final List list = dao
-						.retrieve(sourceObjectName, selectColumnName, queryWhereClause);
+				//queryWhereClause.addCondition(new EqualClause("name", site.getName()));
+				queryWhereClause.addCondition(new EqualClause("name", '?'));
+				List<ColumnValueBean> columnValueBeans = new ArrayList<ColumnValueBean>();
+				columnValueBeans.add(new ColumnValueBean(site.getName()));
+				/*final List list = dao
+						.retrieve(sourceObjectName, selectColumnName, queryWhereClause);*/
+				final List list = ((HibernateDAO)dao).retrieve(sourceObjectName, selectColumnName,
+						queryWhereClause, columnValueBeans);
 
 				if (!list.isEmpty())
 				{
@@ -299,7 +306,7 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 			{
 				final IParticipantMedicalIdentifier<IParticipant, ISite> partiMedobj = (IParticipantMedicalIdentifier<IParticipant, ISite>) itr
 						.next();
-				final ISite site = (ISite) partiMedobj.getSite();
+				final ISite site = partiMedobj.getSite();
 				final String medicalRecordNo = partiMedobj.getMedicalRecordNumber();
 				if (validator.isEmpty(medicalRecordNo) || site == null || site.getId() == null)
 				{
@@ -328,7 +335,7 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 				final IRace race = (IRace) itr.next();
 				if (race != null)
 				{
-					final String raceName = (String) race.getRaceName();
+					final String raceName = race.getRaceName();
 					if (!validator.isEmpty(raceName)
 							&& !Validator.isEnumeratedOrNullValue(raceList, raceName))
 					{
