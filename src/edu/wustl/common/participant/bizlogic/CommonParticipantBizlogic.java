@@ -525,6 +525,10 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 		{
 			if (ParticipantManagerUtility.isEMPIEnable(participant.getId()) &&  ParticipantManagerUtility.isParticipantEdited(oldParticipant,participant))
 			{
+				if(edu.wustl.common.participant.utility.Constants.EMPI_ID_CREATED
+				.equals(oldParticipant.getEmpiIdStatus())
+				&& edu.wustl.common.participant.utility.Constants.EMPI_ID_PENDING
+						.equals(participant.getEmpiIdStatus()))
 				// if the
 				if (oldEMPIStatus != null && !("".equals(oldEMPIStatus)))
 				{
