@@ -2,7 +2,7 @@
  * CommonDefaultBizLogic.java
  * Purpose:
  */
-package java.edu.wustl.common.participant.bizlogic;
+package edu.wustl.common.participant.bizlogic;
 
 import edu.wustl.common.beans.SessionDataBean;
 import edu.wustl.common.bizlogic.DefaultBizLogic;

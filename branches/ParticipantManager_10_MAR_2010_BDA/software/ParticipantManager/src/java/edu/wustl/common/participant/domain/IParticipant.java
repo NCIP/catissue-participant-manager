@@ -1,5 +1,5 @@
 
-package java.edu.wustl.common.participant.domain;
+package edu.wustl.common.participant.domain;
 
 import java.util.Collection;
 import java.util.Date;

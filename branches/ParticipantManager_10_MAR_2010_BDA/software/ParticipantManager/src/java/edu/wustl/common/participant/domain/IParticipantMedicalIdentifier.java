@@ -1,5 +1,5 @@
 
-package java.edu.wustl.common.participant.domain;
+package edu.wustl.common.participant.domain;
 
 /**
  * The Interface IParticipantMedicalIdentifier.
