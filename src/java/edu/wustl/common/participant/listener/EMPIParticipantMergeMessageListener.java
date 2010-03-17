@@ -1,8 +1,6 @@
 
-package java.edu.wustl.common.participant.listener;
+package edu.wustl.common.participant.listener;
 
-import java.edu.wustl.common.participant.utility.Constants;
-import java.edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
@@ -13,6 +11,8 @@ import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.TextMessage;
 
+import edu.wustl.common.participant.utility.Constants;
+import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.util.logger.Logger;
 import edu.wustl.dao.JDBCDAO;
 import edu.wustl.dao.exception.DAOException;
