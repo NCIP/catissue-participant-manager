@@ -1,9 +1,9 @@
 
-package java.edu.wustl.common.participant.bizlogic;
+package edu.wustl.common.participant.bizlogic;
 
-import java.edu.wustl.common.participant.domain.IParticipant;
-import java.edu.wustl.common.participant.utility.Constants;
-import java.edu.wustl.common.participant.utility.ParticipantManagerUtility;
+import edu.wustl.common.participant.domain.IParticipant;
+import edu.wustl.common.participant.utility.Constants;
+import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;

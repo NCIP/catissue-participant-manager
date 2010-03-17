@@ -1,5 +1,5 @@
 
-package java.edu.wustl.common.participant.actionForm;
+package edu.wustl.common.participant.actionForm;
 
 import java.util.Map;
 

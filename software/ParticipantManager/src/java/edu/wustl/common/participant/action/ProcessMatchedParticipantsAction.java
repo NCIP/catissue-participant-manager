@@ -1,9 +1,9 @@
 
-package java.edu.wustl.common.participant.action;
+package edu.wustl.common.participant.action;
 
-import java.edu.wustl.common.participant.bizlogic.ParticipantMatchingBizLogic;
-import java.edu.wustl.common.participant.utility.Constants;
-import java.edu.wustl.common.participant.utility.ParticipantManagerUtility;
+import edu.wustl.common.participant.bizlogic.ParticipantMatchingBizLogic;
+import edu.wustl.common.participant.utility.Constants;
+import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import java.util.ArrayList;
 import java.util.List;
 
