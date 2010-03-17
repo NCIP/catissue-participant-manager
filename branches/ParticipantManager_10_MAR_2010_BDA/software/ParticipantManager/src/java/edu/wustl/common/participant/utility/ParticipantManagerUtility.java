@@ -1,12 +1,6 @@
 
 package edu.wustl.common.participant.utility;
 
-import edu.wustl.common.participant.domain.IParticipant;
-import edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
-import edu.wustl.common.participant.domain.IRace;
-import edu.wustl.common.participant.domain.ISite;
-import edu.wustl.common.participant.listener.EMPIParticipantListener;
-import edu.wustl.common.participant.listener.EMPIParticipantMergeMessageListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -39,12 +33,20 @@ import edu.wustl.common.factory.IFactory;
 import edu.wustl.common.lookup.DefaultLookupParameters;
 import edu.wustl.common.lookup.DefaultLookupResult;
 import edu.wustl.common.lookup.LookupLogic;
+import edu.wustl.common.participant.domain.IParticipant;
+import edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
+import edu.wustl.common.participant.domain.IRace;
+import edu.wustl.common.participant.domain.ISite;
+import edu.wustl.common.participant.listener.EMPIParticipantListener;
+import edu.wustl.common.participant.listener.EMPIParticipantMergeMessageListener;
 import edu.wustl.common.util.Utility;
 import edu.wustl.common.util.XMLPropertyHandler;
 import edu.wustl.common.util.global.CommonServiceLocator;
 import edu.wustl.common.util.logger.Logger;
 import edu.wustl.dao.DAO;
 import edu.wustl.dao.JDBCDAO;
+import edu.wustl.dao.QueryWhereClause;
+import edu.wustl.dao.condition.EqualClause;
 import edu.wustl.dao.daofactory.DAOConfigFactory;
 import edu.wustl.dao.daofactory.IDAOFactory;
 import edu.wustl.dao.exception.DAOException;
@@ -198,13 +200,29 @@ public class ParticipantManagerUtility
 	{
 		String sourceObjectName = ISite.class.getName();
 		String selectColumnNames[] = {"id", "name"};
-		String whereColumnName[] = {"facilityId"};
-		String whColCondn[] = {"="};
+		//String whereColumnName[] = {"facilityId"};
+		//String whColCondn[] = {"="};
 		DefaultBizLogic bizLogic = new DefaultBizLogic();
 		ISite site = null;
-		Object whereColumnValue[] = {facilityId};
-		List siteObject = bizLogic.retrieve(sourceObjectName, selectColumnNames, whereColumnName,
-				whColCondn, whereColumnValue, null);
+		//Object whereColumnValue[] = {facilityId};
+		/*List siteObject = bizLogic.retrieve(sourceObjectName, selectColumnNames, whereColumnName,
+				whColCondn, whereColumnValue, null);*/
+
+		QueryWhereClause queryWhereClause = new QueryWhereClause(sourceObjectName);
+		try
+		{
+			queryWhereClause.addCondition(new EqualClause("facilityId", '?'));
+		}
+		catch (DAOException e)
+		{
+			throw new BizLogicException(e);
+		}
+
+		List<ColumnValueBean> columnValueBeans = new ArrayList<ColumnValueBean>();
+		columnValueBeans.add(new ColumnValueBean(facilityId));
+		List siteObject = bizLogic.retrieve(sourceObjectName, selectColumnNames, queryWhereClause,
+				columnValueBeans);
+
 		if (siteObject != null && siteObject.size() > 0)
 		{
 			Object siteList[] = (Object[]) siteObject.get(0);
@@ -273,7 +291,21 @@ public class ParticipantManagerUtility
 		IBizLogic bizLogic = factory.getBizLogic(Constants.DEFAULT_BIZ_LOGIC);
 		String sourceObjectName = IParticipant.class.getName();
 		// getting all the participants from the database
-		List participantList = bizLogic.retrieve(sourceObjectName, "id", identifier);
+		//List participantList = bizLogic.retrieve(sourceObjectName, "id", identifier);
+		QueryWhereClause queryWhereClause = new QueryWhereClause(sourceObjectName);
+		try
+		{
+			queryWhereClause.addCondition(new EqualClause("id", '?'));
+		}
+		catch (DAOException e)
+		{
+			throw new BizLogicException(e);
+		}
+
+		List<ColumnValueBean> columnValueBeans = new ArrayList<ColumnValueBean>();
+		columnValueBeans.add(new ColumnValueBean(identifier));
+		List participantList = bizLogic.retrieve(sourceObjectName, null, queryWhereClause,
+				columnValueBeans);
 		return (IParticipant) participantList.get(0);
 
 	}
@@ -805,7 +837,7 @@ public class ParticipantManagerUtility
 			if (!statusList.isEmpty() && !"".equals(statusList.get(0)))
 			{
 				List idList = (List) statusList.get(0);
-				if (!idList.isEmpty() && !"".equals(((String) idList.get(0))))
+				if (!idList.isEmpty() && !"".equals((idList.get(0))))
 				{
 					for (int i = 0; i < idList.size(); i++)
 					{
