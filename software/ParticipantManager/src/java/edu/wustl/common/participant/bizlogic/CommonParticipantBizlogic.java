@@ -77,8 +77,7 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 				.iterator();
 		while (iterator.hasNext())
 		{
-			final IParticipantMedicalIdentifier<IParticipant, ISite> pmIdentifier = iterator
-					.next();
+			final IParticipantMedicalIdentifier<IParticipant, ISite> pmIdentifier = iterator.next();
 			pmIdentifier.setParticipant(participant);
 		}
 		dao.insert(participant);
@@ -116,7 +115,7 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 				columnValueBeans.add(new ColumnValueBean(site.getName()));
 				/*final List list = dao
 						.retrieve(sourceObjectName, selectColumnName, queryWhereClause);*/
-				final List list = ((HibernateDAO)dao).retrieve(sourceObjectName, selectColumnName,
+				final List list = ((HibernateDAO) dao).retrieve(sourceObjectName, selectColumnName,
 						queryWhereClause, columnValueBeans);
 
 				if (!list.isEmpty())
@@ -504,7 +503,8 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 						.getSocialSecurityNumber(), mrn))
 		{
 			// Process participant for CIDER participant matching.
-			 ParticipantManagerUtility.addParticipantToProcessMessageQueue(userIdSet, participant.getId());
+			ParticipantManagerUtility.addParticipantToProcessMessageQueue(userIdSet, participant
+					.getId());
 		}
 
 	}
@@ -525,9 +525,8 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 		final String oldEMPIStatus = oldParticipant.getEmpiIdStatus();
 		try
 		{
-			if (ParticipantManagerUtility.isEMPIEnable(participant.getId()))
+			if (ParticipantManagerUtility.isEMPIEnable(participant.getId()) &&  ParticipantManagerUtility.isParticipantEdited(oldParticipant,participant))
 			{
-				// if the
 				if (oldEMPIStatus != null && !("".equals(oldEMPIStatus)))
 				{
 					if (Constants.EMPI_ID_CREATED.equals(participant.getEmpiIdStatus()))
@@ -551,28 +550,23 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 	 *
 	 * @throws BizLogicException the biz logic exception
 	 */
-	public static void postUpdate(Object currentObj, Object oldObj,
-			SessionDataBean sessionDataBean, LinkedHashSet<Long> userIdSet)
+	public static void postUpdate(Object oldObj, Object currentObj, SessionDataBean sessionDataBean)
 			throws BizLogicException
 	{
+
 		final IParticipant oldParticipant = (IParticipant) oldObj;
 		final IParticipant participant = (IParticipant) currentObj;
 		try
 		{
-
-			if (ParticipantManagerUtility.isEMPIEnable(participant.getId()))
+			if (ParticipantManagerUtility.isEMPIEnable(participant.getId()) && ParticipantManagerUtility.isParticipantEdited(oldParticipant,participant))
 			{
-				if (Constants.EMPI_ID_CREATED.equals(oldParticipant.getEmpiIdStatus())
-						&& Constants.EMPI_ID_PENDING.equals(participant.getEmpiIdStatus()))
+				if (edu.wustl.common.participant.utility.Constants.EMPI_ID_CREATED
+						.equals(oldParticipant.getEmpiIdStatus())
+						&& edu.wustl.common.participant.utility.Constants.EMPI_ID_PENDING
+								.equals(participant.getEmpiIdStatus()))
 				{
 					regNewPatientToEMPI(participant);
 				}
-
-			  /*if (participant.getEmpiIdStatus() == null
-						|| "".equals(participant.getEmpiIdStatus()))
-				{
-					insertParticipantToProcessingQue(participant, userIdSet);
-				}*/
 			}
 		}
 		catch (Exception e)
@@ -580,6 +574,7 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 			logger.info("ERROR WHILE REGISTERING NEW PATIENT TO EMPI  ##############  \n");
 			throw new BizLogicException(null, e, e.getMessage());
 		}
+
 	}
 
 	/**
