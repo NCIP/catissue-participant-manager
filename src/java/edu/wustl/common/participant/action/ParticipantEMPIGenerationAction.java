@@ -78,21 +78,24 @@ public class ParticipantEMPIGenerationAction extends CommonAddEditAction
 				{
 					participantForm.setOperation(edu.wustl.common.util.global.Constants.EDIT);
 					participantForm.setEmpiIdStatus(Constants.EMPI_ID_PENDING);
+					// Send the registration message to CDR.
+					registerPatientToEMPI(request, participantForm);
+					// change the eMPI id status
 					forward = super.executeXSS(mapping, (AbstractActionForm) participantForm,
 							request, response);
 					if (!forward.getName().equals(edu.wustl.common.util.global.Constants.FAILURE))
 					{
-						// Send the registration message to CDR.
-						registerPatientToEMPI(request, participantForm);
-						// Delete that participant from the processed message
-						// queue.
+						// Delete that participant from the processed message queue.
 						ParticipantManagerUtility.deleteProcessedParticipant(participantForm
 								.getId());
+						// process next participant
+						forward=mapping.findForward(Constants.PROCESS_NEXT_PARTCIPANT);
 					}
 				}
 			}
 			else if (isGenerateEMPID.equals(Constants.YES))
 			{
+				// when user clicks on GenerateeMPI or reGenerateEMI button
 				// chech the status first if its waiting for generating eMPI thn
 				// can't edit it util it get eMPi id.
 				final String eMPIStatus = ParticipantManagerUtility
@@ -113,9 +116,32 @@ public class ParticipantEMPIGenerationAction extends CommonAddEditAction
 			// TODO Auto-generated catch block
 			LOGGER.info("Error while generating EMPI for the participant \n");
 			LOGGER.info(e.getMessage());
+
+			forward = mapping.findForward(Constants.FAILURE);
+			setErrorMessage(request, "participant.hl7Message.sending.failed", e.getMessage());
 		}
 		return forward;
 
+	}
+
+
+	/**
+	 * Sets the error message.
+	 *
+	 * @param request the new error message
+	 * @param key the key
+	 * @param errMes the err mes
+	 */
+	private void setErrorMessage(final HttpServletRequest request, final String key,
+			final String errMes)
+	{
+		ActionErrors actionErr = (ActionErrors) request.getAttribute(Globals.ERROR_KEY);
+		if (actionErr == null)
+		{
+			actionErr = new ActionErrors();
+		}
+		actionErr.add(ActionErrors.GLOBAL_ERROR, new ActionError(key, errMes));
+		saveMessages(request, actionErr);
 	}
 
 	/**
