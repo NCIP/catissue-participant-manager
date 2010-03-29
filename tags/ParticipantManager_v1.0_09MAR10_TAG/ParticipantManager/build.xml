@@ -1,0 +1,78 @@
+<?xml version ="1.0"?>
+
+	<!--Ant Script for create Build for DAO -->
+<project name="ParticipantManager" default="compile">
+	<property name="base.dir" value="." />
+	<property name="lib.dir" value="${base.dir}/lib" />
+	<property name="build.dir" value="${base.dir}/build" />
+	<property name="src.dir" value="${base.dir}/src/java" />
+	<property name="wc.jar.details" value="Partiicpant Manager" />
+	<property name="wc.jar.version" value="1.0" />
+	<property name="wc.jar.creator" value="Virender" />
+	<property name="target.dir" value="${base.dir}/build/classes" />
+	<!--
+		<loadfile property="dist.revision" srcFile="./.svn/entries">
+		<filterchain> <headfilter lines="1" skip="4"/> </filterchain>
+		</loadfile>
+	-->
+
+	<loadfile property="dist.revision" srcFile="./.svn/entries">
+				<filterchain>
+					<headfilter lines="1" skip="4"/>
+				</filterchain>
+	</loadfile>
+
+	<target name="compile" depends="init">
+		<echo> Compiling Participant Manager source code : </echo>
+		<javac destdir="${target.dir}" includes="**/*.*" debug="on"
+			includeAntRuntime="false" target="1.5">
+			<src path="${src.dir}" />
+			<classpath>
+				<fileset dir="${lib.dir}">
+					<include name="*.jar" />
+				</fileset>
+			</classpath>
+		</javac>
+	</target>
+	<!-- sub tasks -->
+	
+	<target name="init">
+			<echo>Initializing necessary parameters : </echo>
+			<!-- Create the time stamp -->
+			<tstamp />
+			<!-- Create the build directory structure used by compile -->
+			<delete dir="${build.dir}" />
+			<mkdir dir="${build.dir}" />
+			<mkdir dir="${build.dir}/classes" />
+	</target>
+
+	<target name="build_jar" depends="compile">
+		<echo>Building Participant Manager project jar : </echo>
+	
+		<jar taskname="build_jar" jarfile="${build.dir}/ParticipantManager.jar">
+			<fileset dir="${target.dir}">
+				<include name="**/*" />
+			</fileset>
+			<manifest>
+				<section name="${wc.jar.details}">
+			  		<attribute name="Version" value="${wc.jar.version}" />
+			  		<attribute name="Built-By" value="${wc.jar.creator}" />
+			  		<attribute name="Build-on" value="${TODAY} ${TSTAMP}" />
+			  		<attribute name="SVN-URL" value="${dist.revision}" />
+			  	</section>
+			</manifest>
+		</jar>
+	</target>
+
+	<target name="build_code_zip" depends="compile">
+		<echo> Building project installable zip : </echo>
+		<zip destfile="${build.dir}/WUSTLKey-src.zip">
+			<fileset dir="${src.dir}" includes="**/*" />
+		</zip>
+	</target>
+	
+	<target name="dist" depends="build_jar">
+
+	</target>
+
+</project>
