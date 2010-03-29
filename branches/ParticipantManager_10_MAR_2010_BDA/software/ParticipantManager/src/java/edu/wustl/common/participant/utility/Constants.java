@@ -278,4 +278,10 @@ public class Constants
 	public static final String IS_GENERATE_EMPI_PAGE = "isGenerateeMPIPage";
 
 	public static final String EMPI_GENERATION_FIELDS_INSUFFICIENT = "empiGenerationFieldsInsufficient";
+
+	public static final String PAGE_OF_PARTICIPANT = "pageOfParticipant";
+
+	public static final String PROCESS_NEXT_PARTCIPANT = "processNextParticipant";
+	public static final String FAILURE = "failure";
+
 }
