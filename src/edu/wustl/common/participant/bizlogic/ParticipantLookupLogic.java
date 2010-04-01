@@ -176,6 +176,7 @@ public class ParticipantLookupLogic implements LookupLogic
 					partcipantNew
 							.setParticipantMedicalIdentifierCollection(participantMedicalIdentifierCollectionNew);
 					result.setObject(partcipantNew);
+					result.setWeight(new Double(patientInfo.getMatchingScore()));
 					matchingPartisList.add(result);
 				}
 			}
