@@ -11,10 +11,14 @@ import java.util.List;
 import java.util.Locale;
 
 import edu.wustl.common.exception.ApplicationException;
+import edu.wustl.common.exception.BizLogicException;
+import edu.wustl.common.participant.client.IParticipantManager;
 import edu.wustl.common.participant.domain.IParticipant;
 import edu.wustl.common.participant.domain.IRace;
 import edu.wustl.common.participant.utility.Constants;
 import edu.wustl.common.participant.utility.MQMessageWriter;
+import edu.wustl.common.participant.utility.ParticipantManagerException;
+import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.participant.utility.RaceGenderCodesProperyHandler;
 import edu.wustl.common.util.Utility;
 import edu.wustl.common.util.XMLPropertyHandler;
@@ -25,8 +29,6 @@ import edu.wustl.dao.daofactory.DAOConfigFactory;
 import edu.wustl.dao.daofactory.IDAOFactory;
 import edu.wustl.dao.exception.DAOException;
 import edu.wustl.dao.query.generator.ColumnValueBean;
-import edu.wustl.patientLookUp.util.PropertyHandler;
-
 
 /**
  * The Class EMPIParticipantRegistrationBizLogic.
@@ -162,9 +164,17 @@ public class EMPIParticipantRegistrationBizLogic
 		LOGGER.info("\n\nHL7 Message \n \n \n\n\n");
 
 		final String commonHL7Segments = getMSHEVNPIDSengment(participant, eventTypeCode);
-		final String pvSegment = getHL7PVSegment(participant, dateTime);
-
-		hl7Message = commonHL7Segments + "\r" + pvSegment + "\n";
+		String pvSegment;
+		try
+		{
+			pvSegment = getHL7PVSegment(participant, dateTime);
+			hl7Message = commonHL7Segments + "\r" + pvSegment + "\n";
+		}
+		catch (ParticipantManagerException e)
+		{
+			// TODO Auto-generated catch block
+			throw new ApplicationException(null, e, e.getMessage());
+		}
 		return hl7Message;
 	}
 
@@ -177,8 +187,8 @@ public class EMPIParticipantRegistrationBizLogic
 	 *
 	 * @throws Exception the exception
 	 */
-	public void sendMergeMessage(final IParticipant participant, final String oldParticipantId, final String oldEMPIID)
-			throws ApplicationException
+	public void sendMergeMessage(final IParticipant participant, final String oldParticipantId,
+			final String oldEMPIID) throws ApplicationException
 	{
 		if (!participant.getEmpiId().equals(oldEMPIID))
 		{
@@ -232,7 +242,7 @@ public class EMPIParticipantRegistrationBizLogic
 	 *
 	 * @throws Exception the exception
 	 */
-	public String getMRNMergeMgs(final IParticipant participant,final  String oldParticipantId)
+	public String getMRNMergeMgs(final IParticipant participant, final String oldParticipantId)
 			throws ApplicationException
 	{
 		LOGGER.info("\n\n  MRN Merge HL7 Message \n \n \n\n\n");
@@ -253,7 +263,8 @@ public class EMPIParticipantRegistrationBizLogic
 	 *
 	 * @throws Exception the exception
 	 */
-	private void sendEMPIMIdMergeMgs(final IParticipant participant,final  String oldEMPIID) throws ApplicationException
+	private void sendEMPIMIdMergeMgs(final IParticipant participant, final String oldEMPIID)
+			throws ApplicationException
 	{
 		String hl7Message = "";
 		hl7Message = getEMPIMIdMergeMgs(participant, oldEMPIID);
@@ -270,7 +281,8 @@ public class EMPIParticipantRegistrationBizLogic
 	 *
 	 * @throws Exception the exception
 	 */
-	public String getEMPIMIdMergeMgs(final IParticipant participant, final String oldEMPIID) throws ApplicationException
+	public String getEMPIMIdMergeMgs(final IParticipant participant, final String oldEMPIID)
+			throws ApplicationException
 	{
 		String hl7Message = "";
 		LOGGER.info("\n\n  EMPI Merge HL7 Message \n \n \n\n\n");
@@ -303,7 +315,7 @@ public class EMPIParticipantRegistrationBizLogic
 		final String dateTime = getDateTime();
 		final String msgSegment = getHL7MSHSegment(msgControlId, dateTime, eventTypeCode);
 		final String evnSegment = getHL7EVNSegment(dateTime, eventTypeCode);
-		final String pid = getHL7PIDSegment(participant,eventTypeCode);
+		final String pid = getHL7PIDSegment(participant, eventTypeCode);
 		hl7Segment = msgSegment + "\r" + evnSegment + "\r" + pid;
 		LOGGER.info(msgSegment + "\n");
 		LOGGER.info(evnSegment + "\n");
@@ -324,7 +336,7 @@ public class EMPIParticipantRegistrationBizLogic
 		final String empiIdZeroAppnd = getZeroAppendedEMPIId(eMPI);
 		final String eMPIID = empiIdZeroAppnd + "^^^64";
 		final String mrn = particiapntId + "^^^" + Constants.CLINPORTAL_FACILITY_ID + "^U";
-		final String mgrSegment = "MRG|" + mrn + "|||" + eMPIID+"||||^^^&&";
+		final String mgrSegment = "MRG|" + mrn + "|||" + eMPIID + "||||^^^&&";
 		return mgrSegment;
 	}
 
@@ -345,7 +357,8 @@ public class EMPIParticipantRegistrationBizLogic
 		final String minute = time[1];
 		final String second = time[2];
 		final String milisecond = time[3];
-		final String msgControlId = milisecond + "FAC" + year + month + date + hour + minute + second;
+		final String msgControlId = milisecond + "FAC" + year + month + date + hour + minute
+				+ second;
 		final String dateTime = year + month + date + hour + minute + second + "-0500^S";
 		setMsgControlId(msgControlId);
 		setDateTime(dateTime);
@@ -360,15 +373,19 @@ public class EMPIParticipantRegistrationBizLogic
 	 *
 	 * @return the h l7 msh segment
 	 */
-	private String getHL7MSHSegment(final String msgControlId,final  String dateTime,final  String eventTypeCode)
+	private String getHL7MSHSegment(final String msgControlId, final String dateTime,
+			final String eventTypeCode)
 	{
 		String msgSegment = null;
-		if(Constants.HL7_REG_EVENT_TYPE_A04.equals(eventTypeCode)){
+		if (Constants.HL7_REG_EVENT_TYPE_A04.equals(eventTypeCode))
+		{
 			msgSegment = "MSH|^~\\&|CLINPORTAL|CLINPORTAL|ADMISSION|ADT1|" + dateTime + "||ADT^"
-				+ eventTypeCode + "|" + msgControlId + "|P|2.1";
-		}else if(Constants.HL7_MERGE_EVENT_TYPE_A34.equals(eventTypeCode)){
+					+ eventTypeCode + "|" + msgControlId + "|P|2.1";
+		}
+		else if (Constants.HL7_MERGE_EVENT_TYPE_A34.equals(eventTypeCode))
+		{
 			msgSegment = "MSH|^~\\&|CLINPORTAL|CLINPORTAL|CDR__S|BJC_SYSTEM|" + dateTime + "||ADT^"
-			+ eventTypeCode + "|" + msgControlId + "|P|2.1";
+					+ eventTypeCode + "|" + msgControlId + "|P|2.1";
 		}
 		return msgSegment;
 	}
@@ -396,7 +413,8 @@ public class EMPIParticipantRegistrationBizLogic
 	 *
 	 * @throws Exception the exception
 	 */
-	private String getHL7PIDSegment(final IParticipant participant,final String eventTypeCode) throws ApplicationException
+	private String getHL7PIDSegment(final IParticipant participant, final String eventTypeCode)
+			throws ApplicationException
 	{
 		String pid = null;
 		try
@@ -409,27 +427,29 @@ public class EMPIParticipantRegistrationBizLogic
 			final String gender = getGenderCode(participant.getGender());
 			final String raceCode = getRaceCode(participant.getRaceCollection());
 			final String dateOfBirth = getBirthDate(participant.getBirthDate());
-		    String empiIdInPID2 = "";
+			String empiIdInPID2 = "";
 			final String mrn = getMRN(participant.getId());
 			final String pan = getPAN(participant.getId());
-			String pidFirstField="";
+			String pidFirstField = "";
 			if (participant.getEmpiId() != null && !"".equals(participant.getEmpiId()))
 			{
 				final String empiIdZeroAppnd = getZeroAppendedEMPIId(participant.getEmpiId());
 				empiIdInPID2 = empiIdZeroAppnd + "^^^64";
 			}
-			if(Constants.HL7_MERGE_EVENT_TYPE_A34.equals(eventTypeCode)){
+			if (Constants.HL7_MERGE_EVENT_TYPE_A34.equals(eventTypeCode))
+			{
 				// for merge messages PID.1 field should have value :1
-				pidFirstField="1";
+				pidFirstField = "1";
 			}
-			if(Constants.HL7_REG_EVENT_TYPE_A04.equals(eventTypeCode)){
-				pidFirstField=mrn;
+			if (Constants.HL7_REG_EVENT_TYPE_A04.equals(eventTypeCode))
+			{
+				pidFirstField = mrn;
 			}
-			pid = "PID|" + pidFirstField + "|" + empiIdInPID2 + "|" + mrn + "^^^" + facilityId + "^U||"
-					+ lastName.toUpperCase(Locale.US) + "^" + firstName.toUpperCase(Locale.US)
-					+ "^" + middleName.toUpperCase(Locale.US) + "||" + dateOfBirth + "|" + gender
-					+ "||" + raceCode + "||||||||" + pan + "^^^" + facilityId + "|"
-					+ socialSecurityNumber + "|||";
+			pid = "PID|" + pidFirstField + "|" + empiIdInPID2 + "|" + mrn + "^^^" + facilityId
+					+ "^U||" + lastName.toUpperCase(Locale.US) + "^"
+					+ firstName.toUpperCase(Locale.US) + "^" + middleName.toUpperCase(Locale.US)
+					+ "||" + dateOfBirth + "|" + gender + "||" + raceCode + "||||||||" + pan
+					+ "^^^" + facilityId + "|" + socialSecurityNumber + "|||";
 		}
 		catch (Exception e)
 		{
@@ -447,8 +467,11 @@ public class EMPIParticipantRegistrationBizLogic
 	 * @return the h l7 pv segment
 	 *
 	 * @throws DAOException the DAO exception
+	 * @throws ParticipantManagerException
+	 * @throws BizLogicException
 	 */
-	private String getHL7PVSegment(final IParticipant participant, final String dateTime) throws DAOException
+	private String getHL7PVSegment(final IParticipant participant, final String dateTime)
+			throws DAOException, BizLogicException, ParticipantManagerException
 	{
 		String pvSegment;
 		String csPILastName = null;
@@ -465,7 +488,7 @@ public class EMPIParticipantRegistrationBizLogic
 			dao.openSession(null);
 
 			//final String hql = getQuery(participant.getId().longValue());
-			final String hql = getQuery();
+			final String hql = getQueryForPICordinators();
 			List<ColumnValueBean> columnValueBeans = new ArrayList<ColumnValueBean>();
 			columnValueBeans.add(new ColumnValueBean(participant.getId().longValue()));
 
@@ -512,9 +535,22 @@ public class EMPIParticipantRegistrationBizLogic
 	 * @return the query
 	 *
 	 * @throws DAOException the DAO exception
+	 * @throws ParticipantManagerException
+	 * @throws BizLogicException
 	 */
-	private String getQuery() throws DAOException
+	private String getQueryForPICordinators() throws DAOException, ParticipantManagerException,
+			BizLogicException
 	{
+
+		String PartiManagerImplClassName = (String) edu.wustl.common.participant.utility.PropertyHandler
+				.getValue(Constants.PARTICIPANT_MANAGER_IMPL_CLASS);
+
+		IParticipantManager participantManagerImplObj = (IParticipantManager) ParticipantManagerUtility
+				.getObject(PartiManagerImplClassName);
+
+		return participantManagerImplObj.getPICordinatorsofProtocol();
+
+		/*
 		String application = null;
 		try
 		{
@@ -543,6 +579,7 @@ public class EMPIParticipantRegistrationBizLogic
 							+ " CSReg where CSReg.participant.id= ?");
 		}
 		return hql.toString();
+		*/
 	}
 
 	/**
@@ -557,7 +594,8 @@ public class EMPIParticipantRegistrationBizLogic
 		final String qmgName = XMLPropertyHandler.getValue(Constants.WMQ_QMG_NAME);
 		final String channelName = XMLPropertyHandler.getValue(Constants.WMQ_CHANNEL);
 		final int port = Integer.parseInt(XMLPropertyHandler.getValue(Constants.WMQ_PORT));
-		final String outBoundQueueName = XMLPropertyHandler.getValue(Constants.OUT_BOUND_QUEUE_NAME);
+		final String outBoundQueueName = XMLPropertyHandler
+				.getValue(Constants.OUT_BOUND_QUEUE_NAME);
 
 		final MQMessageWriter messageWriter = new MQMessageWriter();
 		messageWriter.setHostName(hostName);
@@ -695,7 +733,8 @@ public class EMPIParticipantRegistrationBizLogic
 	 *
 	 * @throws Exception the exception
 	 */
-	private String getRaceCode(final Collection<IRace<IParticipant>> participantRaceCollection) throws ApplicationException
+	private String getRaceCode(final Collection<IRace<IParticipant>> participantRaceCollection)
+			throws ApplicationException
 	{
 		String raceName = null;
 		String raceCode = null;

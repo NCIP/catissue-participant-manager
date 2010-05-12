@@ -8,6 +8,7 @@ import edu.wustl.common.participant.actionForm.IParticipantForm;
 import edu.wustl.common.participant.bizlogic.EMPIParticipantRegistrationBizLogic;
 import edu.wustl.common.participant.domain.IParticipant;
 import edu.wustl.common.participant.utility.Constants;
+import edu.wustl.common.participant.utility.ParticipantManagerException;
 import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import java.util.LinkedHashSet;
 
@@ -152,9 +153,10 @@ public class ParticipantEMPIGenerationAction extends CommonAddEditAction
 	 *
 	 * @throws BizLogicException the biz logic exception
 	 * @throws AssignDataException the assign data exception
+	 * @throws ParticipantManagerException
 	 */
 	private void registerPatientToEMPI(final HttpServletRequest request,
-			final IParticipantForm participantForm) throws BizLogicException, AssignDataException
+			final IParticipantForm participantForm) throws BizLogicException, AssignDataException, ParticipantManagerException
 	{
 		final IParticipant participant = (IParticipant) ParticipantManagerUtility
 				.getParticipantInstance();

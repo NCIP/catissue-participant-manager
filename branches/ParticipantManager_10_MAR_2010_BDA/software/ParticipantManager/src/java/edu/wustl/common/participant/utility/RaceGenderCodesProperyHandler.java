@@ -54,7 +54,7 @@ public class RaceGenderCodesProperyHandler
 			}
 			else
 			{
-				throw new FileNotFoundException("patientLookUpService.properties file not Found");
+				throw new FileNotFoundException("HL7MesRaceGenderCodes.xml file not Found");
 			}
 		}
 		catch (FileNotFoundException e)

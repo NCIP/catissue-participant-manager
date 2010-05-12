@@ -7,6 +7,7 @@ import edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
 import edu.wustl.common.participant.domain.IRace;
 import edu.wustl.common.participant.domain.ISite;
 import edu.wustl.common.participant.utility.Constants;
+import edu.wustl.common.participant.utility.ParticipantManagerException;
 import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -131,10 +132,11 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 	 * @throws BizLogicException the biz logic exception
 	 * @throws Exception the exception
 	 * @throws DAOException the DAO exception
+	 * @throws ParticipantManagerException
 	 */
 	private void fetchMatchedParticipantsFromDB(final long participantId,
 			final HttpServletRequest request,final IParticipantForm partiForm) throws DAOException, BizLogicException,
-			ParseException
+			ParseException, ParticipantManagerException
 	{
 		JDBCDAO dao = null;
 		List<DefaultLookupResult> matchPartpantLst = null;
@@ -217,10 +219,11 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 	 *
 	 * @throws ParseException the parse exception
 	 * @throws BizLogicException the biz logic exception
+	 * @throws ParticipantManagerException
 	 * @throws Exception the exception
 	 */
 	private List<DefaultLookupResult> populateParticipantList(final List matchPartpantLstTmp)
-			throws BizLogicException, ParseException
+			throws BizLogicException, ParseException, ParticipantManagerException
 
 	{
 		final List<DefaultLookupResult> matchPartpantLst = new ArrayList<DefaultLookupResult>();
@@ -248,10 +251,11 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 	 *
 	 * @throws BizLogicException the biz logic exception
 	 * @throws ParseException the parse exception
+	 * @throws ParticipantManagerException
 	 * @throws Exception the exception
 	 */
 	private IParticipant getParticipantObj(final List participantValueList)
-			throws BizLogicException, ParseException
+			throws BizLogicException, ParseException, ParticipantManagerException
 	{
 		final IParticipant participant = (IParticipant) ParticipantManagerUtility
 				.getParticipantInstance();
@@ -305,8 +309,9 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 	 * @return the race collection
 	 *
 	 * @throws BizLogicException the biz logic exception
+	 * @throws ParticipantManagerException
 	 */
-	private Collection getRaceCollection(final String raceString) throws BizLogicException
+	private Collection getRaceCollection(final String raceString) throws BizLogicException, ParticipantManagerException
 	{
 		final Collection<IRace> raceCollection = new LinkedHashSet<IRace>();
 		final String racevalues[] = raceString.split(",");
@@ -328,10 +333,11 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 	 * @return the parti medi id coln collection
 	 *
 	 * @throws BizLogicException the biz logic exception
+	 * @throws ParticipantManagerException
 	 * @throws Exception the exception
 	 */
 	private Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> getPartiMediIdColnCollection(
-			final String mrnString) throws BizLogicException
+			final String mrnString) throws BizLogicException, ParticipantManagerException
 	{
 		final Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> partiMediIdColn = new LinkedHashSet<IParticipantMedicalIdentifier<IParticipant, ISite>>();
 		final String values[] = mrnString.split(",");
@@ -356,10 +362,11 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 	 * @return the participant medical identifier obj
 	 *
 	 * @throws BizLogicException the biz logic exception
+	 * @throws ParticipantManagerException
 	 * @throws Exception the exception
 	 */
 	private IParticipantMedicalIdentifier<IParticipant, ISite> getParticipantMedicalIdentifierObj(
-			final String value) throws BizLogicException
+			final String value) throws BizLogicException, ParticipantManagerException
 
 	{
 		IParticipantMedicalIdentifier<IParticipant, ISite> participantMedicalIdentifier = null;

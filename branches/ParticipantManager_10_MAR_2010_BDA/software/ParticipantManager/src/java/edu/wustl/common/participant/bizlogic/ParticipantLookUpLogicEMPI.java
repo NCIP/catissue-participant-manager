@@ -54,7 +54,7 @@ public class ParticipantLookUpLogicEMPI implements LookupLogic
 				final DefaultLookupParameters participantParams = (DefaultLookupParameters) params;
 				final IParticipant participant = (IParticipant) participantParams.getObject();
 				final PatientInformation patientInfo = ParticipantManagerUtility
-						.populatePatientObject(participant);
+						.populatePatientObject(participant,null);
 				cutoffPoints = Integer
 						.valueOf(XMLPropertyHandler.getValue(Constants.EMPITHRESHOLD));
 				maxPartipntsToReturn = Integer.valueOf(XMLPropertyHandler

@@ -1,10 +1,6 @@
 
 package edu.wustl.common.participant.action;
 
-import edu.wustl.common.participant.actionForm.IParticipantForm;
-import edu.wustl.common.participant.domain.IParticipant;
-import edu.wustl.common.participant.utility.Constants;
-import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -19,12 +15,16 @@ import org.apache.struts.action.ActionMessages;
 
 import edu.wustl.common.action.SecureAction;
 import edu.wustl.common.actionForm.AbstractActionForm;
-import edu.wustl.common.exception.ApplicationException;
 import edu.wustl.common.factory.AbstractFactoryConfig;
 import edu.wustl.common.factory.IDomainObjectFactory;
 import edu.wustl.common.lookup.DefaultLookupResult;
+import edu.wustl.common.participant.actionForm.IParticipantForm;
+import edu.wustl.common.participant.domain.IParticipant;
+import edu.wustl.common.participant.utility.Constants;
+import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.util.logger.Logger;
 import edu.wustl.dao.exception.DAOException;
+import edu.wustl.patientLookUp.util.PatientLookupException;
 
 /**
  * @author geeta_jaggal
@@ -39,10 +39,10 @@ public class ParticipantLookupAction extends SecureAction
 	 * Method for performing participant look up.
 	 */
 	public ActionForward executeSecureAction(final ActionMapping mapping, final ActionForm form,
-			final HttpServletRequest request, final HttpServletResponse response) throws ApplicationException
+			final HttpServletRequest request, final HttpServletResponse response)
+			throws PatientLookupException
 	{
 		final AbstractActionForm abstractForm = (AbstractActionForm) form;
-
 		final IParticipantForm participantForm = (IParticipantForm) form;
 		String target = null;
 		try
@@ -66,8 +66,9 @@ public class ParticipantLookupAction extends SecureAction
 						.isCallToLookupLogicNeeded(participant);
 				if (isCallToLkupLgic)
 				{
-					final List<DefaultLookupResult> matchPartpantLst = getListOfMatchingParticipants(
-							participant, request, participantForm.getCpId());
+					List matchPartpantLst = ParticipantManagerUtility
+							.getListOfMatchingParticipants(participant, null, participantForm
+									.getCpId());
 
 					if (!matchPartpantLst.isEmpty())
 					{
@@ -78,54 +79,21 @@ public class ParticipantLookupAction extends SecureAction
 					{
 						target = Constants.PARTICIPANT_ADD_FORWARD;
 					}
-
-					/*
-					if (matchPartpantLst == null || matchPartpantLst.isEmpty())
-					{
-						target = Constants.PARTICIPANT_ADD_FORWARD;
-					}
-					else
-					{
-						target = processListForMatchWithinCS(request, matchPartpantLst,
-								participantForm.getCpId());
-					}
-					*/
 				}
 				else
 				{
 					target = Constants.PARTICIPANT_ADD_FORWARD;
 				}
 				setRequestAttributes(request);
-
 			}
 		}
-		catch (Exception e)
+		catch (Exception exp)
 		{
-			// TODO Auto-generated catch block
-			throw new ApplicationException(null, e, e.getMessage());
+
+			throw new PatientLookupException(exp.getMessage(), exp);
+
 		}
 		return mapping.findForward(target);
-	}
-
-	/**
-	 * Gets the list of matching participants.
-	 *
-	 * @param participant the participant
-	 * @param request the request
-	 *
-	 * @return the list of matching participants
-	 * @throws Exception
-	 *
-	 * @throws Exception the exception
-	 */
-	private List<DefaultLookupResult> getListOfMatchingParticipants(final IParticipant participant,
-			final HttpServletRequest request, final Long csId) throws Exception
-
-	{
-		final edu.wustl.common.beans.SessionDataBean sessionDataBean = getSessionData(request);
-		final List<DefaultLookupResult> matchPartpantLst = ParticipantManagerUtility
-				.getListOfMatchingParticipants(participant, sessionDataBean, null, csId);
-		return matchPartpantLst;
 	}
 
 	/**
@@ -133,27 +101,37 @@ public class ParticipantLookupAction extends SecureAction
 	 *
 	 * @param request the request
 	 * @param matchPartpantLst the match partpant lst
+	 * @throws PatientLookupException
 	 *
 	 * @throws DAOException the DAO exception
 	 */
-	private void storeLists(final HttpServletRequest request, final List<DefaultLookupResult> matchPartpantLst)
-			throws DAOException
+	private void storeLists(final HttpServletRequest request,
+			final List<DefaultLookupResult> matchPartpantLst) throws PatientLookupException
 	{
-		final ActionMessages messages = new ActionMessages();
-		messages.add("org.apache.struts.action.GLOBAL_MESSAGE", new ActionMessage(
-				"participant.lookup.success",
-				"Submit was not successful because some matching participants found."));
-		final List columnList = ParticipantManagerUtility.getColumnHeadingList();
-		request.setAttribute(edu.wustl.common.util.global.Constants.SPREADSHEET_COLUMN_LIST,
-				columnList);
-		final List pcpantDisplayLst = ParticipantManagerUtility
-				.getParticipantDisplayList(matchPartpantLst);
-		request.setAttribute(Constants.SPREADSHEET_DATA_LIST, pcpantDisplayLst);
-		final HttpSession session = request.getSession();
-		session.setAttribute("MatchedParticpant", matchPartpantLst);
-		if (request.getAttribute("continueLookup") == null)
+		try
 		{
-			saveMessages(request, messages);
+			final ActionMessages messages = new ActionMessages();
+			messages.add("org.apache.struts.action.GLOBAL_MESSAGE", new ActionMessage(
+					"participant.lookup.success",
+					"Submit was not successful because some matching participants found."));
+			List columnList;
+
+			columnList = ParticipantManagerUtility.getColumnHeadingList();
+			request.setAttribute(edu.wustl.common.util.global.Constants.SPREADSHEET_COLUMN_LIST,
+					columnList);
+			final List pcpantDisplayLst = ParticipantManagerUtility
+					.getParticipantDisplayList(matchPartpantLst);
+			request.setAttribute(Constants.SPREADSHEET_DATA_LIST, pcpantDisplayLst);
+			final HttpSession session = request.getSession();
+			session.setAttribute("MatchedParticpant", matchPartpantLst);
+			if (request.getAttribute("continueLookup") == null)
+			{
+				saveMessages(request, messages);
+			}
+		}
+		catch (DAOException e)
+		{
+			throw new PatientLookupException(e.getMessage(), e);
 		}
 	}
 
