@@ -39,6 +39,7 @@ import edu.wustl.common.participant.domain.IRace;
 import edu.wustl.common.participant.domain.ISite;
 import edu.wustl.common.participant.domain.IUser;
 import edu.wustl.common.participant.utility.Constants;
+import edu.wustl.common.participant.utility.ParticipantManagerException;
 import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.util.XMLPropertyHandler;
 import edu.wustl.common.util.logger.Logger;
@@ -47,6 +48,7 @@ import edu.wustl.dao.exception.DAOException;
 import edu.wustl.dao.query.generator.ColumnValueBean;
 import edu.wustl.patientLookUp.util.PatientLookupException;
 import edu.wustl.patientLookUp.util.PropertyHandler;
+
 
 /**
  * * @author geeta_jaggal
@@ -173,12 +175,13 @@ public class EMPIParticipantListener implements MessageListener
 	 * Process domographic xml.
 	 *
 	 * @param personDemoGraphics the person demo graphics
+	 * @throws ParticipantManagerException
 	 * @throws BizLogicException
 	 *
 	 * @throws Exception the exception
 	 */
 	public void updateParticipantWithEMPIDetails(final String personDemoGraphics)
-			throws ApplicationException
+			throws ApplicationException, ParticipantManagerException
 	{
 
 		String clinPortalId = null;
@@ -192,14 +195,8 @@ public class EMPIParticipantListener implements MessageListener
 		String oldEMPIID = null;
 		SessionDataBean sessionData = null;
 		boolean isGenerateMgrMessage = false;
-		if ("clinportal".equals(ParticipantManagerUtility.applicationType()))
-		{
-			sourceObjectName = "edu.wustl.clinportal.domain.Participant";
-		}
-		else
-		{
-			sourceObjectName = "edu.wustl.catissue.domain.Participant";
-		}
+
+		sourceObjectName = (String)edu.wustl.common.participant.utility.PropertyHandler.getValue(Constants.PARTICIPANT_CLASS);
 
 		try
 		{
@@ -554,10 +551,11 @@ public class EMPIParticipantListener implements MessageListener
 	 *
 	 * @param docEle the doc ele
 	 * @throws BizLogicException
+	 * @throws ParticipantManagerException
 	 *
 	 * @throws Exception the exception
 	 */
-	private void parseDomographicXML(final Element docEle) throws BizLogicException
+	private void parseDomographicXML(final Element docEle) throws BizLogicException, ParticipantManagerException
 	{
 		IParticipantMedicalIdentifier<IParticipant, ISite> participantMedicalIdentifier = null;
 		partiMedIdColl = new LinkedHashSet<IParticipantMedicalIdentifier<IParticipant, ISite>>();
@@ -658,12 +656,14 @@ public class EMPIParticipantListener implements MessageListener
 	 * @return the user
 	 *
 	 * @throws BizLogicException the biz logic exception
+	 * @throws ParticipantManagerException
 	 */
 	private IUser getUser(final String loginName, final String activityStatus)
-			throws BizLogicException
+			throws BizLogicException, ParticipantManagerException
 	{
 		IUser validUser = null;
-		final String getActiveUser = "from edu.wustl.clinportal.domain.User user where user.activityStatus= '"
+		String userClassName=(String)edu.wustl.common.participant.utility.PropertyHandler.getValue(Constants.USER_CLASS);
+		final String getActiveUser = "from "+userClassName+" user where user.activityStatus= '"
 				+ activityStatus + "' and user.loginName =" + "'" + loginName + "'";
 		final DefaultBizLogic bizlogic = new DefaultBizLogic();
 		final List users = bizlogic.executeQuery(getActiveUser);

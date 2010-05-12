@@ -11,6 +11,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.Timer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -24,15 +25,16 @@ import javax.jms.QueueSession;
 import com.ibm.mq.jms.JMSC;
 import com.ibm.mq.jms.MQQueueConnectionFactory;
 
-import edu.wustl.common.beans.SessionDataBean;
 import edu.wustl.common.bizlogic.DefaultBizLogic;
 import edu.wustl.common.bizlogic.IBizLogic;
+import edu.wustl.common.exception.ApplicationException;
 import edu.wustl.common.exception.BizLogicException;
 import edu.wustl.common.factory.AbstractFactoryConfig;
 import edu.wustl.common.factory.IFactory;
 import edu.wustl.common.lookup.DefaultLookupParameters;
 import edu.wustl.common.lookup.DefaultLookupResult;
-import edu.wustl.common.lookup.LookupLogic;
+import edu.wustl.common.participant.client.IParticipantManager;
+import edu.wustl.common.participant.client.IParticipantManagerLookupLogic;
 import edu.wustl.common.participant.domain.IParticipant;
 import edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
 import edu.wustl.common.participant.domain.IRace;
@@ -53,7 +55,7 @@ import edu.wustl.dao.exception.DAOException;
 import edu.wustl.dao.query.generator.ColumnValueBean;
 import edu.wustl.dao.query.generator.DBTypes;
 import edu.wustl.patientLookUp.domain.PatientInformation;
-import edu.wustl.patientLookUp.util.PropertyHandler;
+import edu.wustl.patientLookUp.util.PatientLookupException;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -155,7 +157,8 @@ public class ParticipantManagerUtility
 	{
 		final ParticipantMatchingTimerTask timerTask = new ParticipantMatchingTimerTask();
 		final Timer scheduleTime = new Timer();
-		final String delay = XMLPropertyHandler.getValue(Constants.PARTICIPANT_MATCHING_SCHEDULAR_DELAY);
+		final String delay = XMLPropertyHandler
+				.getValue(Constants.PARTICIPANT_MATCHING_SCHEDULAR_DELAY);
 		scheduleTime.schedule(timerTask, 0x1d4c0L, Long.parseLong(delay));
 	}
 
@@ -166,12 +169,14 @@ public class ParticipantManagerUtility
 	 * @param facilityId the facility id
 	 *
 	 * @return the participant medical identifier obj
-	 * @throws BizLogicException
 	 *
+	 * @throws BizLogicException the biz logic exception
+	 * @throws ParticipantManagerException the participant manager exception
 	 * @throws Exception the exception
 	 */
 	public static IParticipantMedicalIdentifier<IParticipant, ISite> getParticipantMedicalIdentifierObj(
-			final String mrn, final String facilityId) throws BizLogicException
+			final String mrn, final String facilityId) throws BizLogicException,
+			ParticipantManagerException
 	{
 
 		ISite site = null;
@@ -194,20 +199,16 @@ public class ParticipantManagerUtility
 	 * @return the site object
 	 *
 	 * @throws BizLogicException the biz logic exception
+	 * @throws ParticipantManagerException the participant manager exception
 	 * @throws Exception the exception
 	 */
-	public static ISite getSiteObject(final String facilityId) throws BizLogicException
+	public static ISite getSiteObject(final String facilityId) throws BizLogicException,
+			ParticipantManagerException
 	{
 		String sourceObjectName = ISite.class.getName();
 		String selectColumnNames[] = {"id", "name"};
-		//String whereColumnName[] = {"facilityId"};
-		//String whColCondn[] = {"="};
 		DefaultBizLogic bizLogic = new DefaultBizLogic();
 		ISite site = null;
-		//Object whereColumnValue[] = {facilityId};
-		/*List siteObject = bizLogic.retrieve(sourceObjectName, selectColumnNames, whereColumnName,
-				whColCondn, whereColumnValue, null);*/
-
 		QueryWhereClause queryWhereClause = new QueryWhereClause(sourceObjectName);
 		try
 		{
@@ -316,11 +317,13 @@ public class ParticipantManagerUtility
 	 * @param LName the l name
 	 * @param FName the f name
 	 * @param dob the dob
+	 * @param ssn the ssn
+	 * @param mrn the mrn
 	 *
 	 * @return true, if is participant valid for empi
 	 */
-	public static boolean isParticipantValidForEMPI(final String LName,final  String FName, final Date dob,
-			final String ssn, final String mrn)
+	public static boolean isParticipantValidForEMPI(final String LName, final String FName,
+			final Date dob, final String ssn, final String mrn)
 	{
 		boolean isValid = false;
 		if ((LName != null && !"".equals(LName)) && (FName != null && !"".equals(FName)))
@@ -354,6 +357,13 @@ public class ParticipantManagerUtility
 		return (Constants.PARTICIPANT_MEDICAL_IDENTIFIER + idx + keyFor);
 	}
 
+	/**
+	 * Gets the mrn value.
+	 *
+	 * @param medIdcol the med idcol
+	 *
+	 * @return the mrn value
+	 */
 	public static String getMrnValue(Collection medIdcol)
 	{
 		String mrn = null;
@@ -376,65 +386,102 @@ public class ParticipantManagerUtility
 	 * Gets the list of matching participants.
 	 *
 	 * @param participant the participant
-	 * @param sessionDataBean the session data bean
 	 * @param lookupAlgorithm the lookup algorithm
-	 * @param linkedCSCPId the linked cscp id
+	 * @param protocolId the protocol id
 	 *
 	 * @return the list of matching participants
 	 *
 	 * @throws Exception the exception
+	 * @throws PatientLookupException the patient lookup exception
 	 */
 	public static List<DefaultLookupResult> getListOfMatchingParticipants(IParticipant participant,
-			SessionDataBean sessionDataBean, String lookupAlgorithm, Long linkedCSCPId)
-			throws Exception
+			String lookupAlgorithm, Long protocolId) throws PatientLookupException
 	{
 		List<DefaultLookupResult> matchParticipantList = null;
-		LookupLogic partLookupLgic = null;
+		try
+		{
+			//get all the associated CS ids for the MISC if  match within MICS is enabled
+			Set<Long> protocolIdList = getProtocolIdLstForMICSEnabledForMatching(protocolId);
+
+			matchParticipantList = findMatchedParticipants(participant, lookupAlgorithm,
+					protocolIdList);
+		}
+		catch (Exception exp)
+		{
+			throw new PatientLookupException(exp.getMessage(), exp);
+		}
+		return matchParticipantList;
+	}
+
+	/**
+	 * Gets the list of matching participants.
+	 *
+	 * @param participant the participant
+	 * @param lookupAlgorithm the lookup algorithm
+	 * @param protocolIdSet the protocol id set
+	 *
+	 * @return the list of matching participants
+	 *
+	 * @throws Exception the exception
+	 * @throws PatientLookupException the patient lookup exception
+	 */
+	public static List<DefaultLookupResult> findMatchedParticipants(IParticipant participant,
+			String lookupAlgorithm, Set<Long> protocolIdSet) throws PatientLookupException
+	{
+		List<DefaultLookupResult> matchParticipantList = null;
+		try
+		{
+			IParticipantManagerLookupLogic partLookupLgic = getLookUPLogicObj(lookupAlgorithm);
+			DefaultLookupParameters params = new DefaultLookupParameters();
+			params.setObject(participant);
+			matchParticipantList = partLookupLgic.lookup(params, protocolIdSet);
+
+		}
+		catch (Exception exp)
+		{
+			throw new PatientLookupException(exp.getMessage(), exp);
+		}
+		return matchParticipantList;
+	}
+
+	/**
+	 * Gets the look up logic obj.
+	 *
+	 * @param lookupAlgorithm the lookup algorithm
+	 *
+	 * @return the look up logic obj
+	 */
+	private static IParticipantManagerLookupLogic getLookUPLogicObj(String lookupAlgorithm)
+	{
+		IParticipantManagerLookupLogic partLookupLgic = null;
 		if (lookupAlgorithm == null)
 		{
-			partLookupLgic = (LookupLogic) Utility.getObject(XMLPropertyHandler
+			partLookupLgic = (IParticipantManagerLookupLogic) Utility.getObject(XMLPropertyHandler
 					.getValue(Constants.PARTICIPANT_LOOKUP_ALGO));
 		}
 		else
 		{
-			partLookupLgic = (LookupLogic) Utility.getObject(XMLPropertyHandler
+			partLookupLgic = (IParticipantManagerLookupLogic) Utility.getObject(XMLPropertyHandler
 					.getValue(lookupAlgorithm));
 		}
-		DefaultLookupParameters params = new DefaultLookupParameters();
-		params.setObject(participant);
-		matchParticipantList = partLookupLgic.lookup(params);
-		String application = applicationType();
-		//Remove this check, once this feature integrated with caTissueSuite
-		if (!Constants.CLINPORTAL_APPLICATION_NAME.equals(application))
-		{
-			linkedCSCPId = null;
-		}
-
-		if (linkedCSCPId != null)
-		{
-			matchParticipantList = processListForMatchWithinCS(matchParticipantList, linkedCSCPId);
-		}
-		return matchParticipantList;
+		return partLookupLgic;
 	}
 
 	/**
 	 * Process list for match within cs.
 	 *
 	 * @param matchPartpantLst the match partpant lst
-	 * @param csId the cs id
+	 * @param csIdList the cs id list
 	 *
 	 * @return the list
 	 *
 	 * @throws DAOException the DAO exception
 	 */
 	public static List processListForMatchWithinCS(List<DefaultLookupResult> matchPartpantLst,
-			Long csId) throws DAOException
+			Set csIdList) throws DAOException
 	{
-		if (ParticipantManagerUtility.isParticipantMatchWithinCSCPEnable(csId))
-		{
-			List idList = ParticipantManagerUtility.getPartcipantIdsList(csId);
-			matchPartpantLst = filerMatchedList(matchPartpantLst, idList);
-		}
+		List idList = ParticipantManagerUtility.getPartcipantIdsList(csIdList);
+		matchPartpantLst = filerMatchedList(matchPartpantLst, idList);
 		return matchPartpantLst;
 	}
 
@@ -513,13 +560,13 @@ public class ParticipantManagerUtility
 	/**
 	 * Gets the partcipant ids list.
 	 *
-	 * @param id the id
+	 * @param cpIdList the cp id list
 	 *
 	 * @return the partcipant ids list
 	 *
 	 * @throws DAOException the DAO exception
 	 */
-	public static List getPartcipantIdsList(Long id) throws DAOException
+	public static List getPartcipantIdsList(Set cpIdList) throws DAOException
 	{
 		List idListArray = null;
 		List<String> idList = new ArrayList<String>();
@@ -530,15 +577,24 @@ public class ParticipantManagerUtility
 			query = "SELECT PARTICIPANT_ID FROM CATISSUE_CLINICAL_STUDY_REG WHERE CLINICAL_STUDY_ID=?";
 			dao = getJDBCDAO();
 
-			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
-			columnValueBeanList.add(new ColumnValueBean("CLINICAL_STUDY_ID", id, DBTypes.LONG));
-
-			idListArray = dao.executeQuery(query, null, columnValueBeanList);
-			if (!idListArray.isEmpty() && !"".equals(idListArray.get(0)))
+			if (cpIdList != null && !cpIdList.isEmpty())
 			{
-				for (Iterator<List> itr = idListArray.iterator(); itr.hasNext();)
+				Iterator<Long> iterator = cpIdList.iterator();
+				while (iterator.hasNext())
 				{
-					idList.add(String.valueOf(itr.next().get(0)));
+					Long id = (Long) iterator.next();
+					LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
+					columnValueBeanList.add(new ColumnValueBean("CLINICAL_STUDY_ID", id,
+							DBTypes.LONG));
+
+					idListArray = dao.executeQuery(query, null, columnValueBeanList);
+					if (!idListArray.isEmpty() && !"".equals(idListArray.get(0)))
+					{
+						for (Iterator<List> itr = idListArray.iterator(); itr.hasNext();)
+						{
+							idList.add(String.valueOf(itr.next().get(0)));
+						}
+					}
 				}
 			}
 		}
@@ -560,20 +616,12 @@ public class ParticipantManagerUtility
 	 * @return the race instance
 	 *
 	 * @throws BizLogicException the biz logic exception
+	 * @throws ParticipantManagerException the participant manager exception
 	 */
-	public static Object getRaceInstance() throws BizLogicException
+	public static Object getRaceInstance() throws BizLogicException, ParticipantManagerException
 	{
-		String application = applicationType();
-		Object raceInstance = null;
-		if (Constants.CLINPORTAL_APPLICATION_NAME.equals(application))
-		{
-			raceInstance = getObject("edu.wustl.clinportal.domain.Race");
-		}
-		else
-		{
-			raceInstance = getObject("edu.wustl.catissuecore.domain.Race");
-		}
-		return raceInstance;
+		String raceclassName = (String) PropertyHandler.getValue(Constants.RACE_CLASS);
+		return getObject(raceclassName);
 	}
 
 	/**
@@ -582,20 +630,12 @@ public class ParticipantManagerUtility
 	 * @return the site instance
 	 *
 	 * @throws BizLogicException the biz logic exception
+	 * @throws ParticipantManagerException the participant manager exception
 	 */
-	public static Object getSiteInstance() throws BizLogicException
+	public static Object getSiteInstance() throws BizLogicException, ParticipantManagerException
 	{
-		String application = applicationType();
-		Object siteInstance = null;
-		if (Constants.CLINPORTAL_APPLICATION_NAME.equals(application))
-		{
-			siteInstance = getObject("edu.wustl.clinportal.domain.Site");
-		}
-		else
-		{
-			siteInstance = getObject("edu.wustl.catissuecore.domain.Site");
-		}
-		return siteInstance;
+		String siteClassName = (String) PropertyHandler.getValue(Constants.SITE_CLASS);
+		return getObject(siteClassName);
 	}
 
 	/**
@@ -604,20 +644,14 @@ public class ParticipantManagerUtility
 	 * @return the participant instance
 	 *
 	 * @throws BizLogicException the biz logic exception
+	 * @throws ParticipantManagerException the participant manager exception
 	 */
-	public static Object getParticipantInstance() throws BizLogicException
+	public static Object getParticipantInstance() throws BizLogicException,
+			ParticipantManagerException
 	{
-		String application = applicationType();
-		Object partiicpantInstance = null;
-		if (Constants.CLINPORTAL_APPLICATION_NAME.equals(application))
-		{
-			partiicpantInstance = getObject("edu.wustl.clinportal.domain.Participant");
-		}
-		else
-		{
-			partiicpantInstance = getObject("edu.wustl.catissuecore.domain.Participant");
-		}
-		return partiicpantInstance;
+		String participantClassName = (String) PropertyHandler
+				.getValue(Constants.PARTICIPANT_CLASS);
+		return getObject(participantClassName);
 	}
 
 	/**
@@ -626,44 +660,14 @@ public class ParticipantManagerUtility
 	 * @return the pMI instance
 	 *
 	 * @throws BizLogicException the biz logic exception
+	 * @throws ParticipantManagerException the participant manager exception
 	 */
 	public static IParticipantMedicalIdentifier<IParticipant, ISite> getPMIInstance()
-			throws BizLogicException
+			throws BizLogicException, ParticipantManagerException
 	{
-		String application = applicationType();
-		Object PMIInstance = null;
-		if (Constants.CLINPORTAL_APPLICATION_NAME.equals(application))
-		{
-			PMIInstance = getObject("edu.wustl.clinportal.domain.ParticipantMedicalIdentifier");
-		}
-		else
-		{
-			PMIInstance = getObject("edu.wustl.catissuecore.domain.ParticipantMedicalIdentifier");
-		}
+		String pmiClassName = (String) PropertyHandler.getValue(Constants.PMI_CLASS);
+		Object PMIInstance = getObject(pmiClassName);
 		return (IParticipantMedicalIdentifier<IParticipant, ISite>) PMIInstance;
-	}
-
-	/**
-	 * Application type.
-	 *
-	 * @return the string
-	 *
-	 * @throws BizLogicException the biz logic exception
-	 */
-	public static String applicationType() throws BizLogicException
-	{
-		String application = null;
-		try
-		{
-			application = PropertyHandler.getValue("application");
-		}
-		catch (Exception e)
-		{
-			LOGGER.info(e.getStackTrace());
-			throw new BizLogicException(null, e,
-					"Error while get value from PatientInfoLookUpService.properties");
-		}
-		return application;
 	}
 
 	/**
@@ -790,49 +794,24 @@ public class ParticipantManagerUtility
 	/**
 	 * Cs empi status.
 	 *
-	 * @param participantId the participant id
+	 * @param cpId the cp id
 	 *
 	 * @return true, if successful
 	 *
-	 * @throws DAOException the DAO exception
+	 * @throws ApplicationException 	 * @throws BizLogicException the biz logic exception
 	 */
-	public static boolean isEMPIEnable(long participantId) throws DAOException
+	public static boolean isEMPIEnable(long cpId) throws BizLogicException
 	{
 		boolean status;
-
 		JDBCDAO dao = null;
 		status = false;
-		String application = null;
 		String query = null;
 		try
 		{
-			application = PropertyHandler.getValue("application");
-		}
-		catch (Exception e)
-		{
-			LOGGER.info(e.getMessage());
-			throw new DAOException(null, e,
-					"Error while get value from PatientInfoLookUpService.properties");
-		}
-
-		dao = getJDBCDAO();
-
-		try
-		{
-			if (Constants.CLINPORTAL_APPLICATION_NAME.equals(application))
-			{
-				query = " SELECT SP.IS_EMPI_ENABLE FROM  CATISSUE_SPECIMEN_PROTOCOL SP JOIN  CATISSUE_CLINICAL_STUDY_REG CSR  "
-						+ " ON SP.IDENTIFIER = CSR.CLINICAL_STUDY_ID  WHERE CSR.PARTICIPANT_Id=?";
-			}
-			else
-			{
-				query = " SELECT SP.IS_EMPI_ENABLE FROM  CATISSUE_SPECIMEN_PROTOCOL SP JOIN  CATISSUE_CLINICAL_STUDY_REG CSR  "
-						+ " ON SP.IDENTIFIER = CSR.CLINICAL_STUDY_ID  WHERE CSR.PARTICIPANT_id=?";
-			}
-
+			dao = getJDBCDAO();
+			query = "SELECT SP.IS_EMPI_ENABLE FROM  CATISSUE_SPECIMEN_PROTOCOL SP WHERE SP.IDENTIFIER = ?";
 			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
-			columnValueBeanList.add(new ColumnValueBean("PARTICIPANT_Id", participantId,
-					DBTypes.LONG));
+			columnValueBeanList.add(new ColumnValueBean("IDENTIFIER", cpId, DBTypes.LONG));
 			List statusList = dao.executeQuery(query, null, columnValueBeanList);
 			if (!statusList.isEmpty() && !"".equals(statusList.get(0)))
 			{
@@ -850,60 +829,24 @@ public class ParticipantManagerUtility
 				}
 			}
 		}
+		catch (DAOException exp)
+		{
+			throw new BizLogicException(exp);
+		}
 		finally
 		{
-			dao.closeSession();
+			try
+			{
+				dao.closeSession();
+			}
+			catch (DAOException exp)
+			{
+				// TODO Auto-generated catch block
+				throw new BizLogicException(exp);
+			}
 		}
 		return status;
 	}
-
-	/**
-	 * Update parti empi id.
-	 *
-	 * @param participantId the participant id
-	 * @param lastName the last name
-	 * @param firstName the first name
-	 * @param dob the dob
-	 *
-	 * @throws ParseException the parse exception
-	 * @throws DAOException the DAO exception
-	 */
-
-	/*
-		public static void updatePartiEMPIId(long participantId, String lastName, String firstName,
-				Date dob) throws ParseException, DAOException
-		{
-			if (isParticipantValidForEMPI(lastName, firstName, dob))
-			{
-				JDBCDAO dao = null;
-				try
-				{
-					dao = getJDBCDAO();
-					LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
-					LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
-					columnValueBeanList.add(new ColumnValueBean(participantId));
-					columnValueBeans.add(columnValueBeanList);
-					String query = (new StringBuilder())
-							.append(
-									"UPDATE CATISSUE_PARTICIPANT SET EMPI_ID_STATUS='PENDING' WHERE IDENTIFIER=?")
-							.toString();
-					dao.executeUpdate(query, columnValueBeans);
-					dao.commit();
-
-				}
-				catch (DAOException exp)
-				{
-					LOGGER.info("ERROR WHILE UPDATING THE EMPI STATUS");
-					throw new DAOException(exp.getErrorKey(), exp, exp.getMsgValues());
-				}
-				finally
-				{
-					dao.closeSession();
-				}
-
-			}
-		}
-	*/
 
 	/**
 	 * Gets the parti empi status.
@@ -923,7 +866,6 @@ public class ParticipantManagerUtility
 		{
 			dao = getJDBCDAO();
 			String query = "SELECT EMPI_ID_STATUS FROM CATISSUE_PARTICIPANT  WHERE IDENTIFIER=?";
-
 			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
 			columnValueBeanList.add(new ColumnValueBean("IDENTIFIER", participantId, DBTypes.LONG));
 			List list = dao.executeQuery(query, null, columnValueBeanList);
@@ -1147,7 +1089,6 @@ public class ParticipantManagerUtility
 				query = "INSERT INTO MATCHED_PARTICIPANT_MAPPING(NO_OF_MATCHED_PARTICIPANTS,CREATION_DATE,SEARCHED_PARTICIPANT_ID) VALUES(?,?,?)";
 			}
 
-
 			columnValueBeanList.add(new ColumnValueBean("NO_OF_MATCHED_PARTICIPANTS", Integer
 					.valueOf(-1), DBTypes.LONG));
 			columnValueBeanList.add(new ColumnValueBean("CREATION_DATE", date, DBTypes.DATE));
@@ -1205,10 +1146,12 @@ public class ParticipantManagerUtility
 	 * Populate patient object.
 	 *
 	 * @param participant the participant
+	 * @param protocolIdSet the protocol id set
 	 *
 	 * @return the patient information
 	 */
-	public static PatientInformation populatePatientObject(IParticipant participant)
+	public static PatientInformation populatePatientObject(IParticipant participant,
+			Set<Long> protocolIdSet)
 	{
 		PatientInformation patientInformation = new PatientInformation();
 		patientInformation.setLastName(participant.getLastName());
@@ -1275,6 +1218,9 @@ public class ParticipantManagerUtility
 			while (true);
 		}
 		patientInformation.setRaceCollection(participantInfoRaceCollection);
+
+		patientInformation.setProtocolIdSet(protocolIdSet);
+
 		return patientInformation;
 	}
 
@@ -1428,9 +1374,11 @@ public class ParticipantManagerUtility
 	}
 
 	/**
+	 * Modify name with proper case.
 	 *
-	 * @param name
-	 * @return
+	 * @param name the name
+	 *
+	 * @return the string
 	 */
 	public static String modifyNameWithProperCase(String name)
 	{
@@ -1442,7 +1390,6 @@ public class ParticipantManagerUtility
 		}
 		return modifiedName;
 	}
-
 
 	/**
 	 * Check whether the object has been changed.
@@ -1695,6 +1642,160 @@ public class ParticipantManagerUtility
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Method gets all the protocol ids for the MICS to which the protocol is is associated with
+	 * Suppose  protocolId associated with MICSId and MICSId enabled for participant
+	 * match withing mics then this method will return all the protocol ids associated with the MICSid.
+	 *
+	 * @param protocolId the protocol id
+	 *
+	 * @return the associted mutli inst protocol id list
+	 *
+	 * @throws ParticipantManagerException the participant manager exception
+	 * @throws ApplicationException the application exception
+	 */
+	private static Set<Long> getProtocolIdLstForMICSEnabledForMatching(Long protocolId)
+			throws ParticipantManagerException, ApplicationException
+	{
+		String PartiManagerImplClassName = (String) edu.wustl.common.participant.utility.PropertyHandler
+				.getValue(Constants.PARTICIPANT_MANAGER_IMPL_CLASS);
+		IParticipantManager participantManagerImplObj = (IParticipantManager) ParticipantManagerUtility
+				.getObject(PartiManagerImplClassName);
+		Set<Long> protocolIdList = participantManagerImplObj
+				.getProtocolIdLstForMICSEnabledForMatching(protocolId);
+		return protocolIdList;
+	}
+
+	/**
+	 * Gets the protocol ids string.
+	 *
+	 * @param protocolIdSet the protocol id set
+	 *
+	 * @return the protocol ids string
+	 */
+	public static String getProtocolIdsString(Set<Long> protocolIdSet)
+	{
+		String protocolIdsStr = new String();
+		if (protocolIdSet != null && !protocolIdSet.isEmpty())
+		{
+			Iterator<Long> iterator = protocolIdSet.iterator();
+			while (iterator.hasNext())
+			{
+				Long protocolId = (Long) iterator.next();
+				protocolIdsStr = protocolIdsStr.concat(String
+						.valueOf((protocolIdsStr.length() == 0) ? protocolId : "," + protocolId));
+			}
+		}
+		return protocolIdsStr;
+	}
+
+	/**
+	 * Gets the participant mgr impl obj.
+	 *
+	 * @return the participant mgr impl obj
+	 *
+	 * @throws ParticipantManagerException the participant manager exception
+	 */
+	public static IParticipantManager getParticipantMgrImplObj() throws ParticipantManagerException
+	{
+		IParticipantManager participantManagerImplObj = null;
+		try
+		{
+			String PartiManagerImplClassName = (String) edu.wustl.common.participant.utility.PropertyHandler
+					.getValue(edu.wustl.common.participant.utility.Constants.PARTICIPANT_MANAGER_IMPL_CLASS);
+			participantManagerImplObj = (IParticipantManager) ParticipantManagerUtility
+					.getObject(PartiManagerImplClassName);
+		}
+		catch (BizLogicException e)
+		{
+			// TODO Auto-generated catch block
+			throw new ParticipantManagerException(e.getMessage(), e);
+		}
+		return participantManagerImplObj;
+
+	}
+
+	/**
+	 * Gets the last name qry.
+	 *
+	 * @param protocolIdSet the protocol id set
+	 * @param participantObjName the participant obj name
+	 *
+	 * @return the last name qry
+	 *
+	 * @throws ParticipantManagerException the participant manager exception
+	 */
+	public static String getLastNameQry(Set<Long> protocolIdSet, String participantObjName)
+			throws ParticipantManagerException
+	{
+		String fetchByNameQry = null;
+		IParticipantManager participantManagerImplObj = getParticipantMgrImplObj();
+
+		fetchByNameQry = participantManagerImplObj.getLastNameQuery(protocolIdSet);
+
+		return fetchByNameQry;
+	}
+
+	/**
+	 * Gets the meta phone qry.
+	 *
+	 * @param protocolIdSet the protocol id set
+	 * @param participantObjName the participant obj name
+	 *
+	 * @return the meta phone qry
+	 *
+	 * @throws ParticipantManagerException the participant manager exception
+	 */
+	public static String getMetaPhoneQry(Set<Long> protocolIdSet, String participantObjName)
+			throws ParticipantManagerException
+	{
+		String fetchByMetaPhoneQry = null;
+		IParticipantManager participantManagerImplObj = getParticipantMgrImplObj();
+		fetchByMetaPhoneQry = participantManagerImplObj.getMetaPhoneCodeQuery(protocolIdSet);
+		return fetchByMetaPhoneQry;
+	}
+
+	/**
+	 * Gets the sSN query.
+	 *
+	 * @param protocolIdSet the protocol id set
+	 * @param participantObjName the participant obj name
+	 *
+	 * @return the sSN query
+	 *
+	 * @throws ParticipantManagerException the participant manager exception
+	 */
+	public static String getSSNQuery(Set<Long> protocolIdSet, String participantObjName)
+			throws ParticipantManagerException
+	{
+		String fetchBySSNQry = null;
+		IParticipantManager participantManagerImplObj = getParticipantMgrImplObj();
+
+		fetchBySSNQry = participantManagerImplObj.getSSNQuery(protocolIdSet);
+
+		return fetchBySSNQry;
+
+	}
+
+	/**
+	 * Gets the mRN query.
+	 *
+	 * @param protocolIdSet the protocol id set
+	 * @param pmiObjName the pmi obj name
+	 *
+	 * @return the mRN query
+	 *
+	 * @throws ParticipantManagerException the participant manager exception
+	 */
+	public static String getMRNQuery(Set<Long> protocolIdSet, String pmiObjName)
+			throws ParticipantManagerException
+	{
+		IParticipantManager participantManagerImplObj = getParticipantMgrImplObj();
+		String fetchByMRNQry = null;
+		fetchByMRNQry = participantManagerImplObj.getMRNQuery(protocolIdSet);
+		return fetchByMRNQry;
 	}
 
 }

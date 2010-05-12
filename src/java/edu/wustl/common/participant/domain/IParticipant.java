@@ -204,7 +204,8 @@ public interface IParticipant
 	 *
 	 * @param participantMedicalIdentifierCollection the new participant medical identifier collection
 	 */
-	void setParticipantMedicalIdentifierCollection(Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> participantMedicalIdentifierCollection);
+	void setParticipantMedicalIdentifierCollection(
+			Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> participantMedicalIdentifierCollection);
 
 	/**
 	 * Gets the meta phone code.
@@ -247,5 +248,6 @@ public interface IParticipant
 	 * @param empiIdStatus the new empi id status
 	 */
 	void setEmpiIdStatus(String empiIdStatus);
+
 
 }
