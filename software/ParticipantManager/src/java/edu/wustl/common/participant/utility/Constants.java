@@ -284,4 +284,18 @@ public class Constants
 	public static final String PROCESS_NEXT_PARTCIPANT = "processNextParticipant";
 	public static final String FAILURE = "failure";
 
+	public static final String RACE_CLASS = "RaceClassName";
+
+	public static final String SITE_CLASS = "SiteClassName";
+
+	public static final String PARTICIPANT_CLASS = "ParticipantClassName";
+
+	public static final String PMI_CLASS = "PartcipantMedIdClassName";
+
+	public static final String USER_CLASS = "UserClassName";
+
+	public static final String PARTICIPANT_MANAGER_IMPL_CLASS = "ParticipantManagerIMPlClassName";
+
+
+
 }

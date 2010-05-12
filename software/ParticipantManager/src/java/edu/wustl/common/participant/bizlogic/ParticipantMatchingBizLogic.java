@@ -55,7 +55,7 @@ public class ParticipantMatchingBizLogic
 					if (isCallToLkupLgic)
 					{
 						List matchPartpantLst = ParticipantManagerUtility
-								.getListOfMatchingParticipants(participant, null,
+								.getListOfMatchingParticipants(participant,
 										Constants.PARTICIPANT_LOOKUP_ALGO_EMPI, null);
 						if (matchPartpantLst.size() == 0
 								&& (participant.getBirthDate() != null

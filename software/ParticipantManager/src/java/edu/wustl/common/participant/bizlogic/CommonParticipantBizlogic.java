@@ -12,6 +12,7 @@ import org.apache.commons.codec.language.Metaphone;
 
 import edu.wustl.common.beans.SessionDataBean;
 import edu.wustl.common.cde.CDEManager;
+import edu.wustl.common.exception.ApplicationException;
 import edu.wustl.common.exception.BizLogicException;
 import edu.wustl.common.exception.ErrorKey;
 import edu.wustl.common.participant.domain.IParticipant;
@@ -19,6 +20,7 @@ import edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
 import edu.wustl.common.participant.domain.IRace;
 import edu.wustl.common.participant.domain.ISite;
 import edu.wustl.common.participant.utility.Constants;
+import edu.wustl.common.participant.utility.ParticipantManagerException;
 import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.util.Utility;
 import edu.wustl.common.util.global.ApplicationProperties;
@@ -450,10 +452,11 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 	 * @param partMedIdentifier the part med identifier
 	 *
 	 * @throws BizLogicException the biz logic exception
+	 * @throws ParticipantManagerException
 	 */
 	public static void setParticipantMedicalIdentifierDefault(
 			IParticipantMedicalIdentifier<IParticipant, ISite> partMedIdentifier)
-			throws BizLogicException
+			throws BizLogicException, ParticipantManagerException
 	{
 		if (isNullobject(partMedIdentifier.getSite()))
 		{
@@ -467,11 +470,10 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 	 *
 	 * @param obj the obj
 	 * @param sessionDataBean the session data bean
-	 *
-	 * @throws DAOException the DAO exception
+	 * @throws ApplicationException
 	 */
 	public static void postInsert(final Object obj, LinkedHashSet<Long> userIdSet)
-			throws DAOException
+			throws BizLogicException
 	{
 		final IParticipant participant = (IParticipant) obj;
 		// if for CS eMPI is enable then set the eMPI status as pending if its eligible
@@ -487,26 +489,31 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 	 *
 	 * @param participant the participant
 	 * @param userIdSet the user id set
+	 * @throws BizLogicException
 	 *
 	 * @throws DAOException the DAO exception
 	 */
 	private static void insertParticipantToProcessingQue(final IParticipant participant,
-			LinkedHashSet<Long> userIdSet) throws DAOException
+			LinkedHashSet<Long> userIdSet) throws BizLogicException
 	{
-
 		String mrn = null;
 		mrn = ParticipantManagerUtility.getMrnValue(participant
 				.getParticipantMedicalIdentifierCollection());
-
-		if (ParticipantManagerUtility.isParticipantValidForEMPI(participant.getLastName(),
-				participant.getFirstName(), participant.getBirthDate(), participant
-						.getSocialSecurityNumber(), mrn))
+		try
 		{
-			// Process participant for CIDER participant matching.
-			ParticipantManagerUtility.addParticipantToProcessMessageQueue(userIdSet, participant
-					.getId());
+			if (ParticipantManagerUtility.isParticipantValidForEMPI(participant.getLastName(),
+					participant.getFirstName(), participant.getBirthDate(), participant
+							.getSocialSecurityNumber(), mrn))
+			{
+				// Process participant for CIDER participant matching.
+				ParticipantManagerUtility.addParticipantToProcessMessageQueue(userIdSet,
+						participant.getId());
+			}
 		}
-
+		catch (DAOException daoException)
+		{
+			throw new BizLogicException(daoException);
+		}
 	}
 
 	/**
@@ -514,32 +521,27 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 	 *
 	 * @param obj the obj
 	 * @param sessionDataBean the session data bean
-	 *
-	 * @throws BizLogicException the biz logic exception
+	 * @throws BizLogicException
+	 * @throws ApplicationException
 	 */
-	public static void preUpdate(Object oldObj, Object obj, SessionDataBean sessionDataBean)
-			throws BizLogicException
+	public static void preUpdate(Object oldObj, Object obj, SessionDataBean sessionDataBean) throws BizLogicException
 	{
 		final IParticipant participant = (IParticipant) obj;
 		final IParticipant oldParticipant = (IParticipant) oldObj;
 		final String oldEMPIStatus = oldParticipant.getEmpiIdStatus();
-		try
+
+		if (ParticipantManagerUtility.isEMPIEnable(participant.getId())
+				&& ParticipantManagerUtility.isParticipantEdited(oldParticipant, participant))
 		{
-			if (ParticipantManagerUtility.isEMPIEnable(participant.getId()) &&  ParticipantManagerUtility.isParticipantEdited(oldParticipant,participant))
+			if (oldEMPIStatus != null && !("".equals(oldEMPIStatus)))
 			{
-				if (oldEMPIStatus != null && !("".equals(oldEMPIStatus)))
+				if (Constants.EMPI_ID_CREATED.equals(participant.getEmpiIdStatus()))
 				{
-					if (Constants.EMPI_ID_CREATED.equals(participant.getEmpiIdStatus()))
-					{
-						participant.setEmpiIdStatus(Constants.EMPI_ID_PENDING);
-					}
+					participant.setEmpiIdStatus(Constants.EMPI_ID_PENDING);
 				}
 			}
 		}
-		catch (DAOException e)
-		{
-			throw new BizLogicException(e);
-		}
+
 	}
 
 	/**
@@ -558,7 +560,8 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 		final IParticipant participant = (IParticipant) currentObj;
 		try
 		{
-			if (ParticipantManagerUtility.isEMPIEnable(participant.getId()) && ParticipantManagerUtility.isParticipantEdited(oldParticipant,participant))
+			if (ParticipantManagerUtility.isEMPIEnable(participant.getId())
+					&& ParticipantManagerUtility.isParticipantEdited(oldParticipant, participant))
 			{
 				if (edu.wustl.common.participant.utility.Constants.EMPI_ID_CREATED
 						.equals(oldParticipant.getEmpiIdStatus())
