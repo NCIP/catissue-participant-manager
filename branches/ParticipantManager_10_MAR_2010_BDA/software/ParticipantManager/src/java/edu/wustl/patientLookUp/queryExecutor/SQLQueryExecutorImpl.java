@@ -44,9 +44,10 @@ public class SQLQueryExecutorImpl extends AbstractQueryExecutor
 			String participantObjName) throws PatientLookupException
 	{
 		List<PatientInformation> patientInformationList = new ArrayList<PatientInformation>();
+		DAO dao= null;
 		try
 		{
-			DAO dao = ParticipantManagerUtility.getDAO();
+		    dao = ParticipantManagerUtility.getDAO();
 			String fetchByLNameQry = ParticipantManagerUtility.getLastNameQry(protocolIdSet,
 					participantObjName);
 			List<ColumnValueBean> columnValueBeans = new ArrayList<ColumnValueBean>();
@@ -64,6 +65,16 @@ public class SQLQueryExecutorImpl extends AbstractQueryExecutor
 			Logger.out.info(e.getMessage(), e);
 			Logger.out.info("Error while retriving the matched patients based on name\n");
 			throw new PatientLookupException(e.getMessage(), e);
+		}finally{
+			try
+			{
+				dao.closeSession();
+			}
+			catch (DAOException e)
+			{
+				// TODO Auto-generated catch block
+				throw new PatientLookupException(e.getMessage(), e);
+			}
 		}
 
 		return patientInformationList;
