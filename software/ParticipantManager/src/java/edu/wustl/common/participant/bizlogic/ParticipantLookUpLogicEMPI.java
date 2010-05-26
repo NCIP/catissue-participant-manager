@@ -1,11 +1,13 @@
 
 package edu.wustl.common.participant.bizlogic;
 
+import edu.wustl.common.participant.client.IParticipantManagerLookupLogic;
 import edu.wustl.common.participant.domain.IParticipant;
 import edu.wustl.common.participant.utility.Constants;
 import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import edu.wustl.common.exception.BizLogicException;
 import edu.wustl.common.lookup.DefaultLookupParameters;
@@ -22,7 +24,7 @@ import edu.wustl.patientLookUp.util.PatientLookupException;
 /**
  * The Class ParticipantLookUpLogicEMPI.
  */
-public class ParticipantLookUpLogicEMPI implements LookupLogic
+public class ParticipantLookUpLogicEMPI implements IParticipantManagerLookupLogic
 {
 
 	/** The cutoff points. */
@@ -40,36 +42,9 @@ public class ParticipantLookUpLogicEMPI implements LookupLogic
 	/* (non-Javadoc)
 	 * @see edu.wustl.common.lookup.LookupLogic#lookup(edu.wustl.common.lookup.LookupParameters)
 	 */
-	public List lookup(final LookupParameters params) throws PatientLookupException
+	public List lookup(final LookupParameters params,Set<Long> csSet) throws PatientLookupException
 	{
-		List empiParticipantsList = null;
-		try
-		{
-			if (params == null)
-			{
-				throw new PatientLookupException("Params can not be null", null);
-			}
-			else
-			{
-				final DefaultLookupParameters participantParams = (DefaultLookupParameters) params;
-				final IParticipant participant = (IParticipant) participantParams.getObject();
-				final PatientInformation patientInfo = ParticipantManagerUtility
-						.populatePatientObject(participant,null);
-				cutoffPoints = Integer
-						.valueOf(XMLPropertyHandler.getValue(Constants.EMPITHRESHOLD));
-				maxPartipntsToReturn = Integer.valueOf(XMLPropertyHandler
-						.getValue(Constants.EMPIMAXNOOFPATIENS));
-				empiParticipantsList = searchMatchingParticipantFromEMPI(participant,
-						patientInfo);
-
-			}
-		}
-		catch (Exception e)
-		{
-			LOGGER.info(e.getMessage());
-			throw new PatientLookupException(e.getMessage(), e);
-		}
-		return empiParticipantsList;
+		return  lookup(params);
 	}
 
 	/**
@@ -147,5 +122,38 @@ public class ParticipantLookUpLogicEMPI implements LookupLogic
 
 		}
 		return matchedPartipntsList;
+	}
+
+	public List lookup(LookupParameters params) throws PatientLookupException
+	{
+		// TODO Auto-generated method stub
+		List empiParticipantsList = null;
+		try
+		{
+			if (params == null)
+			{
+				throw new PatientLookupException("Params can not be null", null);
+			}
+			else
+			{
+				final DefaultLookupParameters participantParams = (DefaultLookupParameters) params;
+				final IParticipant participant = (IParticipant) participantParams.getObject();
+				final PatientInformation patientInfo = ParticipantManagerUtility
+						.populatePatientObject(participant,null);
+				cutoffPoints = Integer
+						.valueOf(XMLPropertyHandler.getValue(Constants.EMPITHRESHOLD));
+				maxPartipntsToReturn = Integer.valueOf(XMLPropertyHandler
+						.getValue(Constants.EMPIMAXNOOFPATIENS));
+				empiParticipantsList = searchMatchingParticipantFromEMPI(participant,
+						patientInfo);
+
+			}
+		}
+		catch (Exception e)
+		{
+			LOGGER.info(e.getMessage());
+			throw new PatientLookupException(e.getMessage(), e);
+		}
+		return empiParticipantsList;
 	}
 }
