@@ -1,8 +1,6 @@
 
 package edu.wustl.common.participant.utility;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -25,7 +23,8 @@ public class PropertyHandler
 		{
 			participantManagerProperties = new Properties();
 
-			/*iStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(path);
+			InputStream iStream = Thread.currentThread().getContextClassLoader()
+					.getResourceAsStream(path);
 			if (iStream != null)
 			{
 				participantManagerProperties.load(iStream);
@@ -33,22 +32,23 @@ public class PropertyHandler
 			else
 			{
 				throw new FileNotFoundException("participantManager.properties file not Found");
-			}*/
-
-			path = System.getProperty("patientMatchingPropertyFile");
-			if (path != null)
-			{
-				InputStream inpurStream = new FileInputStream(new File(path));
-				if (inpurStream != null)
-				{
-					participantManagerProperties.load(inpurStream);
-				}
-				else
-				{
-					throw new FileNotFoundException(
-							"participantManager.properties file not Found");
-				}
 			}
+			/*
+						path = System.getProperty("patientMatchingPropertyFile");
+						if (path != null)
+						{
+							InputStream inpurStream = new FileInputStream(new File(path));
+							if (inpurStream != null)
+							{
+								participantManagerProperties.load(inpurStream);
+							}
+							else
+							{
+								throw new FileNotFoundException(
+										"participantManager.properties file not Found");
+							}
+						}
+						*/
 		}
 		catch (Exception e)
 		{
