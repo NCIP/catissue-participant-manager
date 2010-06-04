@@ -1,6 +1,7 @@
 
 package edu.wustl.common.participant.client;
 
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import edu.wustl.common.exception.ApplicationException;
@@ -13,7 +14,6 @@ import edu.wustl.common.exception.ApplicationException;
  */
 public interface IParticipantManager
 {
-
 
 	/**
 	 * Gets the pI cordinators first name and last name.
@@ -38,7 +38,8 @@ public interface IParticipantManager
 	 *
 	 * @throws ApplicationException the application exception
 	 */
-	public Set<Long> getProtocolIdLstForMICSEnabledForMatching(Long protocolId) throws ApplicationException;
+	public Set<Long> getProtocolIdLstForMICSEnabledForMatching(Long protocolId)
+			throws ApplicationException;
 
 	/**
 	 * Gets the last name query.
@@ -75,4 +76,13 @@ public interface IParticipantManager
 	 * @return the sSN query
 	 */
 	public String getSSNQuery(Set<Long> protocolIdSet);
+
+	/**
+	 * Fetch the PI and co-ordinators ids.
+	 * @param participantId
+	 * @return
+	 * @throws ApplicationException
+	 */
+	public LinkedHashSet<Long> getParticipantPICordinators(long participantId)
+			throws ApplicationException;
 }
