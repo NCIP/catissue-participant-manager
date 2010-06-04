@@ -1798,4 +1798,24 @@ public class ParticipantManagerUtility
 		return fetchByMRNQry;
 	}
 
+	/**
+	 * Fetch the PI and cordinators ids.
+	 * @param participantId
+	 * @return
+	 * @throws ApplicationException
+	 */
+	public static LinkedHashSet<Long> getParticipantPICordinators(long participantId)
+			throws ApplicationException
+	{
+		IParticipantManager participantManagerImplObj;
+		try
+		{
+			participantManagerImplObj = getParticipantMgrImplObj();
+		}
+		catch (ParticipantManagerException e)
+		{
+			throw new ApplicationException(null, e, e.getMessage());
+		}
+		return participantManagerImplObj.getParticipantPICordinators(participantId);
+	}
 }
