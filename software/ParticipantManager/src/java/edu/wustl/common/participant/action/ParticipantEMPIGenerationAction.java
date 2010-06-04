@@ -4,12 +4,6 @@
 
 package edu.wustl.common.participant.action;
 
-import edu.wustl.common.participant.actionForm.IParticipantForm;
-import edu.wustl.common.participant.bizlogic.EMPIParticipantRegistrationBizLogic;
-import edu.wustl.common.participant.domain.IParticipant;
-import edu.wustl.common.participant.utility.Constants;
-import edu.wustl.common.participant.utility.ParticipantManagerException;
-import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import java.util.LinkedHashSet;
 
 import javax.servlet.http.HttpServletRequest;
@@ -28,8 +22,15 @@ import edu.wustl.common.action.CommonAddEditAction;
 import edu.wustl.common.actionForm.AbstractActionForm;
 import edu.wustl.common.beans.SessionDataBean;
 import edu.wustl.common.domain.AbstractDomainObject;
+import edu.wustl.common.exception.ApplicationException;
 import edu.wustl.common.exception.AssignDataException;
 import edu.wustl.common.exception.BizLogicException;
+import edu.wustl.common.participant.actionForm.IParticipantForm;
+import edu.wustl.common.participant.bizlogic.EMPIParticipantRegistrationBizLogic;
+import edu.wustl.common.participant.domain.IParticipant;
+import edu.wustl.common.participant.utility.Constants;
+import edu.wustl.common.participant.utility.ParticipantManagerException;
+import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.util.Utility;
 import edu.wustl.common.util.logger.Logger;
 import edu.wustl.dao.exception.DAOException;
@@ -90,7 +91,7 @@ public class ParticipantEMPIGenerationAction extends CommonAddEditAction
 						ParticipantManagerUtility.deleteProcessedParticipant(participantForm
 								.getId());
 						// process next participant
-						forward=mapping.findForward(Constants.PROCESS_NEXT_PARTCIPANT);
+						forward = mapping.findForward(Constants.PROCESS_NEXT_PARTCIPANT);
 					}
 				}
 			}
@@ -125,7 +126,6 @@ public class ParticipantEMPIGenerationAction extends CommonAddEditAction
 
 	}
 
-
 	/**
 	 * Sets the error message.
 	 *
@@ -156,7 +156,8 @@ public class ParticipantEMPIGenerationAction extends CommonAddEditAction
 	 * @throws ParticipantManagerException
 	 */
 	private void registerPatientToEMPI(final HttpServletRequest request,
-			final IParticipantForm participantForm) throws BizLogicException, AssignDataException, ParticipantManagerException
+			final IParticipantForm participantForm) throws BizLogicException, AssignDataException,
+			ParticipantManagerException
 	{
 		final IParticipant participant = (IParticipant) ParticipantManagerUtility
 				.getParticipantInstance();
@@ -217,17 +218,17 @@ public class ParticipantEMPIGenerationAction extends CommonAddEditAction
 	 *
 	 * @param request the request
 	 * @param participantForm the participant form
-	 *
-	 * @throws DAOException the DAO exception
+	 * @throws ApplicationException
 	 */
 	private void generateEMPI(final HttpServletRequest request,
-			final IParticipantForm participantForm) throws DAOException
+			final IParticipantForm participantForm) throws ApplicationException
 	{
 		final SessionDataBean sessionDataBean = (SessionDataBean) request.getSession()
 				.getAttribute(Constants.SESSION_DATA);
 		try
 		{
-			final LinkedHashSet<Long> userIdSet = new LinkedHashSet<Long>();
+			LinkedHashSet<Long> userIdSet = ParticipantManagerUtility
+					.getParticipantPICordinators(participantForm.getId());
 			userIdSet.add(sessionDataBean.getUserId());
 			//getPIUserId(participantForm.getId());
 			// Process participant for CIDER participant matching.
@@ -239,5 +240,6 @@ public class ParticipantEMPIGenerationAction extends CommonAddEditAction
 		{
 			throw new DAOException(e.getErrorKey(), e, e.getMessage());
 		}
+
 	}
 }

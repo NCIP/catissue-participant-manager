@@ -1,9 +1,6 @@
 
 package edu.wustl.common.participant.bizlogic;
 
-import edu.wustl.common.participant.domain.IParticipant;
-import edu.wustl.common.participant.utility.Constants;
-import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -12,6 +9,9 @@ import java.util.LinkedList;
 import java.util.List;
 
 import edu.wustl.common.exception.ApplicationException;
+import edu.wustl.common.participant.domain.IParticipant;
+import edu.wustl.common.participant.utility.Constants;
+import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.util.Utility;
 import edu.wustl.common.util.logger.Logger;
 import edu.wustl.dao.JDBCDAO;
@@ -58,8 +58,8 @@ public class ParticipantMatchingBizLogic
 								.getListOfMatchingParticipants(participant,
 										Constants.PARTICIPANT_LOOKUP_ALGO_EMPI, null);
 						if (matchPartpantLst.size() == 0
-								&& (participant.getBirthDate() != null
-								|| (participant.getSocialSecurityNumber() != null && !""
+								&& (participant.getBirthDate() != null || (participant
+										.getSocialSecurityNumber() != null && !""
 										.equals(participant.getSocialSecurityNumber()))))
 						{
 							ParticipantManagerUtility.setEMPIIdStatus(participant.getId(),
@@ -416,7 +416,7 @@ public class ParticipantMatchingBizLogic
 			query = "SELECT SEARCHED_PARTICIPANT_ID,LAST_NAME,FIRST_NAME,CREATION_DATE,NO_OF_MATCHED_PARTICIPANTS FROM "
 					+ " MATCHED_PARTICIPANT_MAPPING PARTIMAPPING JOIN CATISSUE_PARTICIPANT PARTI ON PARTI.IDENTIFIER=PARTIMAPPING.SEARCHED_PARTICIPANT_ID "
 					+ " JOIN EMPI_PARTICIPANT_USER_MAPPING ON PARTIMAPPING.SEARCHED_PARTICIPANT_ID=EMPI_PARTICIPANT_USER_MAPPING.PARTICIPANT_ID"
-					+ " WHERE EMPI_PARTICIPANT_USER_MAPPING.USER_ID=? AND PARTIMAPPING.NO_OF_MATCHED_PARTICIPANTS!=?";
+					+ " WHERE EMPI_PARTICIPANT_USER_MAPPING.USER_ID=? AND PARTIMAPPING.NO_OF_MATCHED_PARTICIPANTS!=? ORDER BY CREATION_DATE";
 
 			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
 			columnValueBeanList.add(new ColumnValueBean("USER_ID", userId, DBTypes.LONG));
