@@ -1,14 +1,6 @@
 
 package edu.wustl.common.participant.action;
 
-import edu.wustl.common.participant.actionForm.IParticipantForm;
-import edu.wustl.common.participant.domain.IParticipant;
-import edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
-import edu.wustl.common.participant.domain.IRace;
-import edu.wustl.common.participant.domain.ISite;
-import edu.wustl.common.participant.utility.Constants;
-import edu.wustl.common.participant.utility.ParticipantManagerException;
-import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -33,6 +25,14 @@ import edu.wustl.common.beans.SessionDataBean;
 import edu.wustl.common.exception.ApplicationException;
 import edu.wustl.common.exception.BizLogicException;
 import edu.wustl.common.lookup.DefaultLookupResult;
+import edu.wustl.common.participant.actionForm.IParticipantForm;
+import edu.wustl.common.participant.domain.IParticipant;
+import edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
+import edu.wustl.common.participant.domain.IRace;
+import edu.wustl.common.participant.domain.ISite;
+import edu.wustl.common.participant.utility.Constants;
+import edu.wustl.common.participant.utility.ParticipantManagerException;
+import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.util.Utility;
 import edu.wustl.common.util.logger.Logger;
 import edu.wustl.dao.JDBCDAO;
@@ -91,13 +91,13 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 				if (indexOfCurrentPart >= 0 && ((participantIds.size() - 1) > indexOfCurrentPart))
 				{
 					nextMatchedParticpantIndex = indexOfCurrentPart + 1;
+
 				}
 				request.getSession().setAttribute(Constants.NEXT_PART_ID_TO_PROCESS,
 						participantIds.get(nextMatchedParticpantIndex));
 				// fetch the stored matched participant for the participant in the message board
 				final IParticipantForm partiForm = (IParticipantForm) form;
-				fetchMatchedParticipantsFromDB(identifier.longValue(), request,partiForm);
-
+				fetchMatchedParticipantsFromDB(identifier.longValue(), request, partiForm);
 
 			}
 		}
@@ -135,8 +135,8 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 	 * @throws ParticipantManagerException
 	 */
 	private void fetchMatchedParticipantsFromDB(final long participantId,
-			final HttpServletRequest request,final IParticipantForm partiForm) throws DAOException, BizLogicException,
-			ParseException, ParticipantManagerException
+			final HttpServletRequest request, final IParticipantForm partiForm)
+			throws DAOException, BizLogicException, ParseException, ParticipantManagerException
 	{
 		JDBCDAO dao = null;
 		List<DefaultLookupResult> matchPartpantLst = null;
@@ -168,12 +168,13 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 			}
 			else
 			{
-				setStatusMessage(request,"participant.empiid.zero.match.message");
+				setStatusMessage(request, "participant.empiid.zero.match.message");
 				if ((partiForm.getBirthDate() == null || "".equals(partiForm.getBirthDate()))
 						&& (ssn == null || "".equals(ssn)))
 				{
 					setStatusMessage(request, "participant.empiid.generation.incomplete.detail");
-					ParticipantManagerUtility.deleteProcessedParticipant(Long.valueOf(participantId));
+					ParticipantManagerUtility.deleteProcessedParticipant(Long
+							.valueOf(participantId));
 				}
 			}
 			request.setAttribute(Constants.IS_GENERATE_EMPI_PAGE, Constants.TRUE);
@@ -197,7 +198,7 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 	 *
 	 * @throws DAOException the DAO exception
 	 */
-	private void setStatusMessage(final HttpServletRequest request,String key) throws DAOException
+	private void setStatusMessage(final HttpServletRequest request, String key) throws DAOException
 	{
 		ActionMessages actionMsgs = (ActionMessages) request
 				.getAttribute("org.apache.struts.action.ACTION_MESSAGE");
@@ -205,8 +206,7 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 		{
 			actionMsgs = new ActionMessages();
 		}
-		actionMsgs.add("org.apache.struts.action.GLOBAL_MESSAGE", new ActionMessage(
-				key));
+		actionMsgs.add("org.apache.struts.action.GLOBAL_MESSAGE", new ActionMessage(key));
 		saveMessages(request, actionMsgs);
 	}
 
@@ -311,7 +311,8 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 	 * @throws BizLogicException the biz logic exception
 	 * @throws ParticipantManagerException
 	 */
-	private Collection getRaceCollection(final String raceString) throws BizLogicException, ParticipantManagerException
+	private Collection getRaceCollection(final String raceString) throws BizLogicException,
+			ParticipantManagerException
 	{
 		final Collection<IRace> raceCollection = new LinkedHashSet<IRace>();
 		final String racevalues[] = raceString.split(",");

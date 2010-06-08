@@ -296,6 +296,12 @@ public class Constants
 
 	public static final String PARTICIPANT_MANAGER_IMPL_CLASS = "ParticipantManagerIMPlClassName";
 
+	public static final String EMPI_GENERATED_PARTICIPANT_LN="eMPIGeneratedPartipantLN";
+
+	public static final String EMPI_GENERATED_PARTICIPANT_FN="eMPIGeneratedPartipantFN";
+
+	public static final String EMPI_ID_SUCCESS="eMPIIdSucess";
+
 
 
 }
