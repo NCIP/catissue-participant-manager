@@ -80,6 +80,16 @@ public class ParticipantEMPIGenerationAction extends CommonAddEditAction
 				{
 					participantForm.setOperation(edu.wustl.common.util.global.Constants.EDIT);
 					participantForm.setEmpiIdStatus(Constants.EMPI_ID_PENDING);
+					request
+							.getSession()
+							.setAttribute(
+									edu.wustl.common.participant.utility.Constants.EMPI_GENERATED_PARTICIPANT_LN,
+									participantForm.getLastName());
+					request
+							.getSession()
+							.setAttribute(
+									edu.wustl.common.participant.utility.Constants.EMPI_GENERATED_PARTICIPANT_FN,
+									participantForm.getFirstName());
 					// Send the registration message to CDR.
 					registerPatientToEMPI(request, participantForm);
 					// change the eMPI id status
@@ -191,6 +201,8 @@ public class ParticipantEMPIGenerationAction extends CommonAddEditAction
 		{
 			actionMsgs.add(ActionErrors.GLOBAL_MESSAGE, new ActionMessage(
 					"participant.empi.registration.success.message"));
+			request.getSession().setAttribute(Constants.EMPI_ID_SUCCESS,
+					"participant.empi.registration.success.message");
 		}
 		else if (regStatus.equals(edu.wustl.common.util.global.Constants.FAILURE))
 		{
