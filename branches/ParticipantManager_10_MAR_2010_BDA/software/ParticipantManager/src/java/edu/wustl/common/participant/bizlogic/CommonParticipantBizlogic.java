@@ -272,7 +272,7 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 					Constants.CDE_VITAL_STATUS, null);
 			if (!Validator.isEnumeratedOrNullValue(vitalStatusList, participant.getVitalStatus()))
 			{
-				throw new BizLogicException(null, null, "participant.gender.errMsg", "");
+				throw new BizLogicException(null, null, "participant.vitalstatus.errMsg", "");
 			}
 		}
 
