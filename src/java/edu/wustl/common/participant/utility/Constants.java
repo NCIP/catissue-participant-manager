@@ -300,6 +300,8 @@ public class Constants
 
 	public static final String EMPI_GENERATED_PARTICIPANT_FN="eMPIGeneratedPartipantFN";
 
+    public static final String EMPI_GENERATED_PARTICIPANT = "eMPIGeneratedPartipant";
+
 	public static final String EMPI_ID_SUCCESS="eMPIIdSucess";
 
 

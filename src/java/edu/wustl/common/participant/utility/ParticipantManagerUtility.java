@@ -792,6 +792,30 @@ public class ParticipantManagerUtility
 	}
 
 	/**
+	 * Gets the query.
+	 *
+	 * @param csId the cs id
+	 *
+	 * @return the query
+	 *
+	 * @throws DAOException the DAO exception
+	 * @throws ParticipantManagerException
+	 * @throws BizLogicException
+	 */
+	private static String getQueryForEmpiEnabled() throws DAOException, ParticipantManagerException,
+			BizLogicException
+	{
+
+		String PartiManagerImplClassName = (String) edu.wustl.common.participant.utility.PropertyHandler
+				.getValue(Constants.PARTICIPANT_MANAGER_IMPL_CLASS);
+
+		IParticipantManager participantManagerImplObj = (IParticipantManager) ParticipantManagerUtility
+				.getObject(PartiManagerImplClassName);
+
+		return participantManagerImplObj.getIsEmpiEnabledQuery();
+	}
+
+	/**
 	 * Cs empi status.
 	 *
 	 * @param cpId the cp id
@@ -809,29 +833,37 @@ public class ParticipantManagerUtility
 		try
 		{
 			dao = getJDBCDAO();
-			query = "SELECT SP.IS_EMPI_ENABLE FROM  CATISSUE_SPECIMEN_PROTOCOL SP WHERE SP.IDENTIFIER = ?";
+			query = ParticipantManagerUtility.getQueryForEmpiEnabled();
 			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
 			columnValueBeanList.add(new ColumnValueBean("IDENTIFIER", cpId, DBTypes.LONG));
 			List statusList = dao.executeQuery(query, null, columnValueBeanList);
-			if (!statusList.isEmpty() && !"".equals(statusList.get(0)))
+			if (!statusList.isEmpty() && statusList != null)
 			{
-				List idList = (List) statusList.get(0);
-				if (!idList.isEmpty() && !"".equals((idList.get(0))))
-				{
-					for (int i = 0; i < idList.size(); i++)
+//				List idList = (List) statusList.get(0);
+//				if (!idList.isEmpty() && !"".equals((idList.get(0))))
+//				{
+					for (int i = 0; i < statusList.size(); i++)
 					{
-						if (((String) idList.get(0)).equals("1"))
+						List idList = (List) statusList.get(i);
+						if (!idList.isEmpty() && !"".equals((idList.get(0))))
 						{
-							status = true;
-							break;
+							if (((String) idList.get(0)).equals("1"))
+							{
+								status = true;
+								break;
+							}
 						}
 					}
 				}
-			}
+//			}
 		}
 		catch (DAOException exp)
 		{
 			throw new BizLogicException(exp);
+		}
+		catch (ParticipantManagerException e)
+		{
+			throw new BizLogicException(null,e,e.getMessage());
 		}
 		finally
 		{
@@ -841,7 +873,6 @@ public class ParticipantManagerUtility
 			}
 			catch (DAOException exp)
 			{
-				// TODO Auto-generated catch block
 				throw new BizLogicException(exp);
 			}
 		}
@@ -877,7 +908,6 @@ public class ParticipantManagerUtility
 					eMPIStatus = (String) statusList.get(0);
 				}
 			}
-			dao.commit();
 		}
 		catch (DAOException exp)
 		{
@@ -1096,6 +1126,14 @@ public class ParticipantManagerUtility
 					DBTypes.LONG));
 			columnValueBeans.add(columnValueBeanList);
 			jdbcdao.executeUpdate(query, columnValueBeans);
+
+			final String eMPIStatus = ParticipantManagerUtility
+			.getPartiEMPIStatus(participantId);
+			if (eMPIStatus.equals(Constants.EMPI_ID_CREATED))
+			{
+				query = "UPDATE CATISSUE_PARTICIPANT SET EMPI_ID_STATUS = 'PENDING' WHERE IDENTIFIER = "+participantId;
+				jdbcdao.executeUpdate(query);
+			}
 			jdbcdao.commit();
 
 			updateParticipantUserMapping(jdbcdao, userIdSet, participantId);
