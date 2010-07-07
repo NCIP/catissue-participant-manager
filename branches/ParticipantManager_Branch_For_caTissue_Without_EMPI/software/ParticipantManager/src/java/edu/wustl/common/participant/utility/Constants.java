@@ -136,104 +136,30 @@ public class Constants
 	/** The Constant PAGE_OF_MATCHED_PARTIICPANTS. */
 	public static final String PAGE_OF_MATCHED_PARTIICPANTS = "pageOfMatchedParticipant";
 
-	/** The Constant EMPIDBURL. */
-	public static final String EMPIDBURL = "empi.DBURL";
-
-	/** The Constant EMPIDBUSERNAME. */
-	public static final String EMPIDBUSERNAME = "empi.DBUserName";
-
-	/** The Constant EMPIDBUSERPASSWORD. */
-	public static final String EMPIDBUSERPASSWORD = "empi.DBUserPassword";
-
-	/** The Constant EMPIDBSCHEMA. */
-	public static final String EMPIDBSCHEMA = "empi.DBSchema";
-
-	/** The Constant EMPIDBDRIVERNAME. */
-	public static final String EMPIDBDRIVERNAME = "empi.DBDriverName";
 
 	/** The Constant EMPITHRESHOLD. */
-	public static final String EMPITHRESHOLD = "empi.threshold";
+	public static final String PATIENT_THRESHOLD = "patient.threshold";
 
 	/** The Constant EMPIMAXNOOFPATIENS. */
-	public static final String EMPIMAXNOOFPATIENS = "empi.MaxNoOfPatients";
+	public static final String MAX_NO_OF_PATIENS = "patient.MaxNoOfPatients";
 
-	/** The Constant PARTICIPANT_EMPI_ID. */
-	public static final String PARTICIPANT_EMPI_ID = "EMPIID";
-
-	/** The Constant WMQ_SERVER_NAME. */
-	public static final String WMQ_SERVER_NAME = "WMQServerName";
-
-	/** The Constant WMQ_QMG_NAME. */
-	public static final String WMQ_QMG_NAME = "WMQMGRName";
-
-	/** The Constant WMQ_CHANNEL. */
-	public static final String WMQ_CHANNEL = "WMQChannel";
-
-	/** The Constant WMQ_PORT. */
-	public static final String WMQ_PORT = "WMQPort";
-
-	/** The Constant IN_BOUND_QUEUE_NAME. */
-	public static final String IN_BOUND_QUEUE_NAME = "InBoundQueue";
-
-	/** The Constant OUT_BOUND_QUEUE_NAME. */
-	public static final String OUT_BOUND_QUEUE_NAME = "OutBoundQueue";
-
-	/** The Constant MERGE_MESSAGE_QUEUE. */
-	public static final String MERGE_MESSAGE_QUEUE = "MergeMessageQueue";
-
-	/** The Constant EMPI_ID_CREATED. */
-	public static final String EMPI_ID_CREATED = "CREATED";
-
-	/** The Constant EMPI_ID_PENDING. */
-	public static final String EMPI_ID_PENDING = "PENDING";
-
-	/** The Constant HL7_REG_EVENT_TYPE. */
-	public static final String HL7_REG_EVENT_TYPE_A04 = "A04";
-
-	/** The Constant HL7_MERGE_EVENT_TYPE_A34. */
-	public static final String HL7_MERGE_EVENT_TYPE_A34 = "A34";
-
-	/** The Constant HL7_MERGE_EVENT_TYPE_A30. */
-	public static final String HL7_MERGE_EVENT_TYPE_A30 = "A30";
-
-	/** The Constant GENERATE_EMPI_ID. */
-	public static final String GENERATE_EMPI_ID = "Generate eMPI";
-
-	/** The Constant EMPI_DEMOGRAPHIC_XML_GENDER. */
-	public static final String EMPI_DEMOGRAPHIC_XML_GENDER = "gender";
-
-	/** The Constant EMPI_DEMOGRAPHIC_XML_RACE_COLLECTION. */
-	public static final String EMPI_DEMOGRAPHIC_XML_RACE_COLLECTION = "raceCollection";
 
 	/** The Constant CLINPORTAL_FACILITY_ID. */
 	public static final String CLINPORTAL_FACILITY_ID = "6B";
 
-	/** The Constant REGENERATE_EMPI_ID. */
-	public static final String REGENERATE_EMPI_ID = "Regenerate eMPI";
 
 	/** The Constant NOT_REPORTED. */
 	public static final String NOT_REPORTED = "Not Reported";
 
-	/** The Constant EMPI_ID_STATUS. */
-	public static final String EMPI_ID_STATUS = "eMPIIDStatus";
 
 	/** The Constant SHOW_MAPTCHED_PATIENTS. */
 	public static final String SHOW_MAPTCHED_PATIENTS = "Show Matched Participant";
 
-	/** The Constant PARTICIPANT_MATCHING_SCHEDULAR_DELAY. */
-	public static final String PARTICIPANT_MATCHING_SCHEDULAR_DELAY = "ParticipantMatchingShchedularDelay";
 
-	/** The Constant CP_QUERY_PARTICIPANT_EMPI_GENERATION_ACTION. */
-	public static final String CP_QUERY_PARTICIPANT_EMPI_GENERATION_ACTION = "CPQueryParticipantEMPIGeneration.do";
-
-	/** The Constant PARTICIPANT_EMPI_GENERATION_ACTION. */
-	public static final String PARTICIPANT_EMPI_GENERATION_ACTION = "ParticipantEMPIGeneration.do";
 
 	/** The Constant TIMESTAMP_PATTERN. */
 	public static final String TIMESTAMP_PATTERN = "MM-dd-yyyy HH:mm";
 
-	/** The Constant HL7_LISTENER_ADMIN_USER. */
-	public static final String HL7_LISTENER_ADMIN_USER = "HL7ListenerAdminUser";
 
 	/** The Constant CSM. */
 	public static final String CSM = "csm";
@@ -275,9 +201,6 @@ public class Constants
 
 	public static final String PARTICIPANT_MEDICAL_IDENTIFIER = "ParticipantMedicalIdentifier:";
 
-	public static final String IS_GENERATE_EMPI_PAGE = "isGenerateeMPIPage";
-
-	public static final String EMPI_GENERATION_FIELDS_INSUFFICIENT = "empiGenerationFieldsInsufficient";
 
 	public static final String PAGE_OF_PARTICIPANT = "pageOfParticipant";
 
@@ -296,13 +219,6 @@ public class Constants
 
 	public static final String PARTICIPANT_MANAGER_IMPL_CLASS = "ParticipantManagerIMPlClassName";
 
-	public static final String EMPI_GENERATED_PARTICIPANT_LN="eMPIGeneratedPartipantLN";
-
-	public static final String EMPI_GENERATED_PARTICIPANT_FN="eMPIGeneratedPartipantFN";
-
-    public static final String EMPI_GENERATED_PARTICIPANT = "eMPIGeneratedPartipant";
-
-	public static final String EMPI_ID_SUCCESS="eMPIIdSucess";
 
 
 

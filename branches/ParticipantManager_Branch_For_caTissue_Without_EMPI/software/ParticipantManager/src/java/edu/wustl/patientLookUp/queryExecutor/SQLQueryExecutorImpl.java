@@ -271,7 +271,6 @@ public class SQLQueryExecutorImpl extends AbstractQueryExecutor
 						String[] ssn = (participant.getSocialSecurityNumber()).split("-");
 						patientInfo.setSsn(ssn[0] + ssn[1] + ssn[2]);
 					}
-					patientInfo.setUpi(participant.getEmpiId());
 
 					participantInfoMedIdCol = participant
 							.getParticipantMedicalIdentifierCollection();

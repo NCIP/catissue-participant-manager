@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.codec.language.Metaphone;
@@ -30,7 +29,6 @@ import edu.wustl.common.util.global.Validator;
 import edu.wustl.common.util.logger.Logger;
 import edu.wustl.dao.DAO;
 import edu.wustl.dao.HibernateDAO;
-import edu.wustl.dao.JDBCDAO;
 import edu.wustl.dao.QueryWhereClause;
 import edu.wustl.dao.condition.EqualClause;
 import edu.wustl.dao.exception.AuditException;
@@ -475,46 +473,9 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 	public static void postInsert(final Object obj, LinkedHashSet<Long> userIdSet)
 			throws BizLogicException
 	{
-		final IParticipant participant = (IParticipant) obj;
-		// if for CS eMPI is enable then set the eMPI status as pending if its eligible
-		if (ParticipantManagerUtility.isEMPIEnable(participant.getId()))
-		{
-			insertParticipantToProcessingQue(participant, userIdSet);
-		}
 
 	}
 
-	/**
-	 * Insert participant to processing que.
-	 *
-	 * @param participant the participant
-	 * @param userIdSet the user id set
-	 * @throws BizLogicException
-	 *
-	 * @throws DAOException the DAO exception
-	 */
-	private static void insertParticipantToProcessingQue(final IParticipant participant,
-			LinkedHashSet<Long> userIdSet) throws BizLogicException
-	{
-		String mrn = null;
-		mrn = ParticipantManagerUtility.getMrnValue(participant
-				.getParticipantMedicalIdentifierCollection());
-		try
-		{
-			if (ParticipantManagerUtility.isParticipantValidForEMPI(participant.getLastName(),
-					participant.getFirstName(), participant.getBirthDate(), participant
-							.getSocialSecurityNumber(), mrn))
-			{
-				// Process participant for CIDER participant matching.
-				ParticipantManagerUtility.addParticipantToProcessMessageQueue(userIdSet,
-						participant.getId());
-			}
-		}
-		catch (DAOException daoException)
-		{
-			throw new BizLogicException(daoException);
-		}
-	}
 
 	/**
 	 * Pre update.
@@ -526,21 +487,6 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 	 */
 	public static void preUpdate(Object oldObj, Object obj, SessionDataBean sessionDataBean) throws BizLogicException
 	{
-		final IParticipant participant = (IParticipant) obj;
-		final IParticipant oldParticipant = (IParticipant) oldObj;
-		final String oldEMPIStatus = oldParticipant.getEmpiIdStatus();
-
-		if (ParticipantManagerUtility.isEMPIEnable(participant.getId())
-				&& ParticipantManagerUtility.isParticipantEdited(oldParticipant, participant))
-		{
-			if (oldEMPIStatus != null && !("".equals(oldEMPIStatus)))
-			{
-				if (Constants.EMPI_ID_CREATED.equals(participant.getEmpiIdStatus()))
-				{
-					participant.setEmpiIdStatus(Constants.EMPI_ID_PENDING);
-				}
-			}
-		}
 
 	}
 
@@ -556,123 +502,8 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 			throws BizLogicException
 	{
 
-		final IParticipant oldParticipant = (IParticipant) oldObj;
-		final IParticipant participant = (IParticipant) currentObj;
-		try
-		{
-			if (ParticipantManagerUtility.isEMPIEnable(participant.getId())
-					&& ParticipantManagerUtility.isParticipantEdited(oldParticipant, participant))
-			{
-				if (edu.wustl.common.participant.utility.Constants.EMPI_ID_CREATED
-						.equals(oldParticipant.getEmpiIdStatus())
-						&& edu.wustl.common.participant.utility.Constants.EMPI_ID_PENDING
-								.equals(participant.getEmpiIdStatus()))
-				{
-					regNewPatientToEMPI(participant);
-				}
-			}
-		}
-		catch (Exception e)
-		{
-			logger.info("ERROR WHILE REGISTERING NEW PATIENT TO EMPI  ##############  \n");
-			throw new BizLogicException(null, e, e.getMessage());
-		}
 
 	}
 
-	/**
-	 * Reg new patient to empi.
-	 *
-	 * @param participant the participant
-	 *
-	 * @throws BizLogicException the biz logic exception
-	 * @throws Exception the exception
-	 */
-	private static void regNewPatientToEMPI(IParticipant participant) throws BizLogicException,
-			Exception
-	{
-		String permanentPartiId = null;
-		String tempararyPartiId = null;
-		String oldeMPIId = null;
-		oldeMPIId = participant.getEmpiId();
-		tempararyPartiId = participant.getId() + "T";
-		String mrn = ParticipantManagerUtility.getMrnValue(participant
-				.getParticipantMedicalIdentifierCollection());
-		if (ParticipantManagerUtility.isParticipantValidForEMPI(participant.getLastName(),
-				participant.getFirstName(), participant.getBirthDate(), participant
-						.getSocialSecurityNumber(), mrn))
-		{
-			if (oldeMPIId != null && !"".equals(oldeMPIId))
-			{
-				permanentPartiId = String.valueOf(participant.getId());
-				mapParticipantId(oldeMPIId, permanentPartiId, tempararyPartiId);
-			}
-			if (!participant.getEmpiIdStatus().equals(Constants.EMPI_ID_CREATED))
-			{
-				participant.setEmpiId("");
-				sendHL7RegMes(participant, tempararyPartiId);
-			}
-		}
-	}
-
-	/**
-	 * Map participant id.
-	 *
-	 * @param oldeMPIId the olde mpi id
-	 * @param permanentPartiId the permanent parti id
-	 * @param tempararyPartiId the temparary parti id
-	 *
-	 * @throws DAOException the DAO exception
-	 */
-	private static void mapParticipantId(String oldeMPIId, String permanentPartiId,
-			String tempararyPartiId) throws DAOException
-	{
-		JDBCDAO jdbcDao = null;
-		try
-		{
-			final LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
-			final LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
-			columnValueBeanList.add(new ColumnValueBean(permanentPartiId));
-			columnValueBeanList.add(new ColumnValueBean(tempararyPartiId));
-			columnValueBeanList.add(new ColumnValueBean(oldeMPIId));
-			jdbcDao = ParticipantManagerUtility.getJDBCDAO();
-			final String sql = "INSERT INTO PARTICIPANT_EMPI_ID_MAPPING VALUES(?,?,?)";
-
-			columnValueBeans.add(columnValueBeanList);
-			jdbcDao.executeUpdate(sql, columnValueBeans);
-			jdbcDao.commit();
-		}
-		catch (DAOException e)
-		{
-			logger.info("ERROE WHILE UPDATING THE PARTICIPANT EMPI STATUS");
-			throw new DAOException(e.getErrorKey(), e, e.getMsgValues());
-		}
-		finally
-		{
-			jdbcDao.closeSession();
-		}
-	}
-
-	/**
-	 * Send h l7 reg mes.
-	 *
-	 * @param participant the participant
-	 * @param tempararyPartiId the temparary parti id
-	 *
-	 * @throws BizLogicException the biz logic exception
-	 * @throws Exception the exception
-	 */
-	private static void sendHL7RegMes(IParticipant participant, String tempararyPartiId)
-			throws BizLogicException, Exception
-	{
-
-		//IParticipant participant = (IParticipant) ParticipantManagerUtility.getParticipantInstance();
-		//((AbstractDomainObject) participant).setAllValues((AbstractActionForm) participantForm);
-		//participant.setId(participantForm.getId());
-
-		final EMPIParticipantRegistrationBizLogic eMPIPartiReg = new EMPIParticipantRegistrationBizLogic();
-		eMPIPartiReg.setTempMrnId(tempararyPartiId);
-		eMPIPartiReg.registerPatientToeMPI(participant);
-	}
 
 }
