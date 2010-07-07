@@ -81,33 +81,6 @@ public interface IParticipantForm
 	 */
 	void setId(long identifier);
 
-	/**
-	 * Gets the empi id status.
-	 *
-	 * @return the empi id status
-	 */
-	String getEmpiIdStatus();
-
-	/**
-	 * Sets the empi id status.
-	 *
-	 * @param empiIdStatus the new empi id status
-	 */
-	void setEmpiIdStatus(String empiIdStatus);
-
-	/**
-	 * Gets the empi id.
-	 *
-	 * @return the empi id
-	 */
-	String getEmpiId();
-
-	/**
-	 * Sets the empi id.
-	 *
-	 * @param empiId the new empi id
-	 */
-	void setEmpiId(String empiId);
 
 	/**
 	 * @return cpId

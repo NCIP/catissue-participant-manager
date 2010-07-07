@@ -86,9 +86,4 @@ public interface IParticipantManager
 	public LinkedHashSet<Long> getParticipantPICordinators(long participantId)
 			throws ApplicationException;
 
-	/**
-	 * @param participantId
-	 * @return
-	 */
-	public String getIsEmpiEnabledQuery();
 }

@@ -219,17 +219,6 @@ public class PatientInfoLookUpImpl implements IPatientLookUp
 			{
 				this.queryExecutor = queryExecutorObj;
 			}
-			/*if (queryExecutor == null)
-			{
-				this.queryExecutor = queryExecutorObj;
-
-				 queryExecutor.setDBParameteres(PropertyHandler
-						.getValue(Constants.EMPI_DB_URL), PropertyHandler
-						.getValue(Constants.EMPI_DB_USERNAME), PropertyHandler
-						.getValue(Constants.EMPI_DB_PASSWORD), PropertyHandler
-						.getValue(Constants.EMPI_DB_DRIVER), PropertyHandler
-						.getValue(Constants.EMPI_DB_SCHEMA));
-			}*/
 		}
 		catch (Exception e)
 		{

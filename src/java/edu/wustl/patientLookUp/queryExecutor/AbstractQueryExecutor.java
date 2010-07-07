@@ -19,11 +19,11 @@ public abstract class AbstractQueryExecutor implements IQueryExecutor
 	protected Connection connection = null;
 	protected JDBCDAO jdbcDAO = null;
 	protected static IQueryExecutor xQueryExecutorImpl = null;
-	protected String empiDBUrl;
-	protected String empiDBUser;
-	protected String empiDBPassword;
-	protected String empiDBdriver;
-	protected String empiDBSchema;
+//	protected String empiDBUrl;
+//	protected String empiDBUser;
+//	protected String empiDBPassword;
+//	protected String empiDBdriver;
+//	protected String empiDBSchema;
 
 	/* (non-Javadoc)
 	 * @see edu.wustl.patientLookUp.queryExecutor.IQueryExecutor#setDBParameteres(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
@@ -31,12 +31,12 @@ public abstract class AbstractQueryExecutor implements IQueryExecutor
 	public void setDBParameteres(String dbURL, String dbUser, String dbPassword, String dbDriver,
 			String dbSchema) throws PatientLookupException
 	{
-		empiDBUrl = dbURL;
-		empiDBUser = dbUser;
-		empiDBPassword = dbPassword;
-		empiDBdriver = dbDriver;
-		empiDBSchema = dbSchema;
-		QueryGenerator.setDBSchema(empiDBSchema);
+//		empiDBUrl = dbURL;
+//		empiDBUser = dbUser;
+//		empiDBPassword = dbPassword;
+//		empiDBdriver = dbDriver;
+//		empiDBSchema = dbSchema;
+//		QueryGenerator.setDBSchema(empiDBSchema);
 	}
 
 	/**
@@ -47,8 +47,8 @@ public abstract class AbstractQueryExecutor implements IQueryExecutor
 	{
 		try
 		{
-			Class.forName(empiDBdriver);
-			connection = DriverManager.getConnection(empiDBUrl, empiDBUser, empiDBPassword);
+//			Class.forName(empiDBdriver);
+//			connection = DriverManager.getConnection(empiDBUrl, empiDBUser, empiDBPassword);
 
 		}
 		catch (Exception e)
@@ -76,7 +76,6 @@ public abstract class AbstractQueryExecutor implements IQueryExecutor
 		}
 		catch (Exception e)
 		{
-			//e.printStackTrace();
 			Logger.out.info(e.getMessage(), e);
 			Logger.out.info("Error in getting the database connetion");
 			throw new PatientLookupException(e.getMessage(), e);

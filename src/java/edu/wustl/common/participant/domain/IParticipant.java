@@ -221,33 +221,6 @@ public interface IParticipant
 	 */
 	void setMetaPhoneCode(String metaPhoneCode);
 
-	/**
-	 * Gets the empi id.
-	 *
-	 * @return the empi id
-	 */
-	String getEmpiId();
-
-	/**
-	 * Gets the empi id status.
-	 *
-	 * @return the empi id status
-	 */
-	String getEmpiIdStatus();
-
-	/**
-	 * Sets the empi id.
-	 *
-	 * @param empiId the new empi id
-	 */
-	void setEmpiId(String empiId);
-
-	/**
-	 * Sets the empi id status.
-	 *
-	 * @param empiIdStatus the new empi id status
-	 */
-	void setEmpiIdStatus(String empiIdStatus);
 
 
 }

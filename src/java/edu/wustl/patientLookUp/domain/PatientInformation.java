@@ -54,8 +54,6 @@ public class PatientInformation
 	/** facility id. */
 	private String facilityId;
 
-	/** The is from empi. */
-	private String isFromEMPI;
 
 	protected String participantObjName;
 
@@ -102,25 +100,6 @@ public class PatientInformation
 
 
 
-	/**
-	 * Gets the checks if is from empi.
-	 *
-	 * @return the checks if is from empi
-	 */
-	public String getIsFromEMPI()
-	{
-		return isFromEMPI;
-	}
-
-	/**
-	 * Sets the checks if is from empi.
-	 *
-	 * @param isFromEMPI the new checks if is from empi
-	 */
-	public void setIsFromEMPI(String isFromEMPI)
-	{
-		this.isFromEMPI = isFromEMPI;
-	}
 
 	/** The activity status. */
 	private String activityStatus="";
