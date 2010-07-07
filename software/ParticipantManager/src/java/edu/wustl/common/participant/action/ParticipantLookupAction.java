@@ -162,11 +162,6 @@ public class ParticipantLookupAction extends SecureAction
 					isForward = true;
 				}
 			}
-			else if (request.getParameter("generateeMPIIdforPartiId") == null
-					|| "".equals(request.getParameter("generateeMPIIdforPartiId")))
-			{
-				isForward = false;
-			}
 			else
 			{
 				isForward = true;

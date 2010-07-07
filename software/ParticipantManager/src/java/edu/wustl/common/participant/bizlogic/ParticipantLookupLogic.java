@@ -1,13 +1,6 @@
 
 package edu.wustl.common.participant.bizlogic;
 
-import edu.wustl.common.participant.client.IParticipantManagerLookupLogic;
-import edu.wustl.common.participant.domain.IParticipant;
-import edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
-import edu.wustl.common.participant.domain.ISite;
-import edu.wustl.common.participant.utility.Constants;
-import edu.wustl.common.participant.utility.ParticipantManagerException;
-import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -15,14 +8,18 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.servlet.http.HttpServletRequest;
-
 import edu.wustl.common.exception.ApplicationException;
 import edu.wustl.common.exception.BizLogicException;
 import edu.wustl.common.lookup.DefaultLookupParameters;
 import edu.wustl.common.lookup.DefaultLookupResult;
-import edu.wustl.common.lookup.LookupLogic;
 import edu.wustl.common.lookup.LookupParameters;
+import edu.wustl.common.participant.client.IParticipantManagerLookupLogic;
+import edu.wustl.common.participant.domain.IParticipant;
+import edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
+import edu.wustl.common.participant.domain.ISite;
+import edu.wustl.common.participant.utility.Constants;
+import edu.wustl.common.participant.utility.ParticipantManagerException;
+import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.util.XMLPropertyHandler;
 import edu.wustl.dao.JDBCDAO;
 import edu.wustl.dao.exception.DAOException;
@@ -122,9 +119,9 @@ public class ParticipantLookupLogic implements IParticipantManagerLookupLogic
 		final IParticipant participant = (IParticipant) participantParams.getObject();
 		final PatientInformation patientInfo = ParticipantManagerUtility
 				.populatePatientObject(participant,protocolIdSet);
-		cutoffPoints = Integer.parseInt(XMLPropertyHandler.getValue(Constants.EMPITHRESHOLD));
+		cutoffPoints = Integer.parseInt(XMLPropertyHandler.getValue(Constants.PATIENT_THRESHOLD));
 		maxNoOfParticipantsToReturn = Integer.parseInt(XMLPropertyHandler
-				.getValue(Constants.EMPIMAXNOOFPATIENS));
+				.getValue(Constants.MAX_NO_OF_PATIENS));
 		return patientInfo;
 	}
 
@@ -172,9 +169,6 @@ public class ParticipantLookupLogic implements IParticipantManagerLookupLogic
 					partcipantNew.setDeathDate(patientInfo.getDeathDate());
 					partcipantNew.setVitalStatus(patientInfo.getVitalStatus());
 					partcipantNew.setGender(patientInfo.getGender());
-					if(patientInfo.getUpi()!=null){
-						partcipantNew.setEmpiId(patientInfo.getUpi());
-					}
 					partcipantNew.setActivityStatus(patientInfo.getActivityStatus());
 					if (patientInfo.getSsn() != null && !"".equals(patientInfo.getSsn()))
 					{

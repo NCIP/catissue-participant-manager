@@ -17,20 +17,6 @@ public class Constants
 	/** The Constant DATE_FORMAT_YYYY_MM_DD. */
 	public static final String DATE_FORMAT_YYYY_MM_DD = "yyyy-MM-dd";
 
-	/** The Constant EMPI_DB_URL. */
-	public static final String EMPI_DB_URL = "empiDBURL";
-
-	/** The Constant EMPI_DB_USERNAME. */
-	public static final String EMPI_DB_USERNAME = "empiDBUserName";
-
-	/** The Constant EMPI_DB_PASSWORD. */
-	public static final String EMPI_DB_PASSWORD = "empiDBPassword";
-
-	/** The Constant EMPI_DB_DRIVER. */
-	public static final String EMPI_DB_DRIVER = "empiDBDriver";
-
-	/** The Constant EMPI_QUERY_EXECUTOR. */
-	public static final String EMPI_QUERY_EXECUTOR = "empiQueryExecutorClass";
 
 	/** The PATIEN t_ looku p_ service. */
 	public static String PATIENT_LOOKUP_SERVICE = "PatientInfoLookUpServiceClass";
