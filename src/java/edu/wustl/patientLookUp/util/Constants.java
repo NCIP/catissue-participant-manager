@@ -36,6 +36,10 @@ public class Constants
 	/** The Constant PARTICIPANT_SSN_EXACT. */
 	public static final String PARTICIPANT_SSN_EXACT = "SSNExact";
 
+	public static final String PARTICIPANT_BONUS="Bonus";
+	public static final String PARTICIPANT_RACE_PARTIAL="RacePartial";
+	public static final String PARTICIPANT_MATCH_CHARACTERS_FOR_LAST_NAME="MatchCharactersForLastName";
+
 	/** The Constant PARTICIPANT_SSN_PARTIAL. */
 	public static final String PARTICIPANT_SSN_PARTIAL = "SSNPartial";
 
