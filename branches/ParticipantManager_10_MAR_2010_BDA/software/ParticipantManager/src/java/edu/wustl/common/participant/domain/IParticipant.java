@@ -250,4 +250,15 @@ public interface IParticipant
 	void setEmpiIdStatus(String empiIdStatus);
 
 
+	/**
+	 * @return the gridValueSelected
+	 */
+	public String getGridValueSelected();
+
+	/**
+	 * @param gridValueSelected the gridValueSelected to set
+	 */
+	public void setGridValueSelected(String gridValueSelected);
+
+
 }

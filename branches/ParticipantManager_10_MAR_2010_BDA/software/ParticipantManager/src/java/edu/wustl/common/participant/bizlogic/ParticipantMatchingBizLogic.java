@@ -65,8 +65,10 @@ public class ParticipantMatchingBizLogic
 							ParticipantManagerUtility.setEMPIIdStatus(participant.getId(),
 									Constants.EMPI_ID_PENDING);
 							bizLogic.registerPatientToeMPI(participant);
-							ParticipantManagerUtility.deleteProcessedParticipant(participant
-									.getId());
+//							ParticipantManagerUtility.deleteProcessedParticipant(participant
+//									.getId());
+							// count of matched patients updated to 0 when no matches found
+							ParticipantManagerUtility.updateProcessedParticipant(participant.getId());
 						}
 						else
 						{
@@ -115,8 +117,10 @@ public class ParticipantMatchingBizLogic
 						.getParticipantMedicalIdentifierCollection());
 				columnValueBeanList = new LinkedList<ColumnValueBean>();
 				columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
+				if(null!=patientInformation.getId()){
 				columnValueBeanList.add(new ColumnValueBean("PARTICIPANT_ID", patientInformation
 						.getId(), DBTypes.LONG));
+				}
 				columnValueBeanList.add(new ColumnValueBean("EMPI_ID", patientInformation.getUpi(),
 						DBTypes.VARCHAR));
 				columnValueBeanList.add(new ColumnValueBean("LAST_NAME", patientInformation

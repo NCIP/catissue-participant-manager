@@ -173,7 +173,11 @@ public class ParticipantEMPIGenerationAction extends CommonAddEditAction
 		String regStatusMessage = "";
 		try
 		{
-			bizLogic.registerPatientToeMPI(participant);
+			//update empIId to blank and insert temp MRN entry into PARTICIPANT_EMPI_ID_MAPPING table, incase empiId was earlier generated and user said "Ignore and Create new empiId"
+
+			bizLogic.ignoreAndCreateNewFlow(participant);
+
+			//bizLogic.registerPatientToeMPI(participant);
 			regStatusMessage = edu.wustl.common.util.global.Constants.SUCCESS;
 		}
 		catch (Exception e)

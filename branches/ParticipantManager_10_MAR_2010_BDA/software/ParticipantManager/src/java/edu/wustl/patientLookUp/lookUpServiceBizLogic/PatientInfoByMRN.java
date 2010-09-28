@@ -45,27 +45,25 @@ public class PatientInfoByMRN
 			{
 				String mrn = (String) itr.next();
 				String siteId = (String) itr.next();
-				if(mrn!=null){
-					patientListByMRN = queryExecutor.executeQueryForMRN(mrn, siteId,patientInformation.getProtocolIdSet(),patientInformation.getPmiObjName());
-					if (patientListByMRN != null && !patientListByMRN.isEmpty() )
-					{
-						for (int index = 0; index < patientListByMRN.size(); index++)
-						{
-							patientDataMap.put(String.valueOf(patientListByMRN.get(index).getId()), patientListByMRN
-								.get(index));
-						}
-					}
+				if (mrn != null)
+				{
+					patientListByMRN = queryExecutor.executeQueryForMRN(mrn, siteId,
+							patientInformation.getProtocolIdSet(), patientInformation
+									.getPmiObjName());
+					Utility.populatePatientDataMap(patientListByMRN, patientDataMap);
 					// If exact MRN match not found perform the fuzzy match on MRN.
-					mrnFuzzyMatch1(mrn, siteId, queryExecutor,patientInformation.getProtocolIdSet(),patientInformation.getPmiObjName());
-					mrnFuzzyMatch2(mrn, siteId, queryExecutor,patientInformation.getProtocolIdSet(),patientInformation.getPmiObjName());
+					mrnFuzzyMatch1(mrn, siteId, queryExecutor, patientInformation
+							.getProtocolIdSet(), patientInformation.getPmiObjName());
+					mrnFuzzyMatch2(mrn, siteId, queryExecutor, patientInformation
+							.getProtocolIdSet(), patientInformation.getPmiObjName());
 				}
 			}
 			matchedParticipantList.addAll(patientDataMap.values());
 			queryExecutor.fetchRegDateFacilityAndMRNOfPatient(matchedParticipantList);
 			Utility.calculateScore(matchedParticipantList, patientInformation);
 			Utility.sortListByScore(matchedParticipantList);
-			matchedParticipantList = Utility.processMatchingListForFilteration(matchedParticipantList,
-					threshold, maxNoOfRecords);
+			matchedParticipantList = Utility.processMatchingListForFilteration(
+					matchedParticipantList, threshold, maxNoOfRecords);
 
 		}
 		catch (Exception e)
@@ -85,8 +83,8 @@ public class PatientInfoByMRN
 	 * @return List of MRN partially matched patients.
 	 * @throws PatientLookupException : PatientLookupException
 	 */
-	private void mrnFuzzyMatch1(String mrn, String siteId, IQueryExecutor queryExecutor,Set<Long> protocolIdSet,String pmiObjName)
-			throws PatientLookupException
+	private void mrnFuzzyMatch1(String mrn, String siteId, IQueryExecutor queryExecutor,
+			Set<Long> protocolIdSet, String pmiObjName) throws PatientLookupException
 	{
 		List<PatientInformation> patientListByMRN = null;
 		StringBuffer tempMRNStr = new StringBuffer();
@@ -105,20 +103,12 @@ public class PatientInfoByMRN
 					tempMRNStr.append(mrn.charAt(j));
 				}
 			}
-			patientListByMRN = queryExecutor.executeQueryForMRN(tempMRNStr.toString(), siteId,protocolIdSet,pmiObjName);
+			patientListByMRN = queryExecutor.executeQueryForMRN(tempMRNStr.toString(), siteId,
+					protocolIdSet, pmiObjName);
 			// For removing the duplicate MRN matched records
-			if (patientListByMRN != null && !patientListByMRN.isEmpty())
-			{
-				for (int index = 0; index < patientListByMRN.size(); index++)
-				{
-					//patientDataMap.put((patientListByMRN.get(index)).getUpi(), patientListByMRN.get(index));
-					patientDataMap.put(String.valueOf(patientListByMRN.get(index).getId()), patientListByMRN.get(index));
-				}
-
-			}
+			Utility.populatePatientDataMap(patientListByMRN, patientDataMap);
 			tempMRNStr.delete(0, tempMRNStr.length());
 		}
-
 	}
 
 	/**
@@ -146,16 +136,10 @@ public class PatientInfoByMRN
 			{
 				charArray[i] = ++charArray[i];
 				tempMRNStr.append(charArray);
-				patientListByMRN = queryExecutor.executeQueryForMRN(tempMRNStr.toString(), siteId,protocolIdSet,pmiObjName);
+				patientListByMRN = queryExecutor.executeQueryForMRN(tempMRNStr.toString(), siteId,
+						protocolIdSet, pmiObjName);
 				// For removing the duplicate MRN matched records
-				if (patientListByMRN != null && !patientListByMRN.isEmpty())
-				{
-					for (int index = 0; index < patientListByMRN.size(); index++)
-					{
-						//patientDataMap.put((patientListByMRN.get(index)).getUpi(), patientListByMRN.get(index));
-						patientDataMap.put(String.valueOf((patientListByMRN.get(index)).getId()), patientListByMRN.get(index));
-					}
-				}
+				Utility.populatePatientDataMap(patientListByMRN, patientDataMap);
 			}
 			charArray[i] = --charArray[i];
 			tempMRNStr = tempMRNStr.delete(0, tempMRNStr.length());
@@ -163,16 +147,10 @@ public class PatientInfoByMRN
 			{
 				charArray[i] = --charArray[i];
 				tempMRNStr.append(charArray);
-				patientListByMRN = queryExecutor.executeQueryForMRN(tempMRNStr.toString(), siteId,protocolIdSet,pmiObjName);
+				patientListByMRN = queryExecutor.executeQueryForMRN(tempMRNStr.toString(), siteId,
+						protocolIdSet, pmiObjName);
 				// For removing the duplicate MRN matched records
-				if (patientListByMRN != null && !patientListByMRN.isEmpty())
-				{
-					for (int index = 0; index < patientListByMRN.size(); index++)
-					{
-						patientDataMap.put(((patientListByMRN.get(index)).getId()).toString(), patientListByMRN
-								.get(index));
-					}
-				}
+				Utility.populatePatientDataMap(patientListByMRN, patientDataMap);
 				charArray[i] = ++charArray[i];
 			}
 			tempMRNStr = tempMRNStr.delete(0, tempMRNStr.length());

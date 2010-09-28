@@ -67,13 +67,19 @@ public class ParticipantManagerUtility
 	/** The logger. */
 	private static final Logger LOGGER = Logger.getCommonLogger(ParticipantManagerUtility.class);
 
+	/** class level instance for Queue connection*/
+	private QueueConnection connectionToQueue = null;
+
+	/** class level instance for Queue session*/
+	private QueueSession queueSession = null;
+
 	/**
 	 * Register wmq listener.
 	 *
 	 * @throws JMSException the JMS exception
 	 * @throws BizLogicException the biz logic exception
 	 */
-	public static void registerWMQListener() throws JMSException, BizLogicException
+	public void registerWMQListener() throws JMSException, BizLogicException
 	{
 		String hostName = null;
 		String qmgName = null;
@@ -104,18 +110,18 @@ public class ParticipantManagerUtility
 			factory.setChannel(channel);
 			factory.setPort(port);
 
-			final QueueConnection connection = factory.createQueueConnection();
+			connectionToQueue = factory.createQueueConnection();
 
-			connection.start();
+			connectionToQueue.start();
 
-			final QueueSession session = connection.createQueueSession(false,
+			queueSession = connectionToQueue.createQueueSession(false,
 					javax.jms.Session.AUTO_ACKNOWLEDGE);
 			inBoundQueueName = XMLPropertyHandler.getValue(Constants.IN_BOUND_QUEUE_NAME);
-			final Queue inBoundQueue = session.createQueue("queue:///" + inBoundQueueName);
+			final Queue inBoundQueue = queueSession.createQueue("queue:///" + inBoundQueueName);
 
 			LOGGER.info("IN_BOUND_QUEUE_NAME ----------- : " + inBoundQueueName);
 
-			QueueReceiver queueReceiver = session.createReceiver(inBoundQueue);
+			QueueReceiver queueReceiver = queueSession.createReceiver(inBoundQueue);
 
 			final EMPIParticipantListener listener = new EMPIParticipantListener();
 
@@ -123,8 +129,8 @@ public class ParticipantManagerUtility
 
 			// Set the merge message queue listener.
 			mergeMessageQueueName = XMLPropertyHandler.getValue(Constants.MERGE_MESSAGE_QUEUE);
-			final Queue mrgMessageQueue = session.createQueue("queue:///" + mergeMessageQueueName);
-			queueReceiver = session.createReceiver(mrgMessageQueue);
+			final Queue mrgMessageQueue = queueSession.createQueue("queue:///" + mergeMessageQueueName);
+			queueReceiver = queueSession.createReceiver(mrgMessageQueue);
 			final EMPIParticipantMergeMessageListener mrgMesListener = new EMPIParticipantMergeMessageListener();
 			queueReceiver.setMessageListener(mrgMesListener);
 		}
@@ -151,7 +157,7 @@ public class ParticipantManagerUtility
 	}
 
 	/**
-	 * Initialise particiapnt match scheduler.
+	 * Initialize participant match scheduler.
 	 */
 	public static void initialiseParticiapntMatchScheduler()
 	{
@@ -1127,13 +1133,13 @@ public class ParticipantManagerUtility
 			columnValueBeans.add(columnValueBeanList);
 			jdbcdao.executeUpdate(query, columnValueBeans);
 
-			final String eMPIStatus = ParticipantManagerUtility
+			/*final String eMPIStatus = ParticipantManagerUtility
 			.getPartiEMPIStatus(participantId);
 			if (eMPIStatus.equals(Constants.EMPI_ID_CREATED))
 			{
 				query = "UPDATE CATISSUE_PARTICIPANT SET EMPI_ID_STATUS = 'PENDING' WHERE IDENTIFIER = "+participantId;
 				jdbcdao.executeUpdate(query);
-			}
+			}*/
 			jdbcdao.commit();
 
 			updateParticipantUserMapping(jdbcdao, userIdSet, participantId);
@@ -1286,6 +1292,41 @@ public class ParticipantManagerUtility
 			jdbcdao.executeUpdate(query, columnValueBeans);
 			jdbcdao.commit();
 
+		}
+		catch (DAOException e)
+		{
+			jdbcdao.rollback();
+			throw new DAOException(e.getErrorKey(), e, e.getMessage());
+		}
+		finally
+		{
+			jdbcdao.closeSession();
+		}
+	}
+
+
+
+	/**
+	 * Updates the count of matched participants as 0 in case no matching was found.
+	 *
+	 * @param id the id
+	 * @return true, if successful
+	 * @throws DAOException the DAO exception
+	 */
+	public static void updateProcessedParticipant(Long id) throws DAOException
+	{
+		JDBCDAO jdbcdao = null;
+		try
+		{
+			jdbcdao = getJDBCDAO();
+			LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
+			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
+			columnValueBeanList.add(new ColumnValueBean(id));
+			columnValueBeans.add(columnValueBeanList);
+			String query = "UPDATE MATCHED_PARTICIPANT_MAPPING SET NO_OF_MATCHED_PARTICIPANTS=0 "
+					+ "WHERE SEARCHED_PARTICIPANT_ID=?";
+			jdbcdao.executeUpdate(query, columnValueBeans);
+			jdbcdao.commit();
 		}
 		catch (DAOException e)
 		{
@@ -1685,11 +1726,11 @@ public class ParticipantManagerUtility
 	/**
 	 * Method gets all the protocol ids for the MICS to which the protocol is is associated with
 	 * Suppose  protocolId associated with MICSId and MICSId enabled for participant
-	 * match withing mics then this method will return all the protocol ids associated with the MICSid.
+	 * match within mics then this method will return all the protocol ids associated with the MICSid.
 	 *
 	 * @param protocolId the protocol id
 	 *
-	 * @return the associted mutli inst protocol id list
+	 * @return the associated mutli inst protocol id list
 	 *
 	 * @throws ParticipantManagerException the participant manager exception
 	 * @throws ApplicationException the application exception
@@ -1756,12 +1797,12 @@ public class ParticipantManagerUtility
 	}
 
 	/**
-	 * Gets the last name qry.
+	 * Gets the last name query.
 	 *
 	 * @param protocolIdSet the protocol id set
-	 * @param participantObjName the participant obj name
+	 * @param participantObjName the participant object name
 	 *
-	 * @return the last name qry
+	 * @return the last name query
 	 *
 	 * @throws ParticipantManagerException the participant manager exception
 	 */
@@ -1777,12 +1818,12 @@ public class ParticipantManagerUtility
 	}
 
 	/**
-	 * Gets the meta phone qry.
+	 * Gets the meta phone query.
 	 *
 	 * @param protocolIdSet the protocol id set
-	 * @param participantObjName the participant obj name
+	 * @param participantObjName the participant object name
 	 *
-	 * @return the meta phone qry
+	 * @return the meta phone query
 	 *
 	 * @throws ParticipantManagerException the participant manager exception
 	 */
@@ -1821,7 +1862,7 @@ public class ParticipantManagerUtility
 	 * Gets the mRN query.
 	 *
 	 * @param protocolIdSet the protocol id set
-	 * @param pmiObjName the pmi obj name
+	 * @param pmiObjName the pmi object name
 	 *
 	 * @return the mRN query
 	 *
@@ -1837,7 +1878,7 @@ public class ParticipantManagerUtility
 	}
 
 	/**
-	 * Fetch the PI and cordinators ids.
+	 * Fetch the PI and coordinators IDs.
 	 * @param participantId
 	 * @return
 	 * @throws ApplicationException
@@ -1855,5 +1896,44 @@ public class ParticipantManagerUtility
 			throw new ApplicationException(null, e, e.getMessage());
 		}
 		return participantManagerImplObj.getParticipantPICordinators(participantId);
+	}
+
+	/**
+	 * Closes the session and the connection to the WMQ queues when the server is shut down.
+	 * @throws JMSException
+	 */
+	public void unregisterWMQListener() throws JMSException
+	{
+		try
+		{
+			// closing session for queue
+			if (null != queueSession)
+			{
+				queueSession.close();
+			}
+			//closing queue connection
+			if (null != connectionToQueue)
+			{
+				connectionToQueue.close();
+			}
+		}
+		catch (JMSException e)
+		{
+			LOGGER.error(" -------------  ERROR WHILE CLOSING THE MESSAGE QUEUES"
+					+ " \n \n ------------- ");
+			LOGGER.error(e.getMessage());
+			LOGGER.error(e.getStackTrace());
+			e.printStackTrace();
+			e.getLinkedException();
+			LOGGER.error(e.getLinkedException());
+			LOGGER.error(e.getLinkedException().getMessage());
+			LOGGER.error(e.getLinkedException().getStackTrace());
+			throw e;
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+			LOGGER.error(e.getMessage());
+		}
 	}
 }

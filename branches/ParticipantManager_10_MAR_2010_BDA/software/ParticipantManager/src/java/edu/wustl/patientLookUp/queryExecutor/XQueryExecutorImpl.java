@@ -205,7 +205,7 @@ public class XQueryExecutorImpl extends AbstractQueryExecutor
 				{
 					patientInfo = new PatientInformation();
 
-					patientInfo.setId(Long.valueOf((rs.getString("upi").trim())));
+					//patientInfo.setId(Long.valueOf((rs.getString("upi").trim())));
 					patientInfo.setUpi((rs.getString("upi").trim()));
 					patientInfo.setLastName(rs.getString("lastname"));
 					if (rs.getString("firstname") != null)
