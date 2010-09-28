@@ -17,7 +17,7 @@ import edu.wustl.patientLookUp.domain.PatientInformation;
  *
  * @author geeta_jaggal
  */
-public class ScoreCalculator
+public class ScoreCalculatorForOldAlgo
 {
 
 	/** The have lname. */
@@ -237,20 +237,44 @@ public class ScoreCalculator
 	private int getDOBScore(Date dobUser, Date dobDB)
 	{
 		int score = 0;
-		String dob = "";
-		haveNumber += 5;
-		dob = dobUser.toString();
-		if (dob.compareTo(dobDB.toString()) == 0)
+		//String dob = "";
+//		haveNumber += 5;
+		//dob = dobUser.toString();
+		//if (dob.compareTo(dobDB.toString()) == 0)
+//		if("1926-04-19".equals(dobDB.toString()))
+//		{
+//			System.out.println("jkjkj");
+//		}
+		/*	Date date = dobDB.
+		if (dobUser.compareTo(dobDB) == 0)
 		{
 			score += Integer.valueOf(XMLPropertyHandler.getValue(Constants.PARTICIPANT_DOB_EXACT));
 			haveDob = 1;
 			haveBonus += 5;
 		}
-		else if (haveNumber > 0 && haveFname > 0)
+		else
 		{
 			score += checkDateOfBirth(dobUser, dobDB);
 			haveDob = 1;
+		}*/
+
+		if(dobUser.getMonth() == dobDB.getMonth()
+				&& dobUser.getYear() == dobDB.getYear()
+				&& dobUser.getDate() == dobDB.getDate())
+		{
+			score += Integer.valueOf(XMLPropertyHandler.getValue(Constants.PARTICIPANT_DOB_EXACT));
+			haveDob = 1;
+			haveBonus += 5;
 		}
+		else if (compareMonthYear(dobUser, dobDB))
+		{
+			score = Integer.valueOf(XMLPropertyHandler.getValue(Constants.PARTICIPANT_DOB_PARTIAL));
+		}
+		else if (compareDateMonthYear(dobUser, dobDB))
+		{
+			score = Integer.valueOf(XMLPropertyHandler.getValue(Constants.PARTICIPANT_DOB_PARTIAL));
+		}
+
 		return score;
 	}
 

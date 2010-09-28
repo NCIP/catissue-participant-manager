@@ -5,6 +5,7 @@ import java.util.Set;
 
 import edu.wustl.common.lookup.LookupLogic;
 import edu.wustl.common.lookup.LookupParameters;
+import edu.wustl.common.participant.domain.IParticipant;
 
 
 public interface IParticipantManagerLookupLogic extends LookupLogic
@@ -15,4 +16,8 @@ public interface IParticipantManagerLookupLogic extends LookupLogic
 	 * @throws Exception Exception.
 	 */
 	List lookup(LookupParameters params,Set<Long> csList) throws Exception;
+
+	void initParticipantCache() throws Exception;
+
+	void updatePartiicpantCache(IParticipant participant);
 }

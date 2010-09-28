@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import edu.wustl.common.exception.ApplicationException;
@@ -17,6 +18,7 @@ import edu.wustl.common.participant.domain.IParticipant;
 import edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
 import edu.wustl.common.participant.domain.ISite;
 import edu.wustl.common.participant.utility.Constants;
+import edu.wustl.common.participant.utility.ParticipantCache;
 import edu.wustl.common.participant.utility.ParticipantManagerException;
 import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.util.XMLPropertyHandler;
@@ -26,6 +28,7 @@ import edu.wustl.patientLookUp.domain.PatientInformation;
 import edu.wustl.patientLookUp.lookUpServiceBizLogic.PatientInfoLookUpService;
 import edu.wustl.patientLookUp.queryExecutor.SQLQueryExecutorImpl;
 import edu.wustl.patientLookUp.util.PatientLookupException;
+import edu.wustl.patientLookUp.util.Utility;
 
 public class ParticipantLookupLogicWithDynamicCutOff implements IParticipantManagerLookupLogic
 {
@@ -187,11 +190,18 @@ public class ParticipantLookupLogicWithDynamicCutOff implements IParticipantMana
 		JDBCDAO jdbcDAO = null;
 		try
 		{
+			Map<Long, PatientInformation>matchedParticipantList = ParticipantCache.getAllParticipants();
+			List listOfParticipants = new ArrayList();
+			listOfParticipants.addAll(matchedParticipantList.values());
 			jdbcDAO = ParticipantManagerUtility.getJDBCDAO();
 			final edu.wustl.patientLookUp.queryExecutor.IQueryExecutor queryExecutor = new SQLQueryExecutorImpl(
 					jdbcDAO);
-			final List patientInfoList = patientLookupObj.patientLookupService(patientInfoInput,
-					queryExecutor, cutoffPoints, maxNoOfParticipantsToReturn);
+			Utility.calculateScoreForDynamicAlgo(listOfParticipants, patientInfoInput);
+//			Utility.sortListByScore(listOfParticipants);
+			final List patientInfoList = Utility.processMatchingListForFilteration(listOfParticipants,
+					cutoffPoints, maxNoOfParticipantsToReturn);
+//			final List patientInfoList = patientLookupObj.patientLookupService(patientInfoInput,
+//					queryExecutor, cutoffPoints, maxNoOfParticipantsToReturn);
 			if (patientInfoList != null && !patientInfoList.isEmpty())
 			{
 				for (int i = 0; i < patientInfoList.size(); i++)
@@ -278,5 +288,15 @@ public class ParticipantLookupLogicWithDynamicCutOff implements IParticipantMana
 			}
 		}
 		return matchingPartisList;
+	}
+
+	public void initParticipantCache() throws Exception
+	{
+		ParticipantCache.init();
+	}
+
+	public void updatePartiicpantCache(IParticipant participant)
+	{
+		ParticipantCache.updateCache(participant);
 	}
 }

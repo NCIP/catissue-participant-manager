@@ -240,4 +240,14 @@ public class ParticipantLookupLogic implements IParticipantManagerLookupLogic
 		}
 		return matchingPartisList;
 	}
+
+	public void initParticipantCache() throws Exception {
+		// TODO Auto-generated method stub
+
+	}
+
+	public void updatePartiicpantCache(IParticipant participant) {
+		// TODO Auto-generated method stub
+
+	}
 }

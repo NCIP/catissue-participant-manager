@@ -57,7 +57,7 @@ public class SQLQueryExecutorImpl extends AbstractQueryExecutor
 			List list = dao.executeQuery(fetchByLNameQry, columnValueBeans);
 			if (!list.isEmpty())
 			{
-				patientInformationList = populatePatientInfo(list);
+				patientInformationList = ParticipantManagerUtility.populatePatientInfo(list);
 			}
 		}
 		catch (Exception e)
@@ -97,7 +97,7 @@ public class SQLQueryExecutorImpl extends AbstractQueryExecutor
 			List list = dao.executeQuery(fetchByMetaPhoneQry, columnValueBeans);
 			if (!list.isEmpty())
 			{
-				patientInformationList = populatePatientInfo(list);
+				patientInformationList = ParticipantManagerUtility.populatePatientInfo(list);
 			}
 		}
 		catch (Exception e)
@@ -151,7 +151,7 @@ public class SQLQueryExecutorImpl extends AbstractQueryExecutor
 
 			if (!list.isEmpty())
 			{
-				patientInformationList = populatePatientInfo(list);
+				patientInformationList = ParticipantManagerUtility.populatePatientInfo(list);
 			}
 		}
 		catch (Exception e)
@@ -202,7 +202,7 @@ public class SQLQueryExecutorImpl extends AbstractQueryExecutor
 
 			if (!list.isEmpty())
 			{
-				patientInformationList = populatePatientInfo(list);
+				patientInformationList = ParticipantManagerUtility.populatePatientInfo(list);
 			}
 		}
 		catch (Exception e)
@@ -227,83 +227,83 @@ public class SQLQueryExecutorImpl extends AbstractQueryExecutor
 		return patientInformationList;
 	}
 
-	/**
-	 * @param list - matched patient information list.
-	 * @return List of PatientInformation objects.
-	 * @throws PatientLookupException - throws PatientLookupException
-	 */
-	private List<PatientInformation> populatePatientInfo(List list) throws PatientLookupException
-	{
-		PatientInformation patientInfo = null;
-		List<PatientInformation> patientInfoList = new LinkedList<PatientInformation>();
-		try
-		{
-			for (int i = 0; i < list.size(); i++)
-			{
-				IParticipant participant = (IParticipant) list.get(i);
-				Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> participantInfoMedIdCol = null;
-				Collection<String> participantMedIdCol = null;
-				if (participant != null)
-				{
-					patientInfo = new PatientInformation();
-					patientInfo.setId(participant.getId());
-					patientInfo.setLastName(participant.getLastName());
-					patientInfo.setFirstName(participant.getFirstName());
-					patientInfo.setMiddleName(participant.getMiddleName());
-					if (participant.getBirthDate() != null
-							&& !"".equals(participant.getBirthDate()))
-					{
-						patientInfo.setDob((Date) participant.getBirthDate());
-					}
-					if ((participant.getDeathDate()) != null
-							&& !("".equals(participant.getDeathDate())))
-					{
-						patientInfo.setDeathDate((Date) participant.getDeathDate());
-					}
-					patientInfo.setVitalStatus(participant.getVitalStatus());
-
-					patientInfo.setActivityStatus(participant.getActivityStatus());
-					patientInfo.setGender(participant.getGender());
-					patientInfo.setSsn(participant.getSocialSecurityNumber());
-					if (participant.getSocialSecurityNumber() != null
-							&& !("".equals(participant.getSocialSecurityNumber())))
-					{
-						String[] ssn = (participant.getSocialSecurityNumber()).split("-");
-						patientInfo.setSsn(ssn[0] + ssn[1] + ssn[2]);
-					}
-
-					participantInfoMedIdCol = participant
-							.getParticipantMedicalIdentifierCollection();
-					if (participantInfoMedIdCol != null && !participantInfoMedIdCol.isEmpty())
-					{
-						Iterator iterator = participantInfoMedIdCol.iterator();
-						participantMedIdCol = new ArrayList<String>();
-						while (iterator.hasNext())
-						{
-							IParticipantMedicalIdentifier<IParticipant, ISite> participantMedId = (IParticipantMedicalIdentifier<IParticipant, ISite>) iterator
-									.next();
-							if (participantMedId.getMedicalRecordNumber() != null
-									&& !"".equals(participantMedId.getMedicalRecordNumber()))
-							{
-								participantMedIdCol.add(participantMedId.getMedicalRecordNumber());
-								participantMedIdCol.add(String.valueOf(participantMedId.getSite()
-										.getId()));
-								participantMedIdCol.add(participantMedId.getSite().getName());
-							}
-						}
-					}
-					patientInfo.setParticipantMedicalIdentifierCollection(participantMedIdCol);
-					patientInfoList.add(patientInfo);
-				}
-			}
-		}
-		catch (Exception e)
-		{
-			Logger.out.info(e.getMessage(), e);
-			throw new PatientLookupException(e.getMessage(), e);
-		}
-		return patientInfoList;
-	}
+//	/**
+//	 * @param list - matched patient information list.
+//	 * @return List of PatientInformation objects.
+//	 * @throws PatientLookupException - throws PatientLookupException
+//	 */
+//	private List<PatientInformation> populatePatientInfo(List list) throws PatientLookupException
+//	{
+//		PatientInformation patientInfo = null;
+//		List<PatientInformation> patientInfoList = new LinkedList<PatientInformation>();
+//		try
+//		{
+//			for (int i = 0; i < list.size(); i++)
+//			{
+//				IParticipant participant = (IParticipant) list.get(i);
+//				Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> participantInfoMedIdCol = null;
+//				Collection<String> participantMedIdCol = null;
+//				if (participant != null)
+//				{
+//					patientInfo = new PatientInformation();
+//					patientInfo.setId(participant.getId());
+//					patientInfo.setLastName(participant.getLastName());
+//					patientInfo.setFirstName(participant.getFirstName());
+//					patientInfo.setMiddleName(participant.getMiddleName());
+//					if (participant.getBirthDate() != null
+//							&& !"".equals(participant.getBirthDate()))
+//					{
+//						patientInfo.setDob((Date) participant.getBirthDate());
+//					}
+//					if ((participant.getDeathDate()) != null
+//							&& !("".equals(participant.getDeathDate())))
+//					{
+//						patientInfo.setDeathDate((Date) participant.getDeathDate());
+//					}
+//					patientInfo.setVitalStatus(participant.getVitalStatus());
+//
+//					patientInfo.setActivityStatus(participant.getActivityStatus());
+//					patientInfo.setGender(participant.getGender());
+//					patientInfo.setSsn(participant.getSocialSecurityNumber());
+//					if (participant.getSocialSecurityNumber() != null
+//							&& !("".equals(participant.getSocialSecurityNumber())))
+//					{
+//						String[] ssn = (participant.getSocialSecurityNumber()).split("-");
+//						patientInfo.setSsn(ssn[0] + ssn[1] + ssn[2]);
+//					}
+//
+//					participantInfoMedIdCol = participant
+//							.getParticipantMedicalIdentifierCollection();
+//					if (participantInfoMedIdCol != null && !participantInfoMedIdCol.isEmpty())
+//					{
+//						Iterator iterator = participantInfoMedIdCol.iterator();
+//						participantMedIdCol = new ArrayList<String>();
+//						while (iterator.hasNext())
+//						{
+//							IParticipantMedicalIdentifier<IParticipant, ISite> participantMedId = (IParticipantMedicalIdentifier<IParticipant, ISite>) iterator
+//									.next();
+//							if (participantMedId.getMedicalRecordNumber() != null
+//									&& !"".equals(participantMedId.getMedicalRecordNumber()))
+//							{
+//								participantMedIdCol.add(participantMedId.getMedicalRecordNumber());
+//								participantMedIdCol.add(String.valueOf(participantMedId.getSite()
+//										.getId()));
+//								participantMedIdCol.add(participantMedId.getSite().getName());
+//							}
+//						}
+//					}
+//					patientInfo.setParticipantMedicalIdentifierCollection(participantMedIdCol);
+//					patientInfoList.add(patientInfo);
+//				}
+//			}
+//		}
+//		catch (Exception e)
+//		{
+//			Logger.out.info(e.getMessage(), e);
+//			throw new PatientLookupException(e.getMessage(), e);
+//		}
+//		return patientInfoList;
+//	}
 
 	public void fetchRegDateFacilityAndMRNOfPatient(List<PatientInformation> patientMatchingList)
 			throws PatientLookupException
