@@ -235,6 +235,27 @@ public class Utility
 		ScoreCalculator scoreCalculator = new ScoreCalculator();
 		for (int i = 0; i < matchingPatientList.size(); i++)
 		{
+
+			PatientInformation dbPatientInfo = (PatientInformation) matchingPatientList.get(i);
+			score = scoreCalculator.calculateScore(userPatientInfo, dbPatientInfo);
+			dbPatientInfo.setMatchingScore(score);
+		}
+	}
+
+	/**
+	 * This function will calculate the score value by matching the patient information in the list with the
+	 *  user entered patient information
+	 * @param matchingPatientList : matchingPatientList
+	 * @param userPatientInfo  :PatientInformation object
+	 */
+	public static void calculateScoreForDynamicAlgo(List<PatientInformation> matchingPatientList,
+			PatientInformation userPatientInfo)
+	{
+		int score = 0;
+		ScoreCalculatorForOldAlgo scoreCalculator = new ScoreCalculatorForOldAlgo();
+		for (int i = 0; i < matchingPatientList.size(); i++)
+		{
+
 			PatientInformation dbPatientInfo = (PatientInformation) matchingPatientList.get(i);
 			score = scoreCalculator.calculateScore(userPatientInfo, dbPatientInfo);
 			dbPatientInfo.setMatchingScore(score);

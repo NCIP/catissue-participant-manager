@@ -4,6 +4,7 @@ package edu.wustl.common.participant.utility;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -787,7 +788,7 @@ public class ParticipantManagerUtility
 							.getMedicalRecordNumber());
 					participantInfoMedicalIdentifierCollection.add(String
 							.valueOf((participantMedicalIdentifier.getSite()).getId()));
-					//participantInfoMedicalIdentifierCollection.add(((ISite) participantMedicalIdentifier.getSite()).getName());
+					participantInfoMedicalIdentifierCollection.add(((ISite) participantMedicalIdentifier.getSite()).getName());
 				}
 			}
 			while (true);
@@ -1075,5 +1076,103 @@ public class ParticipantManagerUtility
 			throw new ApplicationException(null, e, e.getMessage());
 		}
 		return participantManagerImplObj.getParticipantPICordinators(participantId);
+	}
+
+	/**
+	 * @param list - matched patient information list.
+	 * @return List of PatientInformation objects.
+	 * @throws PatientLookupException - throws PatientLookupException
+	 */
+	public static List<PatientInformation> populatePatientInfo(List list) throws PatientLookupException
+	{
+		PatientInformation patientInfo = null;
+		List<PatientInformation> patientInfoList = new LinkedList<PatientInformation>();
+		try
+		{
+			for (int i = 0; i < list.size(); i++)
+			{
+				IParticipant participant = (IParticipant) list.get(i);
+				Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> participantInfoMedIdCol = null;
+				Collection<String> participantMedIdCol = null;
+				if (participant != null)
+				{
+					patientInfo = new PatientInformation();
+					patientInfo.setId(participant.getId());
+					patientInfo.setLastName(participant.getLastName());
+					patientInfo.setFirstName(participant.getFirstName());
+					patientInfo.setMiddleName(participant.getMiddleName());
+					if (participant.getBirthDate() != null
+							&& !"".equals(participant.getBirthDate()))
+					{
+						patientInfo.setDob((Date) participant.getBirthDate());
+					}
+					if ((participant.getDeathDate()) != null
+							&& !("".equals(participant.getDeathDate())))
+					{
+						patientInfo.setDeathDate((Date) participant.getDeathDate());
+					}
+					patientInfo.setVitalStatus(participant.getVitalStatus());
+
+					patientInfo.setActivityStatus(participant.getActivityStatus());
+					patientInfo.setGender(participant.getGender());
+					patientInfo.setSsn(participant.getSocialSecurityNumber());
+					if (participant.getSocialSecurityNumber() != null
+							&& !("".equals(participant.getSocialSecurityNumber())))
+					{
+						String[] ssn = (participant.getSocialSecurityNumber()).split("-");
+						patientInfo.setSsn(ssn[0] + ssn[1] + ssn[2]);
+					}
+
+					participantInfoMedIdCol = participant
+							.getParticipantMedicalIdentifierCollection();
+					if (participantInfoMedIdCol != null && !participantInfoMedIdCol.isEmpty())
+					{
+						Iterator iterator = participantInfoMedIdCol.iterator();
+						participantMedIdCol = new ArrayList<String>();
+						while (iterator.hasNext())
+						{
+							IParticipantMedicalIdentifier<IParticipant, ISite> participantMedId = (IParticipantMedicalIdentifier<IParticipant, ISite>) iterator
+									.next();
+							if (participantMedId.getMedicalRecordNumber() != null
+									&& !"".equals(participantMedId.getMedicalRecordNumber()))
+							{
+								participantMedIdCol.add(participantMedId.getMedicalRecordNumber());
+								participantMedIdCol.add(String.valueOf(participantMedId.getSite()
+										.getId()));
+								participantMedIdCol.add(participantMedId.getSite().getName());
+							}
+						}
+					}
+					patientInfo.setParticipantMedicalIdentifierCollection(participantMedIdCol);
+					Collection<String> participantInfoRaceCollection = new HashSet<String>();
+					Collection participantRaceCollection = participant.getRaceCollection();
+					if (participantRaceCollection != null)
+					{
+						Iterator itr = participantRaceCollection.iterator();
+						do
+						{
+							if (!itr.hasNext())
+							{
+								break;
+							}
+							IRace<IParticipant> race = (IRace<IParticipant>) itr.next();
+							if (race != null)
+							{
+								participantInfoRaceCollection.add(race.getRaceName());
+							}
+						}
+						while (true);
+					}
+					patientInfo.setRaceCollection(participantInfoRaceCollection);
+					patientInfoList.add(patientInfo);
+				}
+			}
+		}
+		catch (Exception e)
+		{
+			Logger.out.info(e.getMessage(), e);
+			throw new PatientLookupException(e.getMessage(), e);
+		}
+		return patientInfoList;
 	}
 }

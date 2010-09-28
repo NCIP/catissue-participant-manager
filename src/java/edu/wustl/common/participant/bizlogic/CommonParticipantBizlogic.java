@@ -1,7 +1,6 @@
 
 package edu.wustl.common.participant.bizlogic;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -33,7 +32,6 @@ import edu.wustl.dao.QueryWhereClause;
 import edu.wustl.dao.condition.EqualClause;
 import edu.wustl.dao.exception.AuditException;
 import edu.wustl.dao.exception.DAOException;
-import edu.wustl.dao.query.generator.ColumnValueBean;
 
 /**
  * The Class CommonParticipantBizlogic.
@@ -102,31 +100,44 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 		{
 			final IParticipantMedicalIdentifier<IParticipant, ISite> pmIdentifier = pmiIterator
 					.next();
-			if (pmIdentifier.getSite() != null && pmIdentifier.getSite().getId() == null
-					&& pmIdentifier.getSite().getName() != null)
+			if (pmIdentifier.getSite() != null && (pmIdentifier.getSite().getId() != null
+					|| pmIdentifier.getSite().getName() != null))
 			{
 				final ISite site = pmIdentifier.getSite();
 				final String sourceObjectName = ISite.class.getName();
-				final String[] selectColumnName = {"id"};
+				final String[] selectColumnName ={"id","name"};
 				final QueryWhereClause queryWhereClause = new QueryWhereClause(sourceObjectName);
-				//queryWhereClause.addCondition(new EqualClause("name", site.getName()));
-				queryWhereClause.addCondition(new EqualClause("name", '?'));
-				List<ColumnValueBean> columnValueBeans = new ArrayList<ColumnValueBean>();
-				columnValueBeans.add(new ColumnValueBean(site.getName()));
-				/*final List list = dao
-						.retrieve(sourceObjectName, selectColumnName, queryWhereClause);*/
-				final List list = ((HibernateDAO) dao).retrieve(sourceObjectName, selectColumnName,
-						queryWhereClause, columnValueBeans);
+			//	List<ColumnValueBean> columnValueBeans = new ArrayList<ColumnValueBean>();
+				String errMsg = "";
+				String errKey = "";
+				if(site.getName() != null)
+				{
+					errKey = "invalid.site.name";
+					errMsg = site.getName();
+					queryWhereClause.addCondition(new EqualClause("name", site.getName()));
+				//	columnValueBeans.add(new ColumnValueBean("name",site.getName()));
+				}
+				else
+				{
+					errKey = "errors.item.format";
+					errMsg = "Site Identifier";
+					queryWhereClause.addCondition(new EqualClause("id", site.getId()));
+				//	columnValueBeans.add(new ColumnValueBean("id",site.getId()));
+				}
 
+				final List list = ((HibernateDAO) dao).retrieve(sourceObjectName, selectColumnName,
+						queryWhereClause);
+				
 				if (!list.isEmpty())
 				{
-					site.setId((Long) list.get(0));
+					final Object[] valArr = (Object[]) list.get(0);
+					site.setId((Long) valArr[0]);
+					site.setName((String)valArr[1]);
 					pmIdentifier.setSite(site);
 				}
 				else
 				{
-					throw new BizLogicException(ErrorKey.getErrorKey("invalid.site.name"), null,
-							site.getName());
+					throw new BizLogicException(ErrorKey.getErrorKey(errKey), null,errMsg);
 				}
 			}
 		}
@@ -210,7 +221,7 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 
 		final String birthDate = Utility.parseDateToString(participant.getBirthDate(),
 				CommonServiceLocator.getInstance().getDatePattern());
-		if (!validator.isEmpty(birthDate))
+		if (!Validator.isEmpty(birthDate))
 		{
 			errorKeyForBirthDate = validator.validateDate(birthDate, true);
 			if (errorKeyForBirthDate.trim().length() > 0)
@@ -222,7 +233,7 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 
 		final String deathDate = Utility.parseDateToString(participant.getDeathDate(),
 				CommonServiceLocator.getInstance().getDatePattern());
-		if (!validator.isEmpty(deathDate))
+		if (!Validator.isEmpty(deathDate))
 		{
 			errorKeyForDeathDate = validator.validateDate(deathDate, true);
 			if (errorKeyForDeathDate.trim().length() > 0)
@@ -234,12 +245,12 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 
 		if (participant.getVitalStatus() == null || !participant.getVitalStatus().equals("Dead"))
 		{
-			if (!validator.isEmpty(deathDate))
+			if (!Validator.isEmpty(deathDate))
 			{
 				throw new BizLogicException(null, null, "participant.invalid.enddate", "");
 			}
 		}
-		if ((!validator.isEmpty(birthDate) && !validator.isEmpty(deathDate))
+		if ((!Validator.isEmpty(birthDate) && !Validator.isEmpty(deathDate))
 				&& (errorKeyForDeathDate.trim().length() == 0 && errorKeyForBirthDate.trim()
 						.length() == 0))
 		{
@@ -255,7 +266,7 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 			}
 		}
 
-		if (!validator.isEmpty(participant.getSocialSecurityNumber()))
+		if (!Validator.isEmpty(participant.getSocialSecurityNumber()))
 		{
 			if (!validator.isValidSSN(participant.getSocialSecurityNumber()))
 			{
@@ -264,7 +275,7 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 			}
 		}
 
-		if (!validator.isEmpty(participant.getVitalStatus()))
+		if (!Validator.isEmpty(participant.getVitalStatus()))
 		{
 			final List vitalStatusList = CDEManager.getCDEManager().getPermissibleValueList(
 					Constants.CDE_VITAL_STATUS, null);
@@ -274,7 +285,7 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 			}
 		}
 
-		if (!validator.isEmpty(participant.getGender()))
+		if (!Validator.isEmpty(participant.getGender()))
 		{
 			final List genderList = CDEManager.getCDEManager().getPermissibleValueList(
 					Constants.CDE_NAME_GENDER, null);
@@ -285,7 +296,7 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 			}
 		}
 
-		if (!validator.isEmpty(participant.getSexGenotype()))
+		if (!Validator.isEmpty(participant.getSexGenotype()))
 		{
 			final List genotypeList = CDEManager.getCDEManager().getPermissibleValueList(
 					Constants.CDE_NAME_GENOTYPE, null);
@@ -335,7 +346,7 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 				if (race != null)
 				{
 					final String raceName = race.getRaceName();
-					if (!validator.isEmpty(raceName)
+					if (!Validator.isEmpty(raceName)
 							&& !Validator.isEnumeratedOrNullValue(raceList, raceName))
 					{
 						throw new BizLogicException(null, null, "participant.race.errMsg", "");
@@ -344,7 +355,7 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 			}
 		}
 
-		if (!validator.isEmpty(participant.getEthnicity()))
+		if (!Validator.isEmpty(participant.getEthnicity()))
 		{
 			final List ethnicityList = CDEManager.getCDEManager().getPermissibleValueList(
 					Constants.CDE_NAME_ETHNICITY, null);
