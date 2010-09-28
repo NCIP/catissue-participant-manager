@@ -215,7 +215,7 @@ public class EMPIParticipantListener implements MessageListener
 			final DefaultBizLogic bizlogic = new DefaultBizLogic();
 			partcipantObj = (IParticipant) bizlogic.retrieve(sourceObjectName, Long.valueOf(Long
 					.parseLong(clinPortalId)));
-			oldEMPIID = String.valueOf(partcipantObj.getEmpiId());
+			oldEMPIID = getOldEmpiId(clinPortalId);
 
 			loginName = XMLPropertyHandler.getValue(Constants.HL7_LISTENER_ADMIN_USER);
 			//loginName = Constants.CLINPORTAL_EMPI_ADMIN_LOGIN_ID;
@@ -337,7 +337,7 @@ public class EMPIParticipantListener implements MessageListener
 			processPartiMedIdColl(partiMedIdColl, partcipantObj);
 			participant = partcipantObj;
 			partcipantObj.setEmpiId(personUpi);
-			partcipantObj.setEmpiIdStatus(Constants.ACTIVITY_STATUS_ACTIVE);
+			partcipantObj.setEmpiIdStatus(Constants.EMPI_ID_CREATED);
 			partcipantObj.setParticipantMedicalIdentifierCollection(partiMedIdColl);
 			final CommonParticipantBizlogic bizlogic = new CommonParticipantBizlogic();
 			bizlogic.update(partcipantObj, participant, sessionData);
@@ -673,5 +673,47 @@ public class EMPIParticipantListener implements MessageListener
 		}
 		return validUser;
 	}
+
+	/**
+	 * Gets the old empi id.
+	 *
+	 * @param clinPortalId the clin portal id
+	 *
+	 * @return the permanent id
+	 *
+	 * @throws DAOException the DAO exception
+	 * @throws SQLException the SQL exception
+	 */
+	private String getOldEmpiId(final String clinPortalId) throws DAOException, SQLException
+	{
+		String oldEmpiID = null;
+		JDBCDAO jdbcdao = null;
+		try
+		{
+			jdbcdao = ParticipantManagerUtility.getJDBCDAO();
+			final LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
+			columnValueBeanList.add(new ColumnValueBean(clinPortalId));
+			final String query = "SELECT * FROM PARTICIPANT_EMPI_ID_MAPPING WHERE PERMANENT_PARTICIPANT_ID=? ORDER BY TEMPMRNDATE DESC";
+
+			List<Object> idList = jdbcdao.executeQuery(query, null,	columnValueBeanList);
+			if (null != idList && idList.size() > 0) {
+
+				if (null != idList.get(0)) {
+					Object obj = idList.get(0);
+					oldEmpiID = ((ArrayList) obj).get(2)
+							.toString();
+
+				}
+			}
+
+		}
+		finally
+		{
+
+			jdbcdao.closeSession();
+		}
+		return oldEmpiID;
+	}
+
 
 }

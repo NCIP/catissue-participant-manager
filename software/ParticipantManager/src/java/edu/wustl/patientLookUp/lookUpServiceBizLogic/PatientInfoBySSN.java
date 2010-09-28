@@ -42,14 +42,7 @@ public class PatientInfoBySSN
 			{
 				patientListBySSN = queryExecutor.executetQueryForSSN(patientInfo.getSsn(),
 						patientInfo.getProtocolIdSet(), patientInfo.getParticipantObjName());
-				if (patientListBySSN != null && patientListBySSN.size() > 0)
-				{
-					for (int index = 0; index < patientListBySSN.size(); index++)
-					{
-						patientDataMap.put(((patientListBySSN.get(index)).getId()).toString(),
-								patientListBySSN.get(index));
-					}
-				}
+				Utility.populatePatientDataMap(patientListBySSN, patientDataMap);
 				// if SSN exact SSN match not found perform the fuzzy match
 				ssnFuzzyMatch1(patientInfo, queryExecutor);
 				ssnFuzzyMatch2(patientInfo, queryExecutor);
@@ -100,15 +93,7 @@ public class PatientInfoBySSN
 			}
 			patientListTemp = queryExecutor.executetQueryForSSN(tempssnStr.toString(), patientInfo
 					.getProtocolIdSet(), patientInfo.getParticipantObjName());
-			if (patientListTemp != null && patientListTemp.size() > 0)
-			{
-				for (int index = 0; index < patientListTemp.size(); index++)
-				{
-					//patientDataMap.put((patientListTemp.get(index)).getUpi(), patientListTemp.get(index));
-					patientDataMap.put(((patientListTemp.get(index)).getId()).toString(),
-							patientListTemp.get(index));
-				}
-			}
+			Utility.populatePatientDataMap(patientListTemp, patientDataMap);
 			tempssnStr.delete(0, tempssnStr.length());
 		}
 
@@ -139,16 +124,9 @@ public class PatientInfoBySSN
 			{
 				charArray[i] = ++charArray[i];
 				tempssnStr.append(charArray);
-				patientListTemp = queryExecutor.executetQueryForSSN(tempssnStr.toString(),patientInfo.getProtocolIdSet(),patientInfo.getParticipantObjName());
-				if (patientListTemp != null && patientListTemp.size() > 0)
-				{
-					for (int index = 0; index < patientListTemp.size(); index++)
-					{
-						//patientDataMap.put((patientListTemp.get(index)).getUpi(), patientListTemp.get(index));
-						patientDataMap.put(((patientListTemp.get(index)).getId()).toString(),
-								patientListTemp.get(index));
-					}
-				}
+				patientListTemp = queryExecutor.executetQueryForSSN(tempssnStr.toString(),
+						patientInfo.getProtocolIdSet(), patientInfo.getParticipantObjName());
+				Utility.populatePatientDataMap(patientListTemp, patientDataMap);
 				charArray[i] = --charArray[i];
 			}
 			tempssnStr = tempssnStr.delete(0, tempssnStr.length());
@@ -156,16 +134,9 @@ public class PatientInfoBySSN
 			{
 				charArray[i] = --charArray[i];
 				tempssnStr.append(charArray);
-				patientListTemp = queryExecutor.executetQueryForSSN(tempssnStr.toString(),patientInfo.getProtocolIdSet(),patientInfo.getParticipantObjName());
-				if (patientListTemp != null && patientListTemp.size() > 0)
-				{
-					for (int index = 0; index < patientListTemp.size(); index++)
-					{
-						//patientDataMap.put((patientListTemp.get(index)).getUpi(), patientListTemp.get(index));
-						patientDataMap.put(((patientListTemp.get(index)).getId()).toString(),
-								patientListTemp.get(index));
-					}
-				}
+				patientListTemp = queryExecutor.executetQueryForSSN(tempssnStr.toString(),
+						patientInfo.getProtocolIdSet(), patientInfo.getParticipantObjName());
+				Utility.populatePatientDataMap(patientListTemp, patientDataMap);
 				charArray[i] = ++charArray[i];
 			}
 			tempssnStr = tempssnStr.delete(0, tempssnStr.length());

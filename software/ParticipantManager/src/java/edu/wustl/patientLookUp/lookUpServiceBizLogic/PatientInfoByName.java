@@ -57,18 +57,12 @@ public class PatientInfoByName
 								.getParticipantObjName());
 				matchedPatientsByName.addAll(matchedPatientsByMetaPhone);
 			}
+
 			Utility.calculateScore(matchedPatientsByName, patientInformation);
 			Utility.sortListByScore(matchedPatientsByName);
 			matchedPatientsByName = Utility.processMatchingListForFilteration(
 					matchedPatientsByName, threshold, maxNoOfRecords);
-			if (matchedPatientsByName != null && matchedPatientsByName.size() > 0)
-			{
-				for (int index = 0; index < matchedPatientsByName.size(); index++)
-				{
-					patientDataMap.put(String.valueOf((matchedPatientsByName.get(index)).getId()),
-							matchedPatientsByName.get(index));
-				}
-			}
+			Utility.populatePatientDataMap(matchedPatientsByName, patientDataMap);
 			matchedParticipantList.addAll(patientDataMap.values());
 			queryExecutor.fetchRegDateFacilityAndMRNOfPatient(matchedPatientsByName);
 			return matchedParticipantList;

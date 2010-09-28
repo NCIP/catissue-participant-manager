@@ -148,37 +148,12 @@ public class Utility
 			final List<PatientInformation> matchedPatientsBySSN,
 			final List<PatientInformation> matchedPatientsByMRN)
 	{
-		/*
-		List<PatientInformation> patientList = new ArrayList<PatientInformation>();
-
-		if (matchedPatientsByMRN != null && matchedPatientsByMRN.size() > 0)
-		{
-			patientList.addAll(matchedPatientsByMRN);
-		}
-		if (matchedPatientsBySSN != null && matchedPatientsBySSN.size() > 0)
-		{
-			patientList.addAll(matchedPatientsBySSN);
-		}
-		sortListByScore(patientList);
-		return patientList;
-
-		*/
-
 		List<PatientInformation> patientList = new ArrayList<PatientInformation>();
 		Map<String, PatientInformation> patientDataMap = new LinkedHashMap<String, PatientInformation>();
-		if (matchedPatientsByMRN != null && matchedPatientsByMRN.size() > 0)
-		{
-			for(int i=0;i<matchedPatientsByMRN.size();i++){
-				patientDataMap.put(String.valueOf(matchedPatientsByMRN.get(i).getId()), matchedPatientsByMRN.get(i));
-			}
 
-		}
-		if (matchedPatientsBySSN != null && matchedPatientsBySSN.size() > 0)
-		{
-			for(int i=0;i<matchedPatientsBySSN.size();i++){
-				patientDataMap.put(String.valueOf(matchedPatientsBySSN.get(i).getId()), matchedPatientsBySSN.get(i));
-			}
-		}
+		populatePatientDataMap(matchedPatientsByMRN, patientDataMap);
+		populatePatientDataMap(matchedPatientsBySSN, patientDataMap);
+
 		patientList.addAll(patientDataMap.values());
 		sortListByScore(patientList);
 		return patientList;
@@ -404,15 +379,46 @@ public class Utility
 
 
 
-	public static String compressLastName(String lastName){
-		StringBuffer lastNameCompressed=new StringBuffer();
-		String[] names = new String[2];
-		for(int i=0;i<lastName.length();i++){
-			char c=lastName.charAt(i);
-			if(!(c == ' ' || c == '\'' || c=='-' || c=='"')){
+	public static String compressLastName(String lastName)
+	{
+		StringBuffer lastNameCompressed = new StringBuffer();
+		for (int i = 0; i < lastName.length(); i++)
+		{
+			char c = lastName.charAt(i);
+			if (!(c == ' ' || c == '\'' || c == '-' || c == '"'))
+			{
 				lastNameCompressed.append(c);
 			}
 		}
 		return lastNameCompressed.toString();
+	}
+
+	/**
+	 * Method populates patientDataMap with matching patients
+	 * @param matchedPatients
+	 * @param patientDataMap
+	 */
+	public static void populatePatientDataMap(List<PatientInformation> matchedPatients,
+			Map<String, PatientInformation> patientDataMap)
+	{
+		if (matchedPatients != null && matchedPatients.size() > 0)
+		{
+			for (int i = 0; i < matchedPatients.size(); i++)
+			{
+				// In case of patient matching on EMPI DB the patient Id is null
+				// and for local patient matching upi(empi) is null
+				// so added if/else block to use the the available
+				// id/upi as the key for patientDataMap
+				if (matchedPatients.get(i).getId() != null)
+				{
+					patientDataMap.put(String.valueOf(matchedPatients.get(i).getId()),
+							matchedPatients.get(i));
+				}
+				else if (matchedPatients.get(i).getUpi() != null)
+				{
+					patientDataMap.put((matchedPatients.get(i)).getUpi(), matchedPatients.get(i));
+				}
+			}
+		}
 	}
 }

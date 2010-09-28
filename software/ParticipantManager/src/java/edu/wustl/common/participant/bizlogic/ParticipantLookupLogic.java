@@ -164,7 +164,9 @@ public class ParticipantLookupLogic implements IParticipantManagerLookupLogic
 					final DefaultLookupResult result = new DefaultLookupResult();
 					final IParticipant partcipantNew = (IParticipant) ParticipantManagerUtility
 							.getParticipantInstance();
+					if(null!=patientInfo.getId()){
 					partcipantNew.setId(patientInfo.getId());
+					}
 					partcipantNew.setLastName(patientInfo.getLastName());
 					partcipantNew.setFirstName(patientInfo.getFirstName());
 					partcipantNew.setMiddleName(patientInfo.getMiddleName());
