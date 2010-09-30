@@ -751,6 +751,7 @@ public class ParticipantManagerUtility
 			Set<Long> protocolIdSet)
 	{
 		PatientInformation patientInformation = new PatientInformation();
+		patientInformation.setId(participant.getId());
 		patientInformation.setLastName(participant.getLastName());
 		patientInformation.setFirstName(participant.getFirstName());
 		patientInformation.setMiddleName(participant.getMiddleName());
