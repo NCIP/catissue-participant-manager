@@ -1,6 +1,0 @@
-
-validate:pre:build:
-     [echo] Checking for existence of GLOBUS_LOCATION envrironment variable.
-     [echo] wscore.relative.dir = ws-core-4.0.3
-     [echo] GLOBUS_LOCATION not set, downloading and installing http://gforge.nci.nih.gov/svnroot/commonlibrary/trunk/techstack-2006/os-independent/ws-core-enum-4.0.3.zip
-    [unzip] Expanding: D:\ParticipentManager_BDA\ParticipentManager\software\target\download\ws-core-enum-4.0.3.zip into c:\apps\ParticipentManager-webapp
