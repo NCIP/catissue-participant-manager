@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<!-- bda-build-template version 1.2.0   -->
+<!-- bda-build-template version 1.7.4 -->
 <!--
-$Id: build.xml 1786 2009-06-30 18:44:27Z saksass $
-$HeadURL: http://gforge.nci.nih.gov/svnroot/automation/trunk/software/bda-build-template/software/build/build.xml $
+$Id: build.xml 3294 2010-08-31 14:17:31Z saksass $
+$HeadURL: http://gforge.nci.nih.gov/svnroot/automation/branches/automation-1.7.4/software/bda-build-template/software/build/build.xml $
 -->
 
 <project name="build-bda-template" default="build:all" basedir="." xmlns:ivy="antlib:org.apache.ivy.ant" xmlns:cs="antlib:com.puppycrawl.tools.checkstyle">
@@ -15,11 +15,12 @@ $HeadURL: http://gforge.nci.nih.gov/svnroot/automation/trunk/software/bda-build-
 	<!-- The project.properties stores properties that are shared between both build.xml and install.xml. Typically properties that are related to the distribution directories, or files. -->
 	<property file="local.properties" />
 	<property file="project.properties" />
-	<property name="properties.file" value="Install.properties"/>
+	<property name="properties.file" value="install.properties"/>
+	<property name="properties.file.location" location="${properties.file}"/>
 	<property name="upgrade.properties.file" value="upgrade.properties"/>
 	<echo message="Using properties file of ${properties.file}." />
 	<available file="${properties.file}" property="properties.file.exists" />
-	<fail unless="properties.file.exists" message="The properties.file ${properties.file} does not exist, please make sure that you pass in an accurate file name with the 'ant -Dproperties.file=somepath/somefile', otherwise the build will fail." />
+	<!--<fail unless="properties.file.exists" message="The properties.file ${properties.file} does not exist, please make sure that you pass in an accurate file name with the 'ant -Dproperties.file=somepath/somefile', otherwise the build will fail." /> -->
 
 	<replaceregexp file="${properties.file}" byline="true" match="^([\w\d.]+)=(.*[\w\d\/\{\}\\]+)[ \t]+\r*$" replace="\1=\2" />
 	<replaceregexp file="${properties.file}" byline="true" match="^([\w\d.]+)=[ \t]+(.*[\w\d\/\{\}\\]+)\r*$" replace="\1=\2" />
@@ -63,7 +64,6 @@ $HeadURL: http://gforge.nci.nih.gov/svnroot/automation/trunk/software/bda-build-
 
 
 	<!-- Ivy Related props -->
-	<property name="ivy.settings.file" value="ivy-settings.xml" />
 
 	<!-- Properties that relate to how to call build targets from sub-projects-->
 	<!-- Working directory passed to Ant tasks -->
@@ -79,6 +79,9 @@ $HeadURL: http://gforge.nci.nih.gov/svnroot/automation/trunk/software/bda-build-
 	<property name="ParticipantManager-webapp.build.target" value="dist" />
 
 	<!-- Maven comamnd line arguments, bda profile is inside profiles.xml that gets copied to ear folder before build to override exiting properties -->
+
+	<!-- Added to make sure that it works with both absolute and relative paths, this property is handed to sub-project scripts in absolute format. -->
+	<property name="jar-signing.keystore.abs-location" location="${jar-signing.keystore.location}"/>
 
 	<!-- Used by dist:*:prep to determin list of files to use for incremental build process.
 		Directory and files must be in svn to work.
@@ -127,6 +130,7 @@ $HeadURL: http://gforge.nci.nih.gov/svnroot/automation/trunk/software/bda-build-
 	<property name="ParticipantManager-webapp.file.name"  value="${ParticipantManager-webapp.name}.war"/>
 	<property name="ParticipantManager-webapp.src.dir" value="${ParticipantManager-webapp.base.dir}/src/web"/>
 
+	<property name="override.properties.delimiter" value=","/>
 
 	<!-- retrive ivy.jar.files then retrieve bda files and librarires -->
 	<condition property="commonlibrary.dir" value="">
@@ -139,27 +143,38 @@ $HeadURL: http://gforge.nci.nih.gov/svnroot/automation/trunk/software/bda-build-
 	<condition property="commonlibrary.dir" value="c:/">
 		<os family="windows" />
 	</condition>
-    
+
+	<condition property="local.cbiit-ivy-repo.dir" value="">
+		<or>
+		<os family="unix" />
+			<os family="mac" />
+		</or>
+	</condition>
+
+	<condition property="local.cbiit-ivy-repo.dir" value="c:/">
+		<os family="windows" />
+	</condition>
+
 	<property name="bda-download.file" value="bda-ivy-2.0.0-build.xml" />
-	
 	<!--
 	<mkdir dir="${bda-download.dir}" />
 	<property name="bda-download.src.url" value="http://gforge.nci.nih.gov/svnroot/automation/trunk/software/bda-download/${bda-download.file}" />
-     
 	<get src="${bda-download.src.url}" dest="${bda-download.dir}/${bda-download.file}" />
 	-->
-	
-	<!--
 	<ant inheritAll="false" inheritRefs="false" antfile="${bda-download.file}" target="retrieve-bda" dir="${bda-download.dir}">
 		<property name="bda.version" value="${bda.version}" />
 		<property name="bda-utils.dir" location="${bda-utils.dir}" />
 		<property name="lib.dir" location="${lib.dir}" />
 		<property name="software.dir" location="${software.dir}" />
 		<property name="commonlibrary.dir" location="${commonlibrary.dir}" />
+		<!-- Use below for old ivy repo -->
+		<!--<property name="ivy.settings.file" value="ivy-bda-settings.xml"/>-->
+		<!-- Use below for new ivy repo -->
+		<property name="ivy.settings.file" value="cbiit-ivy-bda-settings.xml"/>
 		<property name="target.dir" location="${target.dir}"/>
+		<property name="local.cbiit-ivy-repo.dir" value="${local.cbiit-ivy-repo.dir}"/>
 	</ant>
-	-->
-	
+
 	<!-- Paths -->
 	<path id="bda-utils.classpath">
 		<fileset dir="${bda-utils.dir}">
@@ -175,17 +190,31 @@ $HeadURL: http://gforge.nci.nih.gov/svnroot/automation/trunk/software/bda-build-
 	<!-- Task definitions -->
 	<taskdef resource="org/apache/ivy/ant/antlib.xml" uri="antlib:org.apache.ivy.ant" classpathref="ivy.classpath" />
 	<taskdef name="for" classname="net.sf.antcontrib.logic.ForTask" classpathref="bda-utils.classpath"/>
+	<taskdef resource="net/sf/antcontrib/antcontrib.properties" classpathref="bda-utils.classpath"/>
 
 	<!-- Includes- include BDA marcos -->
+	<if>
+		<equals arg1="${bda.debug}" arg2="true"/>
+		<then>
+			<echoproperties > <propertyset negate="yes" > <propertyref regex="passw" /> </propertyset> </echoproperties>
+		</then>
+	</if>
 	<import file="${bda-utils.dir}/bda-build-utils-${bda.version}.xml" />
 
 	<!-- Start logging -->
 	<mkdir dir="${log.dir}" />
 	<tstamp>
-		<format property="install.time" pattern="yyyy-MM-dd-HH-mm" />
+		<format property="install.time" pattern="yyyy-MM-dd-HH-mm-ss" />
 	</tstamp>
 	<record name="${log.dir}/install-${install.time}.log" action="start" />
 
+	<!-- Echo properties to catch AHP variables at build time-->
+	<if>
+		<equals arg1="${bda.debug}" arg2="true"/>
+		<then>
+			<echoproperties > <propertyset negate="yes" > <propertyref regex="passw" /> </propertyset> </echoproperties>
+		</then>
+	</if>
 	<!-- Fix first time build issue -->
 	<mkdir dir="${download.dir}"/>
 
@@ -193,7 +222,7 @@ $HeadURL: http://gforge.nci.nih.gov/svnroot/automation/trunk/software/bda-build-
 
 
 	<target name="diagnostics" description="diagnostics">
-		<echoproperties />
+		<echoproperties  > <propertyset negate="yes" > <propertyref regex="passw" /> </propertyset> </echoproperties>
 		<diagnostics />
 	</target>
 
@@ -273,14 +302,16 @@ $HeadURL: http://gforge.nci.nih.gov/svnroot/automation/trunk/software/bda-build-
 	</target>
 
 	<target name="validate:pre:build">
+		<mkdir dir="${download.dir}"/>
 		<validate-pre-build
 			/>
 	</target>
 
 	<target name="build:all" description="Builds all the sub projects, putting artifacts in the project level target directory, used by distribution targets to make distributions" depends="
-		validate:pre:build,
+
  		clean,
  		init,
+ 		keygen,
  		build:ParticipantManager-webapp
 		" >
 	</target>
@@ -301,30 +332,38 @@ $HeadURL: http://gforge.nci.nih.gov/svnroot/automation/trunk/software/bda-build-
 			<property name="dist.dir" value="${ParticipantManager-webapp.dist.dir}" />
 			<property name="env.GLOBUS_LOCATION" value="${env.GLOBUS_LOCATION}"/>
 			<property name="commonlibrary.dir" value="${commonlibrary.dir}"/>
+			<property name="local.cbiit-ivy-repo.dir" value="${local.cbiit-ivy-repo.dir}"/>
+			<!-- Pass in env property file, used by jar-signing -->
+			<property name="envpropertyfile" value="${properties.file.location}"/>
+			<!-- Need absolution location, relative path would fail in sub-project since file would not exist -->
+			<property name="jar-signing.keystore.abs-location" value="${jar-signing.keystore.abs-location}"/>
 		</ant>
 	</target>
 
 	<target name="dist" description="Makes all distributions: installer, upgrader and source" depends="
 		build:all,
- 		dist:installer,
- 		dist:upgrader,
  		dist:src
 		">
 	</target>
 
 	<target name="dist:src" description="Makes source distribution">
 		<!-- Add tasks here to zip up src into a distribution, may require some additoinal properties for distribution name" -->
+
+		<delete file="${dist.dir}/${ParticipantManager-src.zip.file}" />
+		<zip destfile="${dist.dir}/${ParticipantManager-src.zip.file}" basedir="${dist.exploded.dir}" />
+
 	</target>
 
 	<target name="dist:tools:retrieve" description="Downloads binary applications from commonlibrary repository" depends="
 		init,
  		dist:tools:retrieve:jboss,
- 		dist:tools:retrieve:jbosscp
+ 		dist:tools:retrieve:jbosscp,
+ 		dist:tools:retrieve:jboss-bindings
 		" >
 	</target>
 
 	<target name="dist:tools:retrieve:jbosscp" unless="jbosscp.tools.exists" description="Downloads JBOSS Cumulative Patch from binary repository and verifies checksum">
-		<echoproperties prefix="jbosscp"/>
+		<echoproperties  prefix="jbosscp"> <propertyset negate="yes" > <propertyref regex="passw" /> </propertyset> </echoproperties>
 		<if>
 			<isset property="jbosscp.src.url"/>
 			<then>
@@ -373,6 +412,12 @@ $HeadURL: http://gforge.nci.nih.gov/svnroot/automation/trunk/software/bda-build-
 			<fileset dir="${download.dir}">
 			</fileset>
 		</copy>
+		<if>
+			<equals arg1="${jar-signing.execution.time}" arg2="install"/>
+			<then>
+				<copy file="${jar-signing.keystore.abs-location}" todir="${dist.exploded.dir}"/>
+			</then>
+		</if>
 	</target>
 
 	<target name="dist:installer" depends="dist:installer:prep" description="Produces zip file based on installer distribution area. Zip is used by deploy:remote:* or external installations">
@@ -411,7 +456,12 @@ $HeadURL: http://gforge.nci.nih.gov/svnroot/automation/trunk/software/bda-build-
 			copy.tools.flag="Y"
 			default.target="upgrade"
 			/>
-
+		<if>
+			<equals arg1="${jar-signing.execution.time}" arg2="install"/>
+			<then>
+				<copy file="${jar-signing.keystore.abs-location}" todir="${dist.exploded.dir}"/>
+			</then>
+		</if>
 	</target>
 
 	<target name="dist:upgrader" depends="dist:upgrader:prep" description="Produces zip file based on installer distribution area. Zip is used by deploy:remote:* or external installations">
@@ -420,8 +470,8 @@ $HeadURL: http://gforge.nci.nih.gov/svnroot/automation/trunk/software/bda-build-
 		<copy todir="${dist.exploded.dir}" overwrite="true">
 			<fileset dir="${build.dir}">
 				<include name="upgrade.properties" />
-			</fileset>              
-		</copy>         
+			</fileset>
+		</copy>
 		<delete file="${dist.exploded.dir}/install.properties"/>
 		<replaceregexp file="${dist.exploded.dir}/upgrade.properties" byline="true" match="^(env.name)=.*" replace="\1=external" />
 
@@ -460,7 +510,7 @@ $HeadURL: http://gforge.nci.nih.gov/svnroot/automation/trunk/software/bda-build-
 				<include name="local.properties" />
 			</zipfileset>
 			-->
-		</zip>          
+		</zip>
 	</target>
 
 	<target name="dist:upgrade:tier:jboss" depends="dist:installer:prep">
@@ -478,7 +528,7 @@ $HeadURL: http://gforge.nci.nih.gov/svnroot/automation/trunk/software/bda-build-
 				<include name="properties.template" />
 				<include name="project.properties" />
 			</zipfileset>
-		</zip>          
+		</zip>
 	</target>
 
 	<target name="dist:upgrade:tier"
@@ -486,8 +536,8 @@ $HeadURL: http://gforge.nci.nih.gov/svnroot/automation/trunk/software/bda-build-
 		dist:upgrade:tier:db,
  		dist:upgrade:tier:jboss
 		"/>
-     
-	<target name="deploy:local:install" depends="build:all" description="Installs and configures the application and required binaries and re-creates the datbase  on the local machine. Used for developer desktops and ci environments.">
+
+	<target name="deploy:local:install" depends="build:all,dist:installer:prep" description="Installs and configures the application and required binaries and re-creates the datbase  on the local machine. Used for developer desktops and ci environments.">
 		<!--
 		  * Requires a database installation.
 		  * Will use the target from install.xml specified in ${install.target} (defaults to install unless passed in on command line).
@@ -496,7 +546,9 @@ $HeadURL: http://gforge.nci.nih.gov/svnroot/automation/trunk/software/bda-build-
 		  * This target will use differnt properties based on linux (linux-install.properties) or windows (windows-install.properties) installs.
 		  * It only supports using those properties files for now, so if you want to change install time properites edit these files.
 		-->
-
+		<deploy-local
+			target.name="${install.target}"
+			/>
 	</target>
 
 	<target name="deploy:local:upgrade" depends="build:all,dist:upgrader:prep" description="Upgrades and configures the application and database  on the local machine. Used for developer desktops and ci environments.">
@@ -548,7 +600,7 @@ $HeadURL: http://gforge.nci.nih.gov/svnroot/automation/trunk/software/bda-build-
 		build:all,
 		dist:upgrade:tier:db
 		">
-		<deploy-files 
+		<deploy-files
 			ssh.user="${db.ssh.server.username}"
 			ssh.host="${db.ssh.server.hostname}"
 			remote.directory.property.name="db.ssh.dir.temp"
@@ -561,7 +613,7 @@ $HeadURL: http://gforge.nci.nih.gov/svnroot/automation/trunk/software/bda-build-
 		build:all,
 		dist:upgrade:tier:jboss
 		">
-		<deploy-files 
+		<deploy-files
 			ssh.user="${jboss.ssh.server.username}"
 			ssh.host="${jboss.ssh.server.hostname}"
 			remote.directory.property.name="jboss.ssh.dir.temp"
@@ -576,13 +628,13 @@ $HeadURL: http://gforge.nci.nih.gov/svnroot/automation/trunk/software/bda-build-
 	<target name="report:grand" depends="dist:installer:prep" description="Generates target flow diagrams for build files">
 		<!-- Temporary fix to make grand work for install.xml -->
 
-		<report-grand 
-			build.file.location="build.xml" 
-			output.file.dir="${grand.rpt.dir}" 
+		<report-grand
+			build.file.location="build.xml"
+			output.file.dir="${grand.rpt.dir}"
 			output.file.name="generic-root-build.xml" />
-		<report-grand 
-			build.file.location="${dist.exploded.dir}/build.xml" 
-			output.file.dir="${grand.rpt.dir}" 
+		<report-grand
+			build.file.location="${dist.exploded.dir}/build.xml"
+			output.file.dir="${grand.rpt.dir}"
 			output.file.name="generic-root-install.xml" />
 	</target>
 
@@ -694,7 +746,7 @@ $HeadURL: http://gforge.nci.nih.gov/svnroot/automation/trunk/software/bda-build-
 			<arg line=" &quot;${selenium.report.dir}/${selenium.report.file}&quot;"/>
 			<arg line=" -timeout 30"/>
 			<arg line=" -log ${temp.dir}/selenium-debug.log"/>
-		</java> 
+		</java>
 		-->
 		<osfamily property="os.family" />
 		<if>
@@ -710,18 +762,18 @@ $HeadURL: http://gforge.nci.nih.gov/svnroot/automation/trunk/software/bda-build-
 		<selenese suite="${selenium.test.suite}" browser="${selenium.browser}" results="${selenium.report.dir}/${selenium.report.file}" multiWindow="falsE" timeoutInSeconds="60" port="${selenium.proxy.port}" startURL="${selenium.url}" />
 	</target>
 
-	<target name="ivy-resolve-all" depends="init:ivy" description="Downloads all libraries included in the ivy definition file from ivy into local lib directory">
+	<target name="report:ivy:bda" description="Runs ivy reports on all dependencies in the ivy defnintion file, also produces dependency diagrams" >
+		<property name="ivy.dep.file" value="${bda-download.dir}/ivy-bda-2.0.0.xml" />
+		<property name="test.lib.dir" location="${target.dir}/lib"/>
+		<mkdir dir="${test.lib.dir}"/>
+		<ivy:settings file="${ivy.settings.file}" />
 		<ivy:resolve refresh="true" />
-	</target>
-
-	<target name="report:ivy" description="Runs ivy reports on all dependencies in the ivy defnintion file, also produces dependency diagrams" depends="
-		ivy-resolve-all
-		">
+		<ivy:retrieve pattern="${test.lib.dir}/[conf]/[artifact]-[revision].[ext]" sync="true" />
 		<property name="ivy.report.dir" value="${reports.dir}/ivy" />
 		<delete dir="${ivy.report.dir}" />
 		<mkdir dir="${ivy.report.dir}" />
-		<ivy:report outputpattern="target/reports/ivy/[organisation]-[module]-[conf].[ext]" dot="true" graph="false" />
-		<util-dot-on-dir dot-file.dir="target/reports/ivy" />
+		<ivy:report outputpattern="../target/reports/ivy/[organisation]-[module]-[conf].[ext]" dot="true" graph="false" />
+		<util-dot-on-dir dot-file.dir="../target/reports/ivy" />
 	</target>
 
 	<target name="deploy:hot" depends="build:all" description="Hot deploys the deployment artifact">
@@ -758,13 +810,14 @@ $HeadURL: http://gforge.nci.nih.gov/svnroot/automation/trunk/software/bda-build-
 		-->
 		<mkdir dir="${user.home}/tmp"/>
 		<ivy-module-add2repo
+			ivy-repo.base.url="https://ncisvn.nci.nih.gov/svn/cbiit-ivy-repo/trunk"
 			ivy-repo.base.dir="${user.home}/tmp/ivy-repo"
-			ivy.add.org="ncicb"
-			ivy.add.module="ssaksa-test-module3"
-			ivy.add.version="0.1.0"
-			ivy.add.module.src.dir="${build.dir}"
-			ivy.add.module.src.file.list="build.xml"
-			ivy.add.xml.src.location="${build.dir}/install.xml"
+			ivy.add.org="gov.nih.nci.participant-manager"
+			ivy.add.module="participant-manager"
+			ivy.add.version="1.0"
+			ivy.add.module.src.dir="${local.repo.dir}"
+			ivy.add.module.src.file.list="ParticipantManager.jar"
+			ivy.add.xml.src.location="${local.repo.dir}/ivy.xml"
 			/>
 	</target>
 
@@ -773,9 +826,9 @@ $HeadURL: http://gforge.nci.nih.gov/svnroot/automation/trunk/software/bda-build-
 		<switch value="${database.type}">
 			<case value="oracle">
 				<property name="database.dialect" value="org.hibernate.dialect.OracleDialect"/>
-				<property name="database.driver.file" value="${bda-utils.dir}/ojdbc14-10.2.0.4.0.jar"/>
+				<property name="database.driver.file" value="${bda-utils.dir}/ojdbc14-10.2.0.3.0.jar"/>
 				<property name="database.driver" value="oracle.jdbc.driver.OracleDriver"/>
-				<property name="database.schema" value="${database.name}"/>
+				<property name="database.schema" value="${database.user}"/>
 			</case>
 			<case value="mysql">
 				<property name="database.dialect" value="org.hibernate.dialect.MySQLDialect"/>
@@ -785,7 +838,7 @@ $HeadURL: http://gforge.nci.nih.gov/svnroot/automation/trunk/software/bda-build-
 			</case>
 			<case value="postgresql">
 				<property name="database.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/>
-				<property name="database.driver.file" value="${bda-utils.dir}/postgresql-jdbc3-8.3-604.jar"/>
+				<property name="database.driver.file" value="${bda-utils.dir}/postgresql-8.3-603.jdbc3.jar"/>
 				<property name="database.driver" value="org.postgresql.Driver"/>
 				<property name="database.schema" value="public"/>
 			</case>
@@ -796,8 +849,8 @@ $HeadURL: http://gforge.nci.nih.gov/svnroot/automation/trunk/software/bda-build-
 		<path id="jdbc.driver.classpath">
 			<pathelement location="${database.driver.file}"/>
 		</path>
-	
-		<echoproperties prefix="database"/>
+
+		<echoproperties  prefix="database"> <propertyset negate="yes" > <propertyref regex="passw" /> </propertyset> </echoproperties>
 		<copy todir="${working.dir}/" filtering="true"  overwrite="true">
 			<fileset dir="${db.src.dir}">
 				<include name="**/db-upgrade/**/*"/>
@@ -841,23 +894,50 @@ $HeadURL: http://gforge.nci.nih.gov/svnroot/automation/trunk/software/bda-build-
 	</target>
 
 	<target name="report:erd">
-		<generate-erd   
-			schemaspy.jar="schemaspy-3.1.1.jar"
-			database.driver.jar="mysql-connector-java-5.0.5.jar"
-			/>                      
+		<generate-erd
+			schemaspy.jar="schemaspy-4.1.1.jar"
+			/>
 	</target>
 
 	<target name="report:uml">
 		<property name="uml.dir" value="${reports.dir}/uml"/>
 		<path id="ParticipantManager.classpath.ref">
 			<fileset dir="${lib.dir}/runtime">
-				<include name="**/*.jar" />     
-			</fileset>              
-		</path>         
-		<generate-uml   
-			uml.dir="${uml.dir}"    
+				<include name="**/*.jar" />
+			</fileset>
+		</path>
+		<generate-uml
+			uml.dir="${uml.dir}"
 			src.java.dir="${ParticipantManager-webapp.base.dir}/src/java"
 			uml.source.path="ParticipantManager.classpath.ref"
-			/>                      
+			/>
+	</target>
+
+	<target name="deploy:remote:upgrade:ahp" description="Installs and configures the application and required binaries and re-creates the datbase  on a remote machine. Used for NCI tiers (dev, qa, stg, prod)" >
+		<!--
+		  * Will use the target from install.xml specified in ${upgrade.target} (defaults to upgrade unless passed in on command line).
+		  * Requires specifying -Dproperties.file=@file@ on the command line to point installer to correct enviornment to install into.
+		  * Calls ant from exec task to ensure properties are do not carry over from current ant runtime and also to emulate a manual install, if you want properties to be used at install time they must be included in a proeprties file.
+		-->
+		<!-- Call macro to deploy files on desired server -->
+		<echoproperties  prefix="ssh"> <propertyset negate="yes" > <propertyref regex="passw" /> </propertyset> </echoproperties>
+		<deploy-files dist.file="${ParticipantManager-webapp.upgrade.zip.file}" />
+		<override-properties-prep
+			override.properties="${override.properties}"
+			override.properties.string.property.name="override.properties.string"
+			/>
+		<!-- SSH to machine ant run ant command line to install application -->
+		<remote-ssh remotesshcommand=". .bash_profile;cd ${ssh.dir.temp}; ant -Dproperties.file=${properties.file.name} -Dforce.reinstall=true ${override.properties.string} ${upgrade.target}" />
+	</target>
+
+	<target name="keygen">
+		<generate-jar-signing-keystore
+			/>
+	</target>
+
+	<target name="report:migrate-ivy">
+		<migrate-ivy-report
+			ivy.analyze.file="ivy-caintegrator2.xml"
+			/>
 	</target>
 </project>

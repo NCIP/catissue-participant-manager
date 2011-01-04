@@ -1,20 +1,20 @@
 ##############################################################
 #
-# $Id: properties.template 1780 2009-06-29 18:32:19Z saksass $
-# $HeadURL: http://gforge.nci.nih.gov/svnroot/automation/trunk/software/bda-build-template/software/build/properties.template $
+# $Id: properties.template 3082 2010-07-28 20:08:08Z saksass $
+# $HeadURL: http://gforge.nci.nih.gov/svnroot/automation/branches/automation-1.7.4/software/bda-build-template/software/build/properties.template $
 #
 #
-# bda-build-template version 1.2.0  
+# bda-build-template version 1.7.0 
 #
 # This properties file template for all .properties to adhere (The "interface")
-# 
+#
 ##############################################################
 ##############################
 ###  APPLICATION SETTINGS  ###
 ##############################
 # install/build.xml set application.base.path to correct path based on os type
-#application.base.path.linux=The base path where all files are stored for this application on linux. Example: ${user.home}/apps/clinportal_prototype-webapp
-#pplication.base.path.windows=The base path where all files are stored for this application on windows. Example: c:/apps/clinportal_prototype-webapp
+#application.base.path.linux=The base path where all files are stored for this application on linux. Example: ${user.home}/apps/ParticipantManager-webapp
+#pplication.base.path.windows=The base path where all files are stored for this application on windows. Example: c:/apps/ParticipantManager-webapp
 #application.base.path=The base directory where application/appserver related files will be stored.  Can be set or derived as above.
 #authentication.type=Used for setting up the login-config.xml. Acceptable values are ldap|db.
 #env.name=Name of environment: local, external, dev, qa, stg, prd, can be used in conditional execution of things.
@@ -45,29 +45,42 @@ jboss.home=This is the root of the jboss installation, can be specified or deriv
 jboss.server.hostname=The server name where jboss will be running. Example: localhost
 jboss.server.name=The jboss server instance name, $JBOSS_HOME/server/${jboss.server.name}. Example: default
 #jboss.web.user=The account name to log into the JBoss web consoles.  Example: admin
-#jboss.web.password=The password to the access the jboss web console and jmx console. Example: blueprint123!. The user is admin. 
+#jboss.web.password=The password to the access the jboss web console and jmx console. Example: blueprint123!. The user is admin.
 #jboss.java.opts=java options for starting jboss
 # If you want to use JBboss NCICB Standard port configurations, uncommment the lines below and comment out all the ports.  Be sure to pick a correct prot configuration (see  https://wiki.nci.nih.gov/x/0gqy)
 #jboss.ncicb-standard.port-config=(true/false) flag to determine whether to use NCICB ports or your own ports
 #jboss.server.ports.name=The name of the port configuration within the bindings file
-#jboss.cobraorb.port=
-#jboss.ejbinvoker.port=
-#jboss.hajndi.port=
-#jboss.hajrmi.port=
-#jboss.jms.port=
-#jboss.jmx-rmi.port=
-#jboss.messaging.port=
-#jboss.pooledha.port=
-#jboss.remoting.port=
-#jboss.server.bind.port=
+#jboss.cobraorb.port=Standard JBoss Port
+#jboss.ejbinvoker.port=Standard JBoss Port
+#jboss.hajndi.port=Standard JBoss Port
+#jboss.hajrmi.port=Standard JBoss Port
+#jboss.jmx-rmi.port=Standard JBoss Port
+#jboss.messaging.port=Standard JBoss Port
+#jboss.pooledha.port=Standard JBoss Port
+#jboss.server.bind.port=Standard JBoss Port
 #jboss.server.jndi.port=Port used to connect when shutting down jboss.
 #jboss.server.port=The port used to connect to the jboss instance via http.
-#jboss.server.rmi.port=
-#jboss.service.rmiobject.port=
-#jboss.service.rmiobject.port=
-#jboss.snmp.port=
-#jboss.snmp-trapd.port=
-#jboss.web.service.port=
+#jboss.server.rmi.port=Standard JBoss Port
+#jboss.service.rmiobject.port=Standard JBoss Port
+#jboss.service.rmiobject.port=Standard JBoss Port
+#jboss.snmp.port=Standard JBoss Port
+#jboss.snmp-trapd.port=Standard JBoss Port
+#jboss.web.service.port=Standard JBoss Port
+
+# not in jboss 5.1.0
+#jboss.remoting.port=Standard JBoss Port
+#jboss.jms.port=Standard JBoss Port
+
+# new ports with 5.1.0
+#jboss.unifiedinvoker.port=Standard JBoss Port
+#jboss.hajndi.auto.port=Standard JBoss Port
+#jboss.ssl.port=Standard JBoss Port
+#jboss.jms2.netty.port=Standard JBoss Port
+#jboss.jms2.netty-ssl.port=Standard JBoss Port
+#jboss.transaction.recovery.port=Standard JBoss Port
+#jboss.transaction.status.port=Standard JBoss Port
+#jboss.transaction.processid.port=Standard JBoss Port
+
 
 jboss.ssl.enable=A flag to determine where JBoss is configured with SSL, see https://wiki.nci.nih.gov/x/7xWy
 #jboss.ssl.keystore.location=The keystore file location, dir/filename recommend projectroot/software/common/security
@@ -79,11 +92,19 @@ jboss.ssl.enable=A flag to determine where JBoss is configured with SSL, see htt
 #jboss.external.ssl.host=Set this if you are using external hostnames for ssl, see https://wiki.nci.nih.gov/x/8hWy
 #jboss.external.ssl.port=Set this if you are using a different port with the external hostname above for ssl
 
+# Should be in the software/build for dev
+#jar-signing.keystore.location=Location of keystore file can include path or just file
+#jar-signing.keystore.password=password for above keystore
+#jar-signing.keystore.alias=alias of cert in keystore file
+# build if deploying at NCI, install if making a distribution for Cancer Center or false to disable
+#jar-signing.execution.time=
+# true for workstation, ci, dev, qa, false for prod ans stg
+#jar-signing.generate-selfsigned=
+
 ##############
 ### TOMCAT ###
 ##############
 # Ports used by JBoss. Must not conflict with other LSD applications. Check with BDA or Systems teamsf for acceptable values.
-#
 ##############
 
 ##############
