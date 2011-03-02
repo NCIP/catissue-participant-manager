@@ -1,11 +1,10 @@
 
 package edu.wustl.common.participant.domain;
 
-
 /**
  * The Interface IRace.
  */
-public interface IRace<T>
+public interface IRace<T extends IParticipant>
 {
 
 	/**

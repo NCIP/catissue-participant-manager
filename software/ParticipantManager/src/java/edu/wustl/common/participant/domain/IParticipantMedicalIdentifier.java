@@ -4,7 +4,7 @@ package edu.wustl.common.participant.domain;
 /**
  * The Interface IParticipantMedicalIdentifier.
  */
-public interface IParticipantMedicalIdentifier<T, S>
+public interface IParticipantMedicalIdentifier<P extends IParticipant, S extends ISite>
 {
 
 	/**
@@ -40,14 +40,14 @@ public interface IParticipantMedicalIdentifier<T, S>
 	 *
 	 * @param participant the new participant
 	 */
-	void setParticipant(T participant);
+	void setParticipant(P participant);
 
 	/**
 	 * Gets the site.
 	 *
 	 * @return the site
 	 */
-	S getSite();
+	ISite getSite();
 
 	/**
 	 * Sets the site.
