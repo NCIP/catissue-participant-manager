@@ -7,7 +7,7 @@ import java.util.Date;
 /**
  * The Interface IParticipant.
  */
-public interface IParticipant
+public interface IParticipant<R extends IRace, P extends IParticipantMedicalIdentifier>
 {
 
 	/**
@@ -113,14 +113,14 @@ public interface IParticipant
 	 *
 	 * @return the race collection
 	 */
-	Collection getRaceCollection();
+	Collection<R> getRaceCollection();
 
 	/**
 	 * Sets the race collection.
 	 *
 	 * @param raceCollection the new race collection
 	 */
-	public void setRaceCollection(Collection raceCollection);
+	public void setRaceCollection(Collection<R> raceCollection);
 
 	/**
 	 * Gets the ethnicity.
@@ -197,7 +197,7 @@ public interface IParticipant
 	 *
 	 * @return the participant medical identifier collection
 	 */
-	Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> getParticipantMedicalIdentifierCollection();
+	Collection<P> getParticipantMedicalIdentifierCollection();
 
 	/**
 	 * Sets the participant medical identifier collection.
@@ -205,7 +205,7 @@ public interface IParticipant
 	 * @param participantMedicalIdentifierCollection the new participant medical identifier collection
 	 */
 	void setParticipantMedicalIdentifierCollection(
-			Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> participantMedicalIdentifierCollection);
+			Collection<P> participantMedicalIdentifierCollection);
 
 	/**
 	 * Gets the meta phone code.
@@ -220,7 +220,5 @@ public interface IParticipant
 	 * @param metaPhoneCode the new meta phone code
 	 */
 	void setMetaPhoneCode(String metaPhoneCode);
-
-
 
 }

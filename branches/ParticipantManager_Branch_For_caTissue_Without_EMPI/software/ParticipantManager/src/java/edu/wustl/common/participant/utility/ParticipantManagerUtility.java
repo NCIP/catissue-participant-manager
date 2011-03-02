@@ -114,8 +114,8 @@ public class ParticipantManagerUtility
 
 		List<ColumnValueBean> columnValueBeans = new ArrayList<ColumnValueBean>();
 		columnValueBeans.add(new ColumnValueBean(facilityId));
-		List siteObject = bizLogic.retrieve(sourceObjectName, selectColumnNames, queryWhereClause,
-				columnValueBeans);
+		List siteObject = bizLogic.retrieve(sourceObjectName,"facilityId",new Long(facilityId));
+		//List siteObject = bizLogic.retrieve(sourceObjectName, selectColumnNames, queryWhereClause,columnValueBeans);
 
 		if (siteObject != null && siteObject.size() > 0)
 		{
@@ -198,8 +198,9 @@ public class ParticipantManagerUtility
 
 		List<ColumnValueBean> columnValueBeans = new ArrayList<ColumnValueBean>();
 		columnValueBeans.add(new ColumnValueBean(identifier));
-		List participantList = bizLogic.retrieve(sourceObjectName, null, queryWhereClause,
-				columnValueBeans);
+		List participantList=(List) bizLogic.retrieve(sourceObjectName, new Long(identifier));
+		//List participantList = bizLogic.retrieve(sourceObjectName, null, queryWhereClause,
+			//	columnValueBeans);
 		return (IParticipant) participantList.get(0);
 
 	}
@@ -797,23 +798,26 @@ public class ParticipantManagerUtility
 		patientInformation
 				.setParticipantMedicalIdentifierCollection(participantInfoMedicalIdentifierCollection);
 		Collection<String> participantInfoRaceCollection = new HashSet<String>();
-		Collection participantRaceCollection = participant.getRaceCollection();
+		Collection<IRace> participantRaceCollection = participant.getRaceCollection();
 		if (participantRaceCollection != null)
 		{
-			Iterator itr = participantRaceCollection.iterator();
+			for(IRace race : participantRaceCollection) {
+				participantInfoRaceCollection.add(race.getRaceName());
+			}
+			/*Iterator itr = participantRaceCollection.iterator();
 			do
 			{
 				if (!itr.hasNext())
 				{
 					break;
 				}
-				IRace<IParticipant> race = (IRace<IParticipant>) itr.next();
+				IRace race = (IRace<IParticipant>) itr.next();
 				if (race != null)
 				{
 					participantInfoRaceCollection.add(race.getRaceName());
 				}
 			}
-			while (true);
+			while (true);*/
 		}
 		patientInformation.setRaceCollection(participantInfoRaceCollection);
 
@@ -1146,23 +1150,26 @@ public class ParticipantManagerUtility
 					}
 					patientInfo.setParticipantMedicalIdentifierCollection(participantMedIdCol);
 					Collection<String> participantInfoRaceCollection = new HashSet<String>();
-					Collection participantRaceCollection = participant.getRaceCollection();
+					Collection<IRace> participantRaceCollection = participant.getRaceCollection();
 					if (participantRaceCollection != null)
 					{
-						Iterator itr = participantRaceCollection.iterator();
+						for(IRace race : participantRaceCollection) {
+							participantInfoRaceCollection.add(race.getRaceName());
+						}
+						/*Iterator itr = participantRaceCollection.iterator();
 						do
 						{
 							if (!itr.hasNext())
 							{
 								break;
 							}
-							IRace<IParticipant> race = (IRace<IParticipant>) itr.next();
+							IRace race = (IRace) itr.next();
 							if (race != null)
 							{
 								participantInfoRaceCollection.add(race.getRaceName());
 							}
 						}
-						while (true);
+						while (true);*/
 					}
 					patientInfo.setRaceCollection(participantInfoRaceCollection);
 					patientInfoList.add(patientInfo);
