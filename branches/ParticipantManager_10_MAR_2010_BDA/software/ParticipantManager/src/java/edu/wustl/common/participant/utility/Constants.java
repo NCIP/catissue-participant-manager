@@ -304,6 +304,40 @@ public class Constants
 
 	public static final String EMPI_ID_SUCCESS="eMPIIdSucess";
 
+	public static final String ZERO_MATCHES="ZERO_MATCHES";
 
+	public static final String RESOLVED = "Resolved";
+
+	public static final String UNRESOLVED = "Unresolved";
+
+	public static final String hl7EventType = "hl7EventType";
+
+	public static final String MERGE_MESSAGE = "mergeMessage";
+
+	public static final String NEW_EMPIID = "newEmpiId";
+
+	public static final String OLD_EMPIID = "oldEmpiId";
+
+	public static final String NEW_SITE = "newSite";
+
+	public static final String NEW_MRN = "newMRN";
+
+	public static final String PARTICIPANT_EMPIID = "empiId";
+
+	public static final String PROCESS_ERROR = "Error while processing the following participant merge messages\n";
+
+	public static final String DAO_ERROR = "Error while storing merge messages for the following participant merge messages\n";
+
+	public static final String PARTICIPANT_ERROR = "Unresolved :Error while getting the participant or storing merge messgage for following empiID : \n";
+
+	public static final String USER_NOT_EXIST_CLINPORTAL = "User for this empiID does not exist in ClinPortal.";
+
+	public static final String USECASE_NOTSUPPORTED = "Unresolved : Use case is not supported.";
+
+	public static final String SITE_ERROR = "Unresolved :Error while getting site or site is missing in DB.";
+
+	public static final String ERROR_PARTICIPANT_UPDATE = "Unresolved : Could not update participant.";
+
+	public static final String MRN_EXIST = "Unresolved:This MRN already exist for this participant.";
 
 }

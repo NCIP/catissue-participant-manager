@@ -1,9 +1,7 @@
 package edu.wustl.common.participant.bizlogic;
 
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -20,10 +18,12 @@ import edu.wustl.common.participant.domain.IParticipant;
 import edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
 import edu.wustl.common.participant.domain.IRace;
 import edu.wustl.common.participant.domain.ISite;
+import edu.wustl.common.participant.domain.IUser;
 import edu.wustl.common.participant.utility.Constants;
 import edu.wustl.common.participant.utility.ParticipantManagerException;
 import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.util.Utility;
+import edu.wustl.common.util.XMLPropertyHandler;
 import edu.wustl.common.util.global.ApplicationProperties;
 import edu.wustl.common.util.global.CommonServiceLocator;
 import edu.wustl.common.util.global.Status;
@@ -563,9 +563,9 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 	 */
 	public static void preUpdate(Object oldObj, Object obj,
 			SessionDataBean sessionDataBean) throws BizLogicException {
-		final IParticipant participant = (IParticipant) obj;
+		/*final IParticipant participant = (IParticipant) obj;
 		final IParticipant oldParticipant = (IParticipant) oldObj;
-		final String oldEMPIStatus = oldParticipant.getEmpiIdStatus();
+		final String oldEMPIStatus = oldParticipant.getEmpiIdStatus();*/
 
 		/*
 		 * if (ParticipantManagerUtility.isEMPIEnable(participant.getId()) &&
@@ -592,71 +592,63 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 	 */
 	public static void postUpdate(Object oldObj, Object currentObj,
 			SessionDataBean sessionDataBean, LinkedHashSet<Long> userIdSet)
-			throws BizLogicException, DAOException {
-
+			throws BizLogicException, DAOException
+	{
 		JDBCDAO jdbcdao = null;
-		String query = null;
-		String queryForStatusUpdate = "";
-		String temporaryParticipantId = "";
 		final IParticipant oldParticipant = (IParticipant) oldObj;
 		final IParticipant participant = (IParticipant) currentObj;
 
-		try {
+		try
+		{
 			jdbcdao = getJDBCDAO();
 			if (ParticipantManagerUtility.isEMPIEnable(participant.getId())
-					&& ParticipantManagerUtility.isParticipantEdited(
-							oldParticipant, participant)) {
+					&& ParticipantManagerUtility.isParticipantEdited(oldParticipant, participant))
+			{
+				// if user resolved match by selecting a record from the grid,
+				// then insert entry into PARTICIPANT_EMPI_ID_MAPPING table
+				// so that HL7 msg is sent with tmpMRN Id
+				if (null != participant.getGridValueSelected()
+						&& participant.getGridValueSelected().equals(Constants.YES)
+						&& null != oldParticipant.getEmpiId())
+				{
+					// Update PARTICIPANT_EMPI_ID_MAPPING table with tempMRN
+					ParticipantManagerUtility utility = new ParticipantManagerUtility();
+					utility.updateOldEMPIDetails(participant.getId(), oldParticipant.getEmpiId(),
+							jdbcdao);
 
-				// if user resolved match by selecting a record from the grid, then insert entry into PARTICIPANT_EMPI_ID_MAPPING table so that HL7 msg is sent with tmpMRN Id
-				if(null!=participant.getGridValueSelected()&&participant.getGridValueSelected().equals(Constants.YES)&&null!=oldParticipant.getEmpiId()){
-						temporaryParticipantId = participant.getId() + "T";
-						final LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
-						final LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
-						columnValueBeanList.add(new ColumnValueBean("PERMANENT_PARTICIPANT_ID",
-								participant.getId(), DBTypes.VARCHAR));
-						columnValueBeanList.add(new ColumnValueBean("TEMPARARY_PARTICIPANT_ID",
-								temporaryParticipantId, DBTypes.VARCHAR));
-						columnValueBeanList.add(new ColumnValueBean("OLD_EMPI_ID",
-								oldParticipant.getEmpiId(), DBTypes.VARCHAR));
-						columnValueBeanList.add(new ColumnValueBean("TEMPMRNDATE",new Timestamp(new Date().getTime())
-								, DBTypes.TIMESTAMP));
-						final String sql = "INSERT INTO PARTICIPANT_EMPI_ID_MAPPING VALUES(?,?,?,?)";
-						columnValueBeans.add(columnValueBeanList);
-						jdbcdao.executeUpdate(sql, columnValueBeans);
-
-						queryForStatusUpdate = "UPDATE CATISSUE_PARTICIPANT SET EMPI_ID_STATUS = 'PENDING' WHERE IDENTIFIER = "
-								+ participant.getId();
-						jdbcdao.executeUpdate(queryForStatusUpdate);
-						jdbcdao.commit();
+					utility.setEMPIIdStatus(participant.getId(), Constants.EMPI_ID_PENDING, jdbcdao);
+					jdbcdao.commit();
 				}
 
-					// to send for participant matching when status is CREATED
-					if (edu.wustl.common.participant.utility.Constants.EMPI_ID_CREATED
-							.equals(oldParticipant.getEmpiIdStatus())) {
-						regNewPatientToEMPI(participant, userIdSet);
-					}
+				// to send for participant matching when status is CREATED -- this check if
+				// done in the method, so removing from here
+				/*if (edu.wustl.common.participant.utility.Constants.EMPI_ID_CREATED
+						.equals(oldParticipant.getEmpiIdStatus())) {*/
+
+				// in case of normal edit flow the method must be executed and
+				// not when a match is selected
+				if (!(null != participant.getGridValueSelected() && participant
+						.getGridValueSelected().equals(Constants.YES)))
+				{
+					regNewPatientToEMPI(participant, userIdSet);
+				}
+				//}
 			}
-
-
-
 		}
-
-		catch (DAOException e) {
+		catch (DAOException e)
+		{
 			jdbcdao.rollback();
 			throw new DAOException(e.getErrorKey(), e, e.getMessage());
 		}
-
-
-		catch (Exception e) {
-			logger
-					.info("ERROR WHILE REGISTERING NEW PATIENT TO EMPI  ##############  \n");
+		catch (Exception e)
+		{
+			logger.info("ERROR WHILE REGISTERING NEW PATIENT TO EMPI  ##############  \n");
 			throw new BizLogicException(null, e, e.getMessage());
 		}
-
-		finally {
+		finally
+		{
 			jdbcdao.closeSession();
 		}
-
 	}
 
 	/**
@@ -670,124 +662,73 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 	 * @throws Exception
 	 *             the exception
 	 */
-	private static void regNewPatientToEMPI(IParticipant participant,
-			LinkedHashSet<Long> userIdSet) throws BizLogicException, Exception {
-
-		String permanentPartiId = null;
-		String query="";
+	private static void regNewPatientToEMPI(IParticipant participant, LinkedHashSet<Long> userIdSet)
+			throws BizLogicException, Exception
+	{
 		JDBCDAO jdbcdao = null;
-		String oldeMPIId = null;
-		String empIdStatus="";
-		oldeMPIId = participant.getEmpiId();
-		// tempararyPartiId = participant.getId() + "T";
-		String mrn = ParticipantManagerUtility.getMrnValue(participant
-				.getParticipantMedicalIdentifierCollection());
 
-		try {
-			jdbcdao = getJDBCDAO();
-			//get current empi Id status of the participant
-			query = "SELECT EMPI_ID_STATUS FROM CATISSUE_PARTICIPANT WHERE IDENTIFIER=?";
-			LinkedList<ColumnValueBean> colValueBeanList = new LinkedList<ColumnValueBean>();
-			colValueBeanList.add(new ColumnValueBean(
-					"IDENTIFIER", participant.getId(),
-					DBTypes.LONG));
-			List<Object> idList = jdbcdao.executeQuery(query, null,colValueBeanList);
-			if(null!=idList &&idList.size()>0){
-				if (null != idList.get(0)) {
-					Object obj = idList.get(0);
-					empIdStatus = ((ArrayList) obj).get(0)
-							.toString();
+		try
+		{
+			String mrn = ParticipantManagerUtility.getMrnValue(participant
+					.getParticipantMedicalIdentifierCollection());
+			if (ParticipantManagerUtility.isParticipantValidForEMPI(participant.getLastName(),
+					participant.getFirstName(), participant.getBirthDate(), participant
+							.getSocialSecurityNumber(), mrn))
+			{
+				String empIdStatus = "";
+				jdbcdao = getJDBCDAO();
+				//get current empi Id status of the participant
+				String query = "SELECT EMPI_ID_STATUS FROM CATISSUE_PARTICIPANT WHERE IDENTIFIER=?";
+				LinkedList<ColumnValueBean> colValueBeanList = new LinkedList<ColumnValueBean>();
+				colValueBeanList.add(new ColumnValueBean("IDENTIFIER", participant.getId(),
+						DBTypes.LONG));
+				List<Object> idList = jdbcdao.executeQuery(query, null, colValueBeanList);
+				if (null != idList && !idList.isEmpty())
+				{
+					if (null != idList.get(0))
+					{
+						Object obj = idList.get(0);
+						empIdStatus = ((ArrayList) obj).get(0).toString();
+					}
+				}
+
+				// Check if participant matches from CIDER are already received before
+				// for old participant before the edit happened -- Bug fixed 18824
+				LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
+				columnValueBeanList.add(new ColumnValueBean(participant.getId()));
+				query = "SELECT SEARCHED_PARTICIPANT_ID FROM MATCHED_PARTICIPANT_MAPPING "
+						+ "WHERE SEARCHED_PARTICIPANT_ID=?";
+				List<Object> partIdList = jdbcdao.executeQuery(query, null, columnValueBeanList);
+				boolean isOldMatchesPresent = false;
+				if (partIdList != null && !partIdList.isEmpty() && partIdList.get(0) != null
+						&& !((List) partIdList.get(0)).isEmpty())
+				{
+					isOldMatchesPresent = true;
+				}
+
+				// go for participant matching only when status is 'CREATED'
+				if (empIdStatus.equals(Constants.EMPI_ID_CREATED) || isOldMatchesPresent)
+				{
+					participant.setEmpiId("");
+
+					// Process participant for CIDER participant matching.
+					ParticipantManagerUtility.addParticipantToProcessMessageQueue(userIdSet,
+							participant.getId());
+					// sendHL7RegMes(participant, tempararyPartiId);
 				}
 			}
-
-		if (ParticipantManagerUtility.isParticipantValidForEMPI(participant
-				.getLastName(), participant.getFirstName(), participant
-				.getBirthDate(), participant.getSocialSecurityNumber(), mrn)) {
-
-			// go for participant matching only when status is 'CREATED'
-			if (empIdStatus.equals(Constants.EMPI_ID_CREATED)) {
-
-				participant.setEmpiId("");
-
-				// Process participant for CIDER participant matching.
-				ParticipantManagerUtility.addParticipantToProcessMessageQueue(
-						userIdSet, participant.getId());
-				// sendHL7RegMes(participant, tempararyPartiId);
-			}
 		}
-		}catch (DAOException e) {
+		catch (DAOException e)
+		{
 			jdbcdao.rollback();
 			throw new DAOException(e.getErrorKey(), e, e.getMessage());
 		}
-
-		finally {
+		finally
+		{
 			jdbcdao.closeSession();
 		}
 	}
 
-	/**
-	 * Map participant id.
-	 *
-	 * @param oldeMPIId
-	 *            the olde mpi id
-	 * @param permanentPartiId
-	 *            the permanent parti id
-	 * @param tempararyPartiId
-	 *            the temparary parti id
-	 *
-	 * @throws DAOException
-	 *             the DAO exception
-	 */
-	private static void mapParticipantId(String oldeMPIId,
-			String permanentPartiId, String tempararyPartiId)
-			throws DAOException {
-		JDBCDAO jdbcDao = null;
-		try {
-			final LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
-			final LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
-			columnValueBeanList.add(new ColumnValueBean(permanentPartiId));
-			columnValueBeanList.add(new ColumnValueBean(tempararyPartiId));
-			columnValueBeanList.add(new ColumnValueBean(oldeMPIId));
-			jdbcDao = ParticipantManagerUtility.getJDBCDAO();
-			final String sql = "INSERT INTO PARTICIPANT_EMPI_ID_MAPPING VALUES(?,?,?)";
-
-			columnValueBeans.add(columnValueBeanList);
-			jdbcDao.executeUpdate(sql, columnValueBeans);
-			jdbcDao.commit();
-		} catch (DAOException e) {
-			logger.info("ERROE WHILE UPDATING THE PARTICIPANT EMPI STATUS");
-			throw new DAOException(e.getErrorKey(), e, e.getMsgValues());
-		} finally {
-			jdbcDao.closeSession();
-		}
-	}
-
-	/**
-	 * Send h l7 reg mes.
-	 *
-	 * @param participant
-	 *            the participant
-	 * @param tempararyPartiId
-	 *            the temparary parti id
-	 *
-	 * @throws BizLogicException
-	 *             the biz logic exception
-	 * @throws Exception
-	 *             the exception
-	 */
-	private static void sendHL7RegMes(IParticipant participant,
-			String tempararyPartiId) throws BizLogicException, Exception {
-
-		// IParticipant participant = (IParticipant)
-		// ParticipantManagerUtility.getParticipantInstance();
-		// ((AbstractDomainObject)
-		// participant).setAllValues((AbstractActionForm) participantForm);
-		// participant.setId(participantForm.getId());
-
-		final EMPIParticipantRegistrationBizLogic eMPIPartiReg = new EMPIParticipantRegistrationBizLogic();
-		eMPIPartiReg.setTempMrnId(tempararyPartiId);
-		eMPIPartiReg.registerPatientToeMPI(participant);
-	}
 
 	/**
 	 * Gets the jDBCDAO.
@@ -806,5 +747,106 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 		return jdbcdao;
 	}
 
+	/**
+	 * Gets the participant.
+	 *
+	 * @param empiId the empi id
+	 *
+	 * @return the participant
+	 *
+	 * @throws BizLogicException the biz logic exception
+	 * @throws DAOException
+	 */
+	public IParticipant getParticipant(String empiId) throws BizLogicException, DAOException
+	{
+		IParticipant participant = null;
+		final String sourceObjectName = IParticipant.class.getName();
+		final String[] selectColumnName = { "id" };
+		final QueryWhereClause queryWhereClause = new QueryWhereClause(
+				sourceObjectName);
+		queryWhereClause.addCondition(new EqualClause(Constants.PARTICIPANT_EMPIID, '?'));
+		List<ColumnValueBean> columnValueBeans = new ArrayList<ColumnValueBean>();
+		columnValueBeans.add(new ColumnValueBean(empiId));
+		/*
+		 * final List list = dao .retrieve(sourceObjectName,
+		 * selectColumnName, queryWhereClause);
+		 */
+		final List list = this.retrieve(sourceObjectName, null, queryWhereClause, columnValueBeans);
+		if(!list.isEmpty()){
+			participant = (IParticipant) list.get(0);
+		}
+		return participant;
+	}
+
+	/**
+	 * Gets the user.
+	 *
+	 * @param loginName the login name
+	 * @param activityStatus the activity status
+	 *
+	 * @return the user
+	 *
+	 * @throws BizLogicException the biz logic exception
+	 * @throws ParticipantManagerException
+	 */
+	public IUser getUser(final String loginName, final String activityStatus)
+			throws BizLogicException, ParticipantManagerException
+	{
+		IUser validUser = null;
+		String userClassName = (String) edu.wustl.common.participant.utility.PropertyHandler
+				.getValue(Constants.USER_CLASS);
+		final String getActiveUser = "from " + userClassName + " user where user.activityStatus= '"
+				+ activityStatus + "' and user.loginName =" + "'" + loginName + "'";
+		final List users = this.executeQuery(getActiveUser);
+		if (users != null && !users.isEmpty())
+		{
+			validUser = (IUser) users.get(0);
+		}
+		return validUser;
+	}
+	/**
+	 * Update participant in database.
+	 *
+	 * @param newpartcipantObj the new participant.
+	 * @param oldPartcipantObj the old participant.
+	 *
+	 * @return the status
+	 */
+	public void updateParticipant(final IParticipant newpartcipantObj,final IParticipant oldPartcipantObj)
+			throws BizLogicException, ParticipantManagerException
+	{
+		final String loginName = XMLPropertyHandler.getValue(Constants.HL7_LISTENER_ADMIN_USER);
+		final IUser validUser = getUser(loginName, Constants.ACTIVITY_STATUS_ACTIVE);
+		if (validUser != null)
+		{
+			SessionDataBean sessionData = ParticipantManagerUtility.getSessionDataBean(validUser);
+			update(newpartcipantObj, oldPartcipantObj, sessionData);
+		}
+	}
+
+	/**
+	 * @param siteName
+	 * @return
+	 * @throws ParticipantManagerException
+	 * @throws BizLogicException
+	 */
+	public ISite getSite(final String siteName) throws ParticipantManagerException, BizLogicException
+	{
+		ISite site = null;
+		String siteClassName = (String) edu.wustl.common.participant.utility.PropertyHandler
+				.getValue(Constants.SITE_CLASS);
+		final String getSite = "from " + siteClassName + " site where site.name= '"
+				+ siteName + "'";
+		final List sites = this.executeQuery(getSite);
+		if (sites != null && !sites.isEmpty())
+		{
+			site = (ISite) sites.get(0);
+		}
+		else
+		{
+			throw new BizLogicException(null, null, null);
+		}
+		return site;
+	}
 
 }

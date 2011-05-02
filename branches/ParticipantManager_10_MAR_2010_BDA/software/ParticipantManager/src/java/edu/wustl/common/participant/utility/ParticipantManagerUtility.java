@@ -1,6 +1,7 @@
 
 package edu.wustl.common.participant.utility;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -25,6 +26,7 @@ import javax.jms.QueueSession;
 import com.ibm.mq.jms.JMSC;
 import com.ibm.mq.jms.MQQueueConnectionFactory;
 
+import edu.wustl.common.beans.SessionDataBean;
 import edu.wustl.common.bizlogic.DefaultBizLogic;
 import edu.wustl.common.bizlogic.IBizLogic;
 import edu.wustl.common.exception.ApplicationException;
@@ -39,6 +41,7 @@ import edu.wustl.common.participant.domain.IParticipant;
 import edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
 import edu.wustl.common.participant.domain.IRace;
 import edu.wustl.common.participant.domain.ISite;
+import edu.wustl.common.participant.domain.IUser;
 import edu.wustl.common.participant.listener.EMPIParticipantListener;
 import edu.wustl.common.participant.listener.EMPIParticipantMergeMessageListener;
 import edu.wustl.common.util.Utility;
@@ -690,13 +693,7 @@ public class ParticipantManagerUtility
 		try
 		{
 			jdbcDao = getJDBCDAO();
-			LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
-			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
-			columnValueBeanList.add(new ColumnValueBean(status));
-			columnValueBeanList.add(new ColumnValueBean(participantId));
-			columnValueBeans.add(columnValueBeanList);
-			String sql = "UPDATE CATISSUE_PARTICIPANT SET EMPI_ID_STATUS=? WHERE IDENTIFIER=?";
-			jdbcDao.executeUpdate(sql, columnValueBeans);
+			setEMPIIdStatus(participantId, status, jdbcDao);
 			jdbcDao.commit();
 		}
 		catch (DAOException e)
@@ -1097,33 +1094,22 @@ public class ParticipantManagerUtility
 	public static void addParticipantToProcessMessageQueue(LinkedHashSet<Long> userIdSet,
 			Long participantId) throws DAOException
 	{
-
 		JDBCDAO jdbcdao = null;
 		String query = null;
 		try
 		{
 			jdbcdao = getJDBCDAO();
-			query = "SELECT SEARCHED_PARTICIPANT_ID FROM MATCHED_PARTICIPANT_MAPPING WHERE SEARCHED_PARTICIPANT_ID=?";
-			LinkedList<ColumnValueBean> colValueBeanList = new LinkedList<ColumnValueBean>();
-			colValueBeanList.add(new ColumnValueBean("SEARCHED_PARTICIPANT_ID", participantId,
-					DBTypes.LONG));
-			List idList = jdbcdao.executeQuery(query, null, colValueBeanList);
+			// delete old data from DB to start up clean with matching process
+			// Bug fix 18823
+			deleteProcessedParticipant(participantId, jdbcdao);
 
 			Calendar cal = Calendar.getInstance();
 			Date date = cal.getTime();
 			LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
 			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
 
-			if (!idList.isEmpty() && !"".equals(idList.get(0)))
-			{
-				query = "UPDATE MATCHED_PARTICIPANT_MAPPING SET SEARCHED_PARTICIPANT_ID=?,NO_OF_MATCHED_PARTICIPANTS=?,CREATION_DATE=? WHERE SEARCHED_PARTICIPANT_ID =?";
-				columnValueBeanList.add(new ColumnValueBean("SEARCHED_PARTICIPANT_ID",
-						participantId, DBTypes.LONG));
-			}
-			else
-			{
-				query = "INSERT INTO MATCHED_PARTICIPANT_MAPPING(NO_OF_MATCHED_PARTICIPANTS,CREATION_DATE,SEARCHED_PARTICIPANT_ID) VALUES(?,?,?)";
-			}
+			query = "INSERT INTO MATCHED_PARTICIPANT_MAPPING(NO_OF_MATCHED_PARTICIPANTS,"
+					+ "CREATION_DATE,SEARCHED_PARTICIPANT_ID) VALUES(?,?,?)";
 
 			columnValueBeanList.add(new ColumnValueBean("NO_OF_MATCHED_PARTICIPANTS", Integer
 					.valueOf(-1), DBTypes.LONG));
@@ -1133,13 +1119,6 @@ public class ParticipantManagerUtility
 			columnValueBeans.add(columnValueBeanList);
 			jdbcdao.executeUpdate(query, columnValueBeans);
 
-			/*final String eMPIStatus = ParticipantManagerUtility
-			.getPartiEMPIStatus(participantId);
-			if (eMPIStatus.equals(Constants.EMPI_ID_CREATED))
-			{
-				query = "UPDATE CATISSUE_PARTICIPANT SET EMPI_ID_STATUS = 'PENDING' WHERE IDENTIFIER = "+participantId;
-				jdbcdao.executeUpdate(query);
-			}*/
 			jdbcdao.commit();
 
 			updateParticipantUserMapping(jdbcdao, userIdSet, participantId);
@@ -1279,19 +1258,12 @@ public class ParticipantManagerUtility
 	 */
 	public static void deleteProcessedParticipant(Long id) throws DAOException
 	{
-
 		JDBCDAO jdbcdao = null;
 		try
 		{
 			jdbcdao = getJDBCDAO();
-			LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
-			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
-			columnValueBeanList.add(new ColumnValueBean(id));
-			columnValueBeans.add(columnValueBeanList);
-			String query = "DELETE FROM MATCHED_PARTICIPANT_MAPPING WHERE SEARCHED_PARTICIPANT_ID=?";
-			jdbcdao.executeUpdate(query, columnValueBeans);
+			deleteProcessedParticipant(id, jdbcdao);
 			jdbcdao.commit();
-
 		}
 		catch (DAOException e)
 		{
@@ -1304,7 +1276,15 @@ public class ParticipantManagerUtility
 		}
 	}
 
-
+	public static void deleteProcessedParticipant(Long id, JDBCDAO jdbcdao) throws DAOException
+	{
+		LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
+		LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
+		columnValueBeanList.add(new ColumnValueBean(id));
+		columnValueBeans.add(columnValueBeanList);
+		String query = "DELETE FROM MATCHED_PARTICIPANT_MAPPING WHERE SEARCHED_PARTICIPANT_ID=?";
+		jdbcdao.executeUpdate(query, columnValueBeans);
+	}
 
 	/**
 	 * Updates the count of matched participants as 0 in case no matching was found.
@@ -1383,7 +1363,8 @@ public class ParticipantManagerUtility
 		try
 		{
 			//query = "SELECT * FROM MATCHED_PARTICIPANT_MAPPING WHERE SEARCHED_PARTICIPANT_ID=? AND NO_OF_MATCHED_PARTICIPANTS!=?";
-			query = "SELECT * FROM MATCHED_PARTICIPANT_MAPPING WHERE SEARCHED_PARTICIPANT_ID=?";
+			query = "SELECT * FROM MATCHED_PARTICIPANT_MAPPING WHERE SEARCHED_PARTICIPANT_ID = ? "
+					+ "AND NO_OF_MATCHED_PARTICIPANTS != 0";
 			dao = getJDBCDAO();
 			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
 			columnValueBeanList
@@ -1935,5 +1916,69 @@ public class ParticipantManagerUtility
 			e.printStackTrace();
 			LOGGER.error(e.getMessage());
 		}
+	}
+
+	/**
+	 * Method to insert tempMRN entry in case eMPI ID was earlier generated
+	 * @param participantId
+	 * @param empiId
+	 * @param jdbcdao
+	 * @throws DAOException
+	 */
+	public void updateOldEMPIDetails(Long participantId, String empiId, JDBCDAO jdbcdao)
+			throws DAOException
+	{
+		final LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
+		final LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
+
+		String temporaryParticipantId = participantId + "T";
+		columnValueBeanList.add(new ColumnValueBean("PERMANENT_PARTICIPANT_ID", participantId,
+				DBTypes.VARCHAR));
+		columnValueBeanList.add(new ColumnValueBean("TEMPARARY_PARTICIPANT_ID",
+				temporaryParticipantId, DBTypes.VARCHAR));
+		columnValueBeanList.add(new ColumnValueBean("OLD_EMPI_ID", empiId, DBTypes.VARCHAR));
+		columnValueBeanList.add(new ColumnValueBean("TEMPMRNDATE", new Timestamp(System
+				.currentTimeMillis()), DBTypes.TIMESTAMP));
+
+		final String sql = "INSERT INTO PARTICIPANT_EMPI_ID_MAPPING VALUES(?,?,?,?)";
+		columnValueBeans.add(columnValueBeanList);
+		jdbcdao.executeUpdate(sql, columnValueBeans);
+	}
+
+	/**
+	 *
+	 * @param participantId
+	 * @param status
+	 * @param jdbcDao
+	 * @throws DAOException
+	 */
+	public static void setEMPIIdStatus(Long participantId, String status, JDBCDAO jdbcDao)
+			throws DAOException
+	{
+		LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
+		LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
+		columnValueBeanList.add(new ColumnValueBean(status));
+		columnValueBeanList.add(new ColumnValueBean(participantId));
+		columnValueBeans.add(columnValueBeanList);
+		String sql = "UPDATE CATISSUE_PARTICIPANT SET EMPI_ID_STATUS=? WHERE IDENTIFIER=?";
+		jdbcDao.executeUpdate(sql, columnValueBeans);
+	}
+	/**
+	 * Gets the session data bean.
+	 *
+	 * @param validUser the valid user
+	 *
+	 * @return the session data bean
+	 */
+	public static SessionDataBean getSessionDataBean(final IUser validUser)
+	{
+		final SessionDataBean sessionData = new SessionDataBean();
+		sessionData.setAdmin(validUser.getAdminuser());
+		sessionData.setUserName(validUser.getLoginName());
+		sessionData.setUserId(validUser.getId());
+		sessionData.setFirstName(validUser.getFirstName());
+		sessionData.setLastName(validUser.getLastName());
+		sessionData.setCsmUserId(validUser.getCsmUserId().toString());
+		return sessionData;
 	}
 }
