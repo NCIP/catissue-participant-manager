@@ -169,12 +169,13 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 			else
 			{
 				setStatusMessage(request, "participant.empiid.zero.match.message");
+				ParticipantManagerUtility.deleteProcessedParticipant(Long
+						.valueOf(participantId));
+				request.setAttribute(Constants.ZERO_MATCHES, Constants.TRUE);
 				if ((partiForm.getBirthDate() == null || "".equals(partiForm.getBirthDate()))
 						&& (ssn == null || "".equals(ssn)))
 				{
 					setStatusMessage(request, "participant.empiid.generation.incomplete.detail");
-					ParticipantManagerUtility.deleteProcessedParticipant(Long
-							.valueOf(participantId));
 				}
 			}
 			request.setAttribute(Constants.IS_GENERATE_EMPI_PAGE, Constants.TRUE);

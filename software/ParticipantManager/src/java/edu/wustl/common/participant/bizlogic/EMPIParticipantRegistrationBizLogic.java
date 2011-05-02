@@ -122,7 +122,7 @@ public class EMPIParticipantRegistrationBizLogic {
 	}
 
 	/**
-	 * Register patient toe mpi.
+	 * Register patient to empi.
 	 *
 	 * @param participant
 	 *            the participant
@@ -132,60 +132,56 @@ public class EMPIParticipantRegistrationBizLogic {
 	 * @throws ApplicationException
 	 *             the application exception
 	 */
-	public void registerPatientToeMPI(final IParticipant participant)
-			throws ApplicationException {
-
+	public void registerPatientToeMPI(final IParticipant participant) throws ApplicationException
+	{
 		JDBCDAO jdbcdao = null;
-		String query = null;
-		String hl7Message = "";
-		String temporaryParticipantId = "";
-		String queryForStatusUpdate="";
-		try {
+
+		try
+		{
 			jdbcdao = getJDBCDAO();
 
 			//update status to 'CREATED' before sending HL7 message, because user selected a record and resolved match, so new empiId was created for user
-			queryForStatusUpdate = "UPDATE CATISSUE_PARTICIPANT SET EMPI_ID_STATUS = 'CREATED' WHERE IDENTIFIER = "
+			/*queryForStatusUpdate = "UPDATE CATISSUE_PARTICIPANT SET EMPI_ID_STATUS = 'CREATED' WHERE IDENTIFIER = "
 				+ participant.getId();
 			jdbcdao.executeUpdate(queryForStatusUpdate);
-			jdbcdao.commit();
+			jdbcdao.commit();*/
 
-			//for update flow,HL7 message needs to be sent with temporary participant Id, hence queries the temp Participant Id from PARTICIPANT_EMPI_ID_MAPPING table
-			query = "SELECT * FROM PARTICIPANT_EMPI_ID_MAPPING WHERE PERMANENT_PARTICIPANT_ID=?";
+			//for update flow,HL7 message needs to be sent with temporary participant Id,
+			// hence queries the temp Participant Id from PARTICIPANT_EMPI_ID_MAPPING table
+			String query = "SELECT * FROM PARTICIPANT_EMPI_ID_MAPPING WHERE PERMANENT_PARTICIPANT_ID=?";
 			LinkedList<ColumnValueBean> colValueBeanList = new LinkedList<ColumnValueBean>();
-			colValueBeanList.add(new ColumnValueBean(
-					"PERMANENT_PARTICIPANT_ID", participant.getId(),
-					DBTypes.LONG));
-			List<Object> idList = jdbcdao.executeQuery(query, null,
-					colValueBeanList);
-			if (null != idList && idList.size() > 0) {
-
-				if (null != idList.get(0)) {
+			colValueBeanList.add(new ColumnValueBean("PERMANENT_PARTICIPANT_ID", participant
+					.getId(), DBTypes.LONG));
+			List<Object> idList = jdbcdao.executeQuery(query, null, colValueBeanList);
+			if (null != idList && idList.size() > 0)
+			{
+				String temporaryParticipantId = "";
+				if (null != idList.get(0))
+				{
 					Object obj = idList.get(0);
-					temporaryParticipantId = ((ArrayList) obj).get(1)
-							.toString();
-
+					temporaryParticipantId = ((ArrayList) obj).get(1).toString();
 				}
 				//send HL7 message with temp participant Id queried
 				this.setTempMrnId(temporaryParticipantId);
-				hl7Message = getRegHL7Message(participant);
-
 			}
+
 			// for new case, send HL7 directly
-			else {
-				hl7Message = getRegHL7Message(participant);
-			}
-
+			String hl7Message = getRegHL7Message(participant);
 			sendHLMessage(hl7Message);
-		} catch (DAOException e) {
+		}
+		catch (DAOException e)
+		{
 			jdbcdao.rollback();
 			throw new DAOException(e.getErrorKey(), e, e.getMessage());
-		} catch (Exception e) {
+		}
+		catch (Exception e)
+		{
 			LOGGER.info("Error while sending HL7 message to EMPI ");
 			LOGGER.info(e.getMessage());
 			throw new ApplicationException(null, e, e.getMessage());
 		}
-
-		finally {
+		finally
+		{
 			jdbcdao.closeSession();
 		}
 	}
@@ -878,73 +874,56 @@ public class EMPIParticipantRegistrationBizLogic {
 
 
 	/**
-	 * Registers patient to eMPI again when empI Id was already generated once and user came back and edited participant
+	 * Registers patient to eMPI again when empI Id was already generated once and
+	 * user came back and edited participant
 	 * and now on message board user selects "Ignore all and Create New" .
 	 *
-	 * @param participant
-	 *            the participant
-	 *
-	 * @throws Exception
-	 *             the exception
-	 * @throws ApplicationException
-	 *             the application exception
+	 * @param participant the participant
+	 * @throws ApplicationException the application exception
 	 */
-	public void ignoreAndCreateNewFlow(final IParticipant participant)
-			throws ApplicationException {
-
+	public void ignoreAndCreateNewFlow(final IParticipant participant) throws ApplicationException
+	{
 		JDBCDAO jdbcdao = null;
-		String hl7Message = "";
-		String temporaryParticipantId = "";
-		String queryForStatusUpdate="";
-		try {
+
+		try
+		{
 			jdbcdao = getJDBCDAO();
 
 			// if block to insert tempMRN entry in case eMPI ID was earlier generated
-			if(null!=participant.getEmpiId()&&!("").equals(participant.getEmpiId())){
-			temporaryParticipantId = participant.getId() + "T";
-			final LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
-			final LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
-
-			columnValueBeanList.add(new ColumnValueBean("PERMANENT_PARTICIPANT_ID",
-					participant.getId(), DBTypes.VARCHAR));
-			columnValueBeanList.add(new ColumnValueBean("TEMPARARY_PARTICIPANT_ID",
-					temporaryParticipantId, DBTypes.VARCHAR));
-			columnValueBeanList.add(new ColumnValueBean("OLD_EMPI_ID",
-					participant.getEmpiId(), DBTypes.VARCHAR));
-			columnValueBeanList.add(new ColumnValueBean("TEMPMRNDATE",
-					new Timestamp(System.currentTimeMillis()), DBTypes.DATE));
-
-			final String sql = "INSERT INTO PARTICIPANT_EMPI_ID_MAPPING VALUES(?,?,?,?)";
-			columnValueBeans.add(columnValueBeanList);
-			jdbcdao.executeUpdate(sql, columnValueBeans);
-			participant.setEmpiId("");
-			this.setTempMrnId(temporaryParticipantId);
+			if (null != participant.getEmpiId() && !("").equals(participant.getEmpiId()))
+			{
+				// Update PARTICIPANT_EMPI_ID_MAPPING table with tempMRN
+				ParticipantManagerUtility utility = new ParticipantManagerUtility();
+				utility.updateOldEMPIDetails(participant.getId(), participant.getEmpiId(), jdbcdao);
+				participant.setEmpiId("");
+				this.setTempMrnId(participant.getId() + "T");
 			}
 
-			// for new eMPIId generation, directly send HL7 message and before sending HL7 message, reset empiId to blank and empiIdstatus to PENDING
-			queryForStatusUpdate = "UPDATE CATISSUE_PARTICIPANT SET EMPI_ID = '', EMPI_ID_STATUS='PENDING' WHERE IDENTIFIER = "
-				+ participant.getId();
+			// for new eMPIId generation, directly send HL7 message and
+			// before sending HL7 message, reset empiId to blank and empiIdstatus to PENDING
+			String queryForStatusUpdate = "UPDATE CATISSUE_PARTICIPANT SET EMPI_ID = '', "
+					+ "EMPI_ID_STATUS='PENDING' WHERE IDENTIFIER = " + participant.getId();
 			jdbcdao.executeUpdate(queryForStatusUpdate);
 			jdbcdao.commit();
 
-
-			hl7Message = getRegHL7Message(participant);
-
+			String hl7Message = getRegHL7Message(participant);
 			sendHLMessage(hl7Message);
-		} catch (DAOException e) {
+		}
+		catch (DAOException e)
+		{
 			jdbcdao.rollback();
 			throw new DAOException(e.getErrorKey(), e, e.getMessage());
-		} catch (Exception e) {
+		}
+		catch (Exception e)
+		{
 			LOGGER.info("Error while sending HL7 message to EMPI ");
 			LOGGER.info(e.getMessage());
 			throw new ApplicationException(null, e, e.getMessage());
 		}
-
-		finally {
+		finally
+		{
 			jdbcdao.closeSession();
 		}
 	}
-
-
 
 }
