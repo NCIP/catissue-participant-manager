@@ -2,6 +2,8 @@
 package edu.wustl.common.participant.utility;
 
 import edu.wustl.common.participant.bizlogic.ParticipantMatchingBizLogic;
+import edu.wustl.common.util.logger.Logger;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.TimerTask;
@@ -19,6 +21,8 @@ import edu.wustl.dao.query.generator.DBTypes;
 public class ParticipantMatchingTimerTask extends TimerTask
 {
 
+	private static final Logger logger = Logger.getCommonLogger(ParticipantMatchingTimerTask.class);
+
 	/* (non-Javadoc)
 	 * @see java.util.TimerTask#run()
 	 */
@@ -30,8 +34,7 @@ public class ParticipantMatchingTimerTask extends TimerTask
 		}
 		catch (Exception e)
 		{
-
-			//logger.info(e.getMessage());
+			logger.error("Error during participant timer task", e);
 			System.out.println("Error during participant timer task");
 		}
 	}

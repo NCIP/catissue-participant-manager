@@ -39,15 +39,15 @@ public class ParticipantMatchingBizLogic
 	 */
 	public void perFormParticipantMatch(List ParticipantIdLst) throws ApplicationException
 	{
-		try
+		EMPIParticipantRegistrationBizLogic bizLogic = new EMPIParticipantRegistrationBizLogic();
+		for (int i = 0; i < ParticipantIdLst.size(); i++)
 		{
-			EMPIParticipantRegistrationBizLogic bizLogic = new EMPIParticipantRegistrationBizLogic();
-			for (int i = 0; i < ParticipantIdLst.size(); i++)
+			List idsList = (List) ParticipantIdLst.get(i);
+			if (!idsList.isEmpty() && idsList.get(0) != "")
 			{
-				List idsList = (List) ParticipantIdLst.get(i);
-				if (!idsList.isEmpty() && idsList.get(0) != "")
+				Long identifier = Long.valueOf((String) idsList.get(0));
+				try
 				{
-					Long identifier = Long.valueOf((String) idsList.get(0));
 					IParticipant participant = ParticipantManagerUtility
 							.getParticipantById(identifier);
 					boolean isCallToLkupLgic = ParticipantManagerUtility
@@ -65,10 +65,11 @@ public class ParticipantMatchingBizLogic
 							ParticipantManagerUtility.setEMPIIdStatus(participant.getId(),
 									Constants.EMPI_ID_PENDING);
 							bizLogic.registerPatientToeMPI(participant);
-//							ParticipantManagerUtility.deleteProcessedParticipant(participant
-//									.getId());
+							//							ParticipantManagerUtility.deleteProcessedParticipant(participant
+							//									.getId());
 							// count of matched patients updated to 0 when no matches found
-							ParticipantManagerUtility.updateProcessedParticipant(participant.getId());
+							ParticipantManagerUtility.updateProcessedParticipant(participant
+									.getId());
 						}
 						else
 						{
@@ -76,13 +77,13 @@ public class ParticipantMatchingBizLogic
 						}
 					}
 				}
+				catch (Exception e)
+				{
+					logger.error(
+							"Error while performing the EMPI participant match for participant with id "
+									+ identifier, e);
+				}
 			}
-
-		}
-		catch (Exception e)
-		{
-			logger.info("Error while performing the EMPI participant match");
-			throw new ApplicationException(null, e, e.getMessage());
 		}
 	}
 

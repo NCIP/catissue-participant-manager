@@ -256,7 +256,7 @@ public class QueryGenerator
 
 		*/
 
-		String query="select distinct ex1.mrn,fac.facility_id,fac.print_name from "
+		String query="select distinct ex1.mrn,fac.facility_id,RTRIM(fac.print_name) as print_name from "
 			 		+ dbSchema + ".encounters e1,"
 			 		+ dbSchema + ".facility fac, xmltable('$e/Encounter'" +
 			 		" passing e1.\"XMLDATA\" as \"e\" " +
