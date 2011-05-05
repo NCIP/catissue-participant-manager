@@ -14,6 +14,7 @@ import edu.wustl.common.cde.CDEManager;
 import edu.wustl.common.exception.ApplicationException;
 import edu.wustl.common.exception.BizLogicException;
 import edu.wustl.common.exception.ErrorKey;
+import edu.wustl.common.participant.domain.IEthnicity;
 import edu.wustl.common.participant.domain.IParticipant;
 import edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
 import edu.wustl.common.participant.domain.IRace;
@@ -373,17 +374,7 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 				}
 			}
 		}
-
-		if (!validator.isEmpty(participant.getEthnicity())) {
-			final List ethnicityList = CDEManager
-					.getCDEManager()
-					.getPermissibleValueList(Constants.CDE_NAME_ETHNICITY, null);
-			if (!Validator.isEnumeratedOrNullValue(ethnicityList, participant
-					.getEthnicity())) {
-				throw new BizLogicException(null, null,
-						"participant.ethnicity.errMsg", "");
-			}
-		}
+        validateEthnicity(participant);
 
 		if (operation.equals(Constants.ADD)) {
 			if (!Status.ACTIVITY_STATUS_ACTIVE.toString().equals(
@@ -400,6 +391,32 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 		}
 		return true;
 	}
+
+    /**
+     * @param participant
+     * @throws BizLogicException
+     */
+    private static void validateEthnicity(IParticipant participant) throws BizLogicException
+    {
+        final Collection ethnicityColl = participant.getEthnicityCollection();
+        if (ethnicityColl != null && !ethnicityColl.isEmpty()) {
+            final List ethnicityList = CDEManager.getCDEManager()
+                    .getPermissibleValueList(Constants.CDE_NAME_ETHNICITY, null);
+            final Iterator itr = ethnicityColl.iterator();
+            while (itr.hasNext()) {
+                final IEthnicity etnicity = (IEthnicity) itr.next();
+                if (etnicity != null) {
+                    final String name = etnicity.getName();
+                    if (!Validator.isEmpty(name)
+                            && !Validator.isEnumeratedOrNullValue(ethnicityList,
+                                    name)) {
+                        throw new BizLogicException(null, null,
+                                "participant.ethnicity.errMsg", "");
+                    }
+                }
+            }
+        }
+    }
 
 	/**
 	 * Modify participant object.
