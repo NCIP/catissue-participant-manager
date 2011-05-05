@@ -127,14 +127,14 @@ public interface IParticipant
 	 *
 	 * @return the ethnicity
 	 */
-	String getEthnicity();
+	Collection getEthnicityCollection();
 
 	/**
 	 * Sets the ethnicity.
 	 *
 	 * @param ethnicity the new ethnicity
 	 */
-	void setEthnicity(String ethnicity);
+	void setEthnicityCollection(Collection ethnicityCollection);
 
 	/**
 	 * Gets the social security number.
