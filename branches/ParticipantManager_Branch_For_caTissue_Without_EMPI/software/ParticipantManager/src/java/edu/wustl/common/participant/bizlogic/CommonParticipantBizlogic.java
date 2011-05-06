@@ -127,7 +127,7 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 
 				final List list = ((HibernateDAO) dao).retrieve(sourceObjectName, selectColumnName,
 						queryWhereClause);
-				
+
 				if (!list.isEmpty())
 				{
 					final Object[] valArr = (Object[]) list.get(0);
@@ -318,7 +318,8 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 						.next();
 				final ISite site = partiMedobj.getSite();
 				final String medicalRecordNo = partiMedobj.getMedicalRecordNumber();
-				if (validator.isEmpty(medicalRecordNo) || site == null || site.getId() == null)
+				if (validator.isEmpty(medicalRecordNo) || site == null ||
+						(site.getId() == null&&(site.getName()==null&&!"".equals(site.getName()))))
 				{
 					if (partiMedobj.getId() == null)
 					{
