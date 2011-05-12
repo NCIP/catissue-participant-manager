@@ -1,9 +1,6 @@
 
 package edu.wustl.common.participant.action;
 
-import edu.wustl.common.participant.bizlogic.ParticipantMatchingBizLogic;
-import edu.wustl.common.participant.utility.Constants;
-import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,6 +20,9 @@ import org.apache.struts.action.ActionMessages;
 import edu.wustl.common.action.SecureAction;
 import edu.wustl.common.beans.SessionDataBean;
 import edu.wustl.common.exception.ApplicationException;
+import edu.wustl.common.participant.bizlogic.ParticipantMatchingBizLogic;
+import edu.wustl.common.participant.utility.Constants;
+import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.util.XMLPropertyHandler;
 import edu.wustl.common.util.global.QuerySessionData;
 import edu.wustl.common.util.logger.Logger;
@@ -41,15 +41,13 @@ public class ProcessMatchedParticipantsAction extends SecureAction
 {
 
 	/** The Constant logger. */
-	private static final Logger LOGGER = Logger
-			.getCommonLogger(ProcessMatchedParticipantsAction.class);
+	private static final Logger LOGGER = Logger.getCommonLogger(ProcessMatchedParticipantsAction.class);
 
 	/* (non-Javadoc)
 	 * @see org.apache.struts.action.Action#execute(org.apache.struts.action.ActionMapping, org.apache.struts.action.ActionForm, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
 	 */
 	public ActionForward executeSecureAction(final ActionMapping mapping, final ActionForm form,
-			final HttpServletRequest request, final HttpServletResponse response)
-			throws ApplicationException
+			final HttpServletRequest request, final HttpServletResponse response) throws ApplicationException
 	{
 		final HttpSession session = request.getSession();
 		String target = null;
@@ -65,8 +63,8 @@ public class ProcessMatchedParticipantsAction extends SecureAction
 			{
 				session.removeAttribute(Constants.NEXT_PART_ID_TO_PROCESS);
 			}
-			if (isDelete != null && !"".equals(isDelete) && Constants.YES.equals(isDelete)
-					&& particicipantId != null && !"".equals(particicipantId))
+			if (isDelete != null && !"".equals(isDelete) && Constants.YES.equals(isDelete) && particicipantId != null
+					&& !"".equals(particicipantId))
 			{
 				ParticipantManagerUtility.deleteProcessedParticipant(Long.valueOf(particicipantId));
 				setStatusMessage(request, "participant.processed.delete.success");
@@ -74,7 +72,7 @@ public class ProcessMatchedParticipantsAction extends SecureAction
 
 			final ParticipantMatchingBizLogic bizLogic = new ParticipantMatchingBizLogic();
 
-			final List list = bizLogic.getProcessedMatchedParticipants(userId);
+			final List list = bizLogic.getProcessedMatchedParticipants(userId, recordsPerPage);
 
 			storeList(request, session, columnNames, list, recordsPerPage);
 
@@ -126,9 +124,9 @@ public class ProcessMatchedParticipantsAction extends SecureAction
 				.getAttribute(edu.wustl.common.util.global.Constants.RESULTS_PER_PAGE);
 		if (recordsPerPageSessionValue == null)
 		{
-			recordsPerPage = Integer.parseInt(XMLPropertyHandler
-					.getValue(Constants.NO_OF_RECORDS_PER_PAGE));
-			session.setAttribute(edu.wustl.common.util.global.Constants.RESULTS_PER_PAGE,String.valueOf(recordsPerPage));
+			recordsPerPage = Integer.parseInt(XMLPropertyHandler.getValue(Constants.NO_OF_RECORDS_PER_PAGE));
+			session.setAttribute(edu.wustl.common.util.global.Constants.RESULTS_PER_PAGE, String
+					.valueOf(recordsPerPage));
 		}
 		else
 		{
@@ -146,8 +144,8 @@ public class ProcessMatchedParticipantsAction extends SecureAction
 	 */
 	private Long getUserId(final HttpServletRequest request)
 	{
-		final SessionDataBean sessionDataBean = (SessionDataBean) request.getSession()
-				.getAttribute(edu.wustl.common.util.global.Constants.SESSION_DATA);
+		final SessionDataBean sessionDataBean = (SessionDataBean) request.getSession().getAttribute(
+				edu.wustl.common.util.global.Constants.SESSION_DATA);
 		final Long userId = sessionDataBean.getUserId();
 		return userId;
 	}
@@ -160,22 +158,30 @@ public class ProcessMatchedParticipantsAction extends SecureAction
 	 * @param columnNames the column names
 	 * @param list the list
 	 * @param recordsPerPage the records per page
+	 * @throws DAOException
 	 */
-	private void storeList(final HttpServletRequest request, final HttpSession session,
-			final List<String> columnNames, final List list, final int recordsPerPage)
+	private void storeList(final HttpServletRequest request, final HttpSession session, final List<String> columnNames,
+			final List list, final int recordsPerPage) throws DAOException
 	{
+		final Long userId = getUserId(request);
+		final ParticipantMatchingBizLogic bizLogic = new ParticipantMatchingBizLogic();
 		final QuerySessionData querySessionData = new QuerySessionData();
+
+		String sql = bizLogic.getQuery(userId);
+
 		querySessionData.setRecordsPerPage(recordsPerPage);
-		querySessionData.setTotalNumberOfRecords(list.size());
-		session.setAttribute(edu.wustl.common.util.global.Constants.QUERY_SESSION_DATA,
-				querySessionData);
+		querySessionData.setTotalNumberOfRecords(bizLogic.getTotalCount(userId));
+		querySessionData.setQueryResultObjectDataMap(null);
+		querySessionData.setSql(sql);
+		querySessionData.setHasConditionOnIdentifiedField(false);
+		querySessionData.setSecureExecute(false);
+
+		session.setAttribute(edu.wustl.common.util.global.Constants.QUERY_SESSION_DATA, querySessionData);
 		session.setAttribute(Constants.IS_SIMPLE_SEARCH, Boolean.TRUE.toString());
 
-		request.setAttribute(edu.wustl.common.util.global.Constants.PAGEOF,
-				Constants.PAGE_OF_MATCHED_PARTIICPANTS);
+		request.setAttribute(edu.wustl.common.util.global.Constants.PAGEOF, Constants.PAGE_OF_MATCHED_PARTIICPANTS);
 		request.setAttribute(Constants.SPREADSHEET_DATA_LIST, list);
-		request.setAttribute(edu.wustl.common.util.global.Constants.SPREADSHEET_COLUMN_LIST,
-				columnNames);
+		request.setAttribute(edu.wustl.common.util.global.Constants.SPREADSHEET_COLUMN_LIST, columnNames);
 		setStatusMessage(request, "process.participant.message");
 	}
 
