@@ -331,27 +331,36 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 			}
 		}
 
-		final Collection paticipantMedCol = participant
-				.getParticipantMedicalIdentifierCollection();
+		final Collection paticipantMedCol = participant.getParticipantMedicalIdentifierCollection();
 		// Created a new PMI collection for bulk operation functionality.
 		final Collection newPMICollection = new LinkedHashSet();
-		if (paticipantMedCol != null && !paticipantMedCol.isEmpty()) {
+		if (paticipantMedCol != null && !paticipantMedCol.isEmpty())
+		{
 			final Iterator itr = paticipantMedCol.iterator();
-			while (itr.hasNext()) {
+			java.util.HashSet<Long> siteIdset = new java.util.HashSet<Long>();
+			while (itr.hasNext())
+			{
 				final IParticipantMedicalIdentifier<IParticipant, ISite> partiMedobj = (IParticipantMedicalIdentifier<IParticipant, ISite>) itr
 						.next();
 				final ISite site = partiMedobj.getSite();
-				final String medicalRecordNo = partiMedobj
-						.getMedicalRecordNumber();
-				if (validator.isEmpty(medicalRecordNo) || site == null
-						|| site.getId() == null) {
-					if (partiMedobj.getId() == null) {
-						throw new BizLogicException(null, null,
-								"errors.participant.extiden.missing", "");
+				final String medicalRecordNo = partiMedobj.getMedicalRecordNumber();
+				if (validator.isEmpty(medicalRecordNo) || site == null || site.getId() == null)
+				{
+					if (partiMedobj.getId() == null)
+					{
+						throw new BizLogicException(null, null, "errors.participant.extiden.missing", "");
 					}
-				} else {
+				}
+				else
+				{
 					newPMICollection.add(partiMedobj);
 				}
+				boolean checkDuplicate = siteIdset.add(site.getId());
+				if (!checkDuplicate)
+				{
+					throw new BizLogicException(null, null, "errors.participant.mediden.duplicate", "");
+				}
+
 			}
 		}
 		participant.setParticipantMedicalIdentifierCollection(newPMICollection);
