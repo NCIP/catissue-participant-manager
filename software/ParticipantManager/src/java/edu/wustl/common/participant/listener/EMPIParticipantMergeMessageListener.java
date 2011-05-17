@@ -53,7 +53,7 @@ public class EMPIParticipantMergeMessageListener implements MessageListener
 
 	/**
 	 * This method will be called as soon as the participant demographic message arrives in the queue.
-	 * Read teh message from queue and update the participant.
+	 * Read the message from queue and update the participant.
 	 *
 	 * @param message the message
 	 */
@@ -67,9 +67,12 @@ public class EMPIParticipantMergeMessageListener implements MessageListener
 			if (message instanceof TextMessage)
 			{
 				mergeMessage = ((TextMessage) message).getText();
+				LOGGER.info("Received merge message---------------------- \n \n");
+				LOGGER.info(mergeMessage);
 				messageValueMap = new HashMap<String, String>();
 				getMessageToknized(mergeMessage, messageValueMap);
 				processMergeMessage(messageValueMap);
+				LOGGER.info("Processed merge message--------------------");
 			}
 		}
 		catch (JMSException exp)

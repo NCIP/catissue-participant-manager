@@ -46,6 +46,7 @@ public class ParticipantMatchingBizLogic
 			if (!idsList.isEmpty() && idsList.get(0) != "")
 			{
 				Long identifier = Long.valueOf((String) idsList.get(0));
+				logger.info("Fetching matches for participant : " + identifier);
 				try
 				{
 					IParticipant participant = ParticipantManagerUtility.getParticipantById(identifier);
@@ -76,6 +77,7 @@ public class ParticipantMatchingBizLogic
 					logger.error("Error while performing the EMPI participant match for participant with id "
 							+ identifier, e);
 				}
+				logger.info("Matches fetched for participant : " + identifier);
 			}
 		}
 	}
