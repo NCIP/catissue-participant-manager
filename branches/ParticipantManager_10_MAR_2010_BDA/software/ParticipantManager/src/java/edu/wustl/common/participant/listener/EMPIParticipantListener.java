@@ -158,10 +158,10 @@ public class EMPIParticipantListener implements MessageListener
 			if (message instanceof TextMessage)
 			{
 				personDemoGraphics = ((TextMessage) message).getText();
-				LOGGER.info(" Received demographics message \n \n");
+				LOGGER.info("Received demographics message---------------------- \n \n");
 				LOGGER.info(personDemoGraphics);
 				updateParticipantWithEMPIDetails(personDemoGraphics);
-
+				LOGGER.info("Processed demographics message---------------------");
 			}
 		}
 		catch (Exception e)
