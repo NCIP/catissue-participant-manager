@@ -129,7 +129,8 @@ public class ParticipantManagerUtility
 
 			// Set the merge message queue listener.
 			mergeMessageQueueName = XMLPropertyHandler.getValue(Constants.MERGE_MESSAGE_QUEUE);
-			final Queue mrgMessageQueue = queueSession.createQueue("queue:///" + mergeMessageQueueName);
+			final Queue mrgMessageQueue = queueSession.createQueue("queue:///"
+					+ mergeMessageQueueName);
 			queueReceiver = queueSession.createReceiver(mrgMessageQueue);
 			final EMPIParticipantMergeMessageListener mrgMesListener = new EMPIParticipantMergeMessageListener();
 			queueReceiver.setMessageListener(mrgMesListener);
@@ -218,7 +219,7 @@ public class ParticipantManagerUtility
 		QueryWhereClause queryWhereClause = new QueryWhereClause(sourceObjectName);
 		try
 		{
-			queryWhereClause.addCondition(new EqualClause("facilityId", '?'));
+			queryWhereClause.addCondition(new EqualClause("facilityId", facilityId));
 		}
 		catch (DAOException e)
 		{
@@ -227,8 +228,7 @@ public class ParticipantManagerUtility
 
 		List<ColumnValueBean> columnValueBeans = new ArrayList<ColumnValueBean>();
 		columnValueBeans.add(new ColumnValueBean(facilityId));
-		List siteObject = bizLogic.retrieve(sourceObjectName, selectColumnNames, queryWhereClause,
-				columnValueBeans);
+		List siteObject = bizLogic.retrieve(sourceObjectName, selectColumnNames, queryWhereClause);
 
 		if (siteObject != null && siteObject.size() > 0)
 		{
@@ -299,20 +299,19 @@ public class ParticipantManagerUtility
 		String sourceObjectName = IParticipant.class.getName();
 		// getting all the participants from the database
 		//List participantList = bizLogic.retrieve(sourceObjectName, "id", identifier);
-		QueryWhereClause queryWhereClause = new QueryWhereClause(sourceObjectName);
-		try
-		{
-			queryWhereClause.addCondition(new EqualClause("id", '?'));
-		}
-		catch (DAOException e)
-		{
-			throw new BizLogicException(e);
-		}
+		//		QueryWhereClause queryWhereClause = new QueryWhereClause(sourceObjectName);
+		//		try
+		//		{
+		//			queryWhereClause.addCondition(new EqualClause("id", identifier));
+		//		}
+		//		catch (DAOException e)
+		//		{
+		//			throw new BizLogicException(e);
+		//		}
 
-		List<ColumnValueBean> columnValueBeans = new ArrayList<ColumnValueBean>();
-		columnValueBeans.add(new ColumnValueBean(identifier));
-		List participantList = bizLogic.retrieve(sourceObjectName, null, queryWhereClause,
-				columnValueBeans);
+		//		List<ColumnValueBean> columnValueBeans = new ArrayList<ColumnValueBean>();
+		//		columnValueBeans.add(new ColumnValueBean(identifier));
+		List participantList = bizLogic.retrieve(sourceObjectName, "id", identifier);
 		return (IParticipant) participantList.get(0);
 
 	}
@@ -415,6 +414,7 @@ public class ParticipantManagerUtility
 		catch (Exception exp)
 		{
 			throw new PatientLookupException(exp.getMessage(), exp);
+			//			exp.printStackTrace();
 		}
 		return matchParticipantList;
 	}
@@ -588,7 +588,7 @@ public class ParticipantManagerUtility
 				Iterator<Long> iterator = cpIdList.iterator();
 				while (iterator.hasNext())
 				{
-					Long id = (Long) iterator.next();
+					Long id = iterator.next();
 					LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
 					columnValueBeanList.add(new ColumnValueBean("CLINICAL_STUDY_ID", id,
 							DBTypes.LONG));
@@ -626,7 +626,7 @@ public class ParticipantManagerUtility
 	 */
 	public static Object getRaceInstance() throws BizLogicException, ParticipantManagerException
 	{
-		String raceclassName = (String) PropertyHandler.getValue(Constants.RACE_CLASS);
+		String raceclassName = PropertyHandler.getValue(Constants.RACE_CLASS);
 		return getObject(raceclassName);
 	}
 
@@ -640,7 +640,7 @@ public class ParticipantManagerUtility
 	 */
 	public static Object getSiteInstance() throws BizLogicException, ParticipantManagerException
 	{
-		String siteClassName = (String) PropertyHandler.getValue(Constants.SITE_CLASS);
+		String siteClassName = PropertyHandler.getValue(Constants.SITE_CLASS);
 		return getObject(siteClassName);
 	}
 
@@ -655,8 +655,7 @@ public class ParticipantManagerUtility
 	public static Object getParticipantInstance() throws BizLogicException,
 			ParticipantManagerException
 	{
-		String participantClassName = (String) PropertyHandler
-				.getValue(Constants.PARTICIPANT_CLASS);
+		String participantClassName = PropertyHandler.getValue(Constants.PARTICIPANT_CLASS);
 		return getObject(participantClassName);
 	}
 
@@ -671,7 +670,7 @@ public class ParticipantManagerUtility
 	public static IParticipantMedicalIdentifier<IParticipant, ISite> getPMIInstance()
 			throws BizLogicException, ParticipantManagerException
 	{
-		String pmiClassName = (String) PropertyHandler.getValue(Constants.PMI_CLASS);
+		String pmiClassName = PropertyHandler.getValue(Constants.PMI_CLASS);
 		Object PMIInstance = getObject(pmiClassName);
 		return (IParticipantMedicalIdentifier<IParticipant, ISite>) PMIInstance;
 	}
@@ -808,11 +807,11 @@ public class ParticipantManagerUtility
 	 * @throws ParticipantManagerException
 	 * @throws BizLogicException
 	 */
-	private static String getQueryForEmpiEnabled() throws DAOException, ParticipantManagerException,
-			BizLogicException
+	private static String getQueryForEmpiEnabled() throws DAOException,
+			ParticipantManagerException, BizLogicException
 	{
 
-		String PartiManagerImplClassName = (String) edu.wustl.common.participant.utility.PropertyHandler
+		String PartiManagerImplClassName = edu.wustl.common.participant.utility.PropertyHandler
 				.getValue(Constants.PARTICIPANT_MANAGER_IMPL_CLASS);
 
 		IParticipantManager participantManagerImplObj = (IParticipantManager) ParticipantManagerUtility
@@ -845,23 +844,23 @@ public class ParticipantManagerUtility
 			List statusList = dao.executeQuery(query, null, columnValueBeanList);
 			if (!statusList.isEmpty() && statusList != null)
 			{
-//				List idList = (List) statusList.get(0);
-//				if (!idList.isEmpty() && !"".equals((idList.get(0))))
-//				{
-					for (int i = 0; i < statusList.size(); i++)
+				//				List idList = (List) statusList.get(0);
+				//				if (!idList.isEmpty() && !"".equals((idList.get(0))))
+				//				{
+				for (int i = 0; i < statusList.size(); i++)
+				{
+					List idList = (List) statusList.get(i);
+					if (!idList.isEmpty() && !"".equals((idList.get(0))))
 					{
-						List idList = (List) statusList.get(i);
-						if (!idList.isEmpty() && !"".equals((idList.get(0))))
+						if (((String) idList.get(0)).equals("1") || (idList.get(0)).equals("true"))
 						{
-							if (((String) idList.get(0)).equals("1"))
-							{
-								status = true;
-								break;
-							}
+							status = true;
+							break;
 						}
 					}
 				}
-//			}
+			}
+			//			}
 		}
 		catch (DAOException exp)
 		{
@@ -869,7 +868,7 @@ public class ParticipantManagerUtility
 		}
 		catch (ParticipantManagerException e)
 		{
-			throw new BizLogicException(null,e,e.getMessage());
+			throw new BizLogicException(null, e, e.getMessage());
 		}
 		finally
 		{
@@ -1304,8 +1303,6 @@ public class ParticipantManagerUtility
 		}
 	}
 
-
-
 	/**
 	 * Updates the count of matched participants as 0 in case no matching was found.
 	 *
@@ -1701,13 +1698,13 @@ public class ParticipantManagerUtility
 			Iterator<IRace<IParticipant>> iterNew = raceColNew.iterator();
 			while (iterNew.hasNext())
 			{
-				IRace<IParticipant> raceNew = (IRace<IParticipant>) iterNew.next();
+				IRace<IParticipant> raceNew = iterNew.next();
 				raceNameNew = raceNew.getRaceName();
 				Iterator<IRace<IParticipant>> iterOld = raceColOld.iterator();
 				found = false;
 				while (iterOld.hasNext())
 				{
-					IRace<IParticipant> raceOld = (IRace<IParticipant>) iterOld.next();
+					IRace<IParticipant> raceOld = iterOld.next();
 					raceNameOld = raceOld.getRaceName();
 					if (raceNameNew.equals(raceNameOld))
 					{
@@ -1738,7 +1735,7 @@ public class ParticipantManagerUtility
 	private static Set<Long> getProtocolIdLstForMICSEnabledForMatching(Long protocolId)
 			throws ParticipantManagerException, ApplicationException
 	{
-		String PartiManagerImplClassName = (String) edu.wustl.common.participant.utility.PropertyHandler
+		String PartiManagerImplClassName = edu.wustl.common.participant.utility.PropertyHandler
 				.getValue(Constants.PARTICIPANT_MANAGER_IMPL_CLASS);
 		IParticipantManager participantManagerImplObj = (IParticipantManager) ParticipantManagerUtility
 				.getObject(PartiManagerImplClassName);
@@ -1762,7 +1759,7 @@ public class ParticipantManagerUtility
 			Iterator<Long> iterator = protocolIdSet.iterator();
 			while (iterator.hasNext())
 			{
-				Long protocolId = (Long) iterator.next();
+				Long protocolId = iterator.next();
 				protocolIdsStr = protocolIdsStr.concat(String
 						.valueOf((protocolIdsStr.length() == 0) ? protocolId : "," + protocolId));
 			}
@@ -1782,7 +1779,7 @@ public class ParticipantManagerUtility
 		IParticipantManager participantManagerImplObj = null;
 		try
 		{
-			String PartiManagerImplClassName = (String) edu.wustl.common.participant.utility.PropertyHandler
+			String PartiManagerImplClassName = edu.wustl.common.participant.utility.PropertyHandler
 					.getValue(edu.wustl.common.participant.utility.Constants.PARTICIPANT_MANAGER_IMPL_CLASS);
 			participantManagerImplObj = (IParticipantManager) ParticipantManagerUtility
 					.getObject(PartiManagerImplClassName);

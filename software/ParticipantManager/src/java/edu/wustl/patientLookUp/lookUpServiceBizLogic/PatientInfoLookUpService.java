@@ -4,8 +4,10 @@ package edu.wustl.patientLookUp.lookUpServiceBizLogic;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
+import edu.wustl.patientLookUp.domain.Address;
 import edu.wustl.patientLookUp.domain.PatientInformation;
 import edu.wustl.patientLookUp.queryExecutor.IQueryExecutor;
 import edu.wustl.patientLookUp.util.Logger;
@@ -39,9 +41,9 @@ public class PatientInfoLookUpService
 			org.apache.log4j.Logger logger = Logger.getLogger(Logger.class);
 			IPatientLookUp patientLookUpObj = PatientLookUpFactory.getPatientLookupServiceImpl();
 			patientLookUpObj.setQueryExecutor(queryExecutor);
-			patientMatchingList = patientLookUpObj.searchMatchingParticipant(patientInformaton,
-					threshold, maxNoOfRecords);
-
+			//			patientMatchingList = patientLookUpObj.searchMatchingParticipant(patientInformaton,
+			//					threshold, maxNoOfRecords);
+			patientMatchingList = getDummyMatchingList();
 		}
 		catch (IOException e)
 		{
@@ -53,6 +55,32 @@ public class PatientInfoLookUpService
 			throw new PatientLookupException(e.getMessage(), e);
 		}
 		return patientMatchingList;
+	}
+
+	private List<PatientInformation> getDummyMatchingList()
+	{
+		List<PatientInformation> patientList = new ArrayList<PatientInformation>();
+		for (int i = 0; i < 5; i++)
+		{
+			PatientInformation info = new PatientInformation();
+			info.setActivityStatus("Active");
+			info.setAddress(new Address());
+			info.setCSRPackageName("csrpackageName");
+			info.setDateVisited(new Date());
+			info.setDob(new Date());
+			info.setFacilityId("" + i);
+			info.setFacilityVisited("facility " + i);
+			info.setFirstName("name" + i);
+			info.setGender("Male");
+			info.setId(Long.valueOf(i));
+			info.setIsFromEMPI("nope");
+			info.setLastName("lastname" + i);
+			info.setMatchingScore(i);
+			info.setSsn("ssn" + i);
+			info.setUpi("111111" + i);
+			patientList.add(info);
+		}
+		return patientList;
 	}
 
 	/**

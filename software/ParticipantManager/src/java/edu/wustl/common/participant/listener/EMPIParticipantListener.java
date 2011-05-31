@@ -1,5 +1,4 @@
 
-
 package edu.wustl.common.participant.listener;
 
 import java.io.IOException;
@@ -48,7 +47,6 @@ import edu.wustl.dao.exception.DAOException;
 import edu.wustl.dao.query.generator.ColumnValueBean;
 import edu.wustl.patientLookUp.util.PatientLookupException;
 import edu.wustl.patientLookUp.util.PropertyHandler;
-
 
 /**
  * * @author geeta_jaggal
@@ -161,7 +159,6 @@ public class EMPIParticipantListener implements MessageListener
 				LOGGER.info(" Received demographics message \n \n");
 				LOGGER.info(personDemoGraphics);
 				updateParticipantWithEMPIDetails(personDemoGraphics);
-
 			}
 		}
 		catch (Exception e)
@@ -196,7 +193,8 @@ public class EMPIParticipantListener implements MessageListener
 		SessionDataBean sessionData = null;
 		boolean isGenerateMgrMessage = false;
 
-		sourceObjectName = (String)edu.wustl.common.participant.utility.PropertyHandler.getValue(Constants.PARTICIPANT_CLASS);
+		sourceObjectName = edu.wustl.common.participant.utility.PropertyHandler
+				.getValue(Constants.PARTICIPANT_CLASS);
 
 		try
 		{
@@ -490,7 +488,7 @@ public class EMPIParticipantListener implements MessageListener
 							&& partMedIdOld.getSite() != null)
 					{
 						final String oldMRN = partMedIdOld.getMedicalRecordNumber();
-						final ISite site = (ISite) partMedIdOld.getSite();
+						final ISite site = partMedIdOld.getSite();
 						final Long oldSiteID = site.getId();
 						itreratorNew = partiMedIdColl.iterator();
 						do
@@ -536,8 +534,7 @@ public class EMPIParticipantListener implements MessageListener
 				{
 					if (count < oldMrnIdList.size())
 					{
-						partiMediIdNew.setId(Long.valueOf(((Long) oldMrnIdList.get(count))
-								.longValue()));
+						partiMediIdNew.setId(Long.valueOf((oldMrnIdList.get(count)).longValue()));
 					}
 					count++;
 				}
@@ -555,7 +552,8 @@ public class EMPIParticipantListener implements MessageListener
 	 *
 	 * @throws Exception the exception
 	 */
-	private void parseDomographicXML(final Element docEle) throws BizLogicException, ParticipantManagerException
+	private void parseDomographicXML(final Element docEle) throws BizLogicException,
+			ParticipantManagerException
 	{
 		IParticipantMedicalIdentifier<IParticipant, ISite> participantMedicalIdentifier = null;
 		partiMedIdColl = new LinkedHashSet<IParticipantMedicalIdentifier<IParticipant, ISite>>();
@@ -616,13 +614,27 @@ public class EMPIParticipantListener implements MessageListener
 	private SessionDataBean getSessionDataBean(final IUser validUser)
 	{
 		final SessionDataBean sessionData = new SessionDataBean();
-		sessionData.setAdmin(validUser.getAdminuser());
+		sessionData.setAdmin(isAdminUser(validUser.getRoleId()));
 		sessionData.setUserName(validUser.getLoginName());
 		sessionData.setUserId(validUser.getId());
 		sessionData.setFirstName(validUser.getFirstName());
 		sessionData.setLastName(validUser.getLastName());
 		sessionData.setCsmUserId(validUser.getCsmUserId().toString());
 		return sessionData;
+	}
+
+	private boolean isAdminUser(final String userRole)
+	{
+		boolean adminUser;
+		if (userRole.equalsIgnoreCase(Constants.ADMIN_USER))
+		{
+			adminUser = true;
+		}
+		else
+		{
+			adminUser = false;
+		}
+		return adminUser;
 	}
 
 	/**
@@ -662,8 +674,9 @@ public class EMPIParticipantListener implements MessageListener
 			throws BizLogicException, ParticipantManagerException
 	{
 		IUser validUser = null;
-		String userClassName=(String)edu.wustl.common.participant.utility.PropertyHandler.getValue(Constants.USER_CLASS);
-		final String getActiveUser = "from "+userClassName+" user where user.activityStatus= '"
+		String userClassName = edu.wustl.common.participant.utility.PropertyHandler
+				.getValue(Constants.USER_CLASS);
+		final String getActiveUser = "from " + userClassName + " user where user.activityStatus= '"
 				+ activityStatus + "' and user.loginName =" + "'" + loginName + "'";
 		final DefaultBizLogic bizlogic = new DefaultBizLogic();
 		final List users = bizlogic.executeQuery(getActiveUser);
@@ -695,13 +708,14 @@ public class EMPIParticipantListener implements MessageListener
 			columnValueBeanList.add(new ColumnValueBean(clinPortalId));
 			final String query = "SELECT * FROM PARTICIPANT_EMPI_ID_MAPPING WHERE PERMANENT_PARTICIPANT_ID=? ORDER BY TEMPMRNDATE DESC";
 
-			List<Object> idList = jdbcdao.executeQuery(query, null,	columnValueBeanList);
-			if (null != idList && idList.size() > 0) {
+			List<Object> idList = jdbcdao.executeQuery(query, null, columnValueBeanList);
+			if (null != idList && idList.size() > 0)
+			{
 
-				if (null != idList.get(0)) {
+				if (null != idList.get(0))
+				{
 					Object obj = idList.get(0);
-					oldEmpiID = ((ArrayList) obj).get(2)
-							.toString();
+					oldEmpiID = ((ArrayList) obj).get(2).toString();
 
 				}
 			}
@@ -714,6 +728,5 @@ public class EMPIParticipantListener implements MessageListener
 		}
 		return oldEmpiID;
 	}
-
 
 }

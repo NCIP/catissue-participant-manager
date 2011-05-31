@@ -7,8 +7,8 @@
 	<property name="build.dir" value="${base.dir}/build" />
 	<property name="src.dir" value="${base.dir}/src/java" />
 	<property name="wc.jar.details" value="Partiicpant Manager" />
-	<property name="wc.jar.version" value="1.0" />
-	<property name="wc.jar.creator" value="Virender" />
+	<property name="wc.jar.version" value="1.3.0" />
+	<property name="wc.jar.creator" value="ClinPortal Team" />
 	<property name="target.dir" value="${base.dir}/build/classes" />
 	<!--
 		<loadfile property="dist.revision" srcFile="./.svn/entries">
@@ -32,10 +32,17 @@
 					<include name="*.jar" />
 				</fileset>
 			</classpath>
+
 		</javac>
+		<copy todir="${build.dir}/classes" overwrite="true">
+			<fileset dir="${src.dir}" id="prop_file_copy_id">
+			    <include name="**/*.xml"/>
+			</fileset>
+		</copy>
+
 	</target>
 	<!-- sub tasks -->
-	
+
 	<target name="init">
 			<echo>Initializing necessary parameters : </echo>
 			<!-- Create the time stamp -->
@@ -48,7 +55,7 @@
 
 	<target name="build_jar" depends="compile">
 		<echo>Building Participant Manager project jar : </echo>
-	
+
 		<jar taskname="build_jar" jarfile="${build.dir}/ParticipantManager.jar">
 			<fileset dir="${target.dir}">
 				<include name="**/*" />
@@ -70,7 +77,7 @@
 			<fileset dir="${src.dir}" includes="**/*" />
 		</zip>
 	</target>
-	
+
 	<target name="dist" depends="build_jar">
 
 	</target>

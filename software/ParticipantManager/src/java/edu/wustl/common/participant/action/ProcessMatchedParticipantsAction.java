@@ -100,6 +100,8 @@ public class ProcessMatchedParticipantsAction extends SecureAction
 	 *
 	 * @return the column list
 	 */
+	
+	//changes by amol
 	private List<String> getColumnList()
 	{
 		final List<String> columnNames = new ArrayList<String>();
@@ -108,7 +110,11 @@ public class ProcessMatchedParticipantsAction extends SecureAction
 		columnNames.add("First Name");
 		columnNames.add("Creation Date");
 		columnNames.add("Matched Participants Count");
-		columnNames.add("Clinical Study Name");
+		if(true){											//need to be generic as per application
+			columnNames.add("Collection Protocol");
+		}else{
+			columnNames.add("Clinical Study Name");
+		}
 		return columnNames;
 	}
 

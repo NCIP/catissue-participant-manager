@@ -362,7 +362,8 @@ public class ParticipantMatchingBizLogic
 	 */
 	private String getClinicalStudyNames(Long participantId, JDBCDAO dao) throws DAOException
 	{
-		String query = "SELECT SHORT_TITLE FROM CATISSUE_CLINICAL_STUDY_REG CSR JOIN CATISSUE_SPECIMEN_PROTOCOL CSP ON CSR.CLINICAL_STUDY_ID=CSP.IDENTIFIER WHERE PARTICIPANT_ID=?";
+		//String query = "SELECT SHORT_TITLE FROM CATISSUE_CLINICAL_STUDY_REG CSR JOIN CATISSUE_SPECIMEN_PROTOCOL CSP ON CSR.CLINICAL_STUDY_ID=CSP.IDENTIFIER WHERE PARTICIPANT_ID=?";
+		String query = "SELECT SHORT_TITLE FROM CATISSUE_COLL_PROT_REG CPR JOIN CATISSUE_SPECIMEN_PROTOCOL CSP ON CPR.COLLECTION_PROTOCOL_ID=CSP.IDENTIFIER WHERE PARTICIPANT_ID=?";
 		LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
 		columnValueBeanList.add(new ColumnValueBean("PARTICIPANT_ID", participantId, DBTypes.LONG));
 		List list = dao.executeQuery(query, null, columnValueBeanList);
