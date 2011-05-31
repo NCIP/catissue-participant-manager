@@ -1,0 +1,51 @@
+
+validate:pre:build:
+     [echo] Checking for existence of GLOBUS_LOCATION envrironment variable.
+     [echo] wscore.relative.dir = ws-core-4.0.3
+     [echo] GLOBUS_LOCATION not set, downloading and installing http://gforge.nci.nih.gov/svnroot/commonlibrary/trunk/techstack-2006/os-independent/ws-core-enum-4.0.3.zip
+     [echo] c:/apps/ParticipentManager-webapp/ws-core-4.0.3 already exists.
+
+clean:
+   [delete] Deleting directory D:\ParticipentManager_BDA\ParticipentManager\software\target\dist
+   [delete] Deleting directory D:\ParticipentManager_BDA\ParticipentManager\software\target\temp
+
+init:
+     [echo]  ______   ______   _______ 
+     [echo] (____  \ (______) (_______)
+     [echo]  ____)  ) _     _  _______ 
+     [echo] |  __  ( | |   | ||  ___  |
+     [echo] | |__)  )| |__/ / | |   | |
+     [echo] |______/ |_____/  |_|   |_|
+    [mkdir] Created dir: D:\ParticipentManager_BDA\ParticipentManager\software\target\dist
+    [mkdir] Created dir: D:\ParticipentManager_BDA\ParticipentManager\software\target\dist\exploded
+    [mkdir] Created dir: D:\ParticipentManager_BDA\ParticipentManager\software\target\dist\exploded\ParticipentManager-api
+    [mkdir] Created dir: D:\ParticipentManager_BDA\ParticipentManager\software\target\dist\exploded\ParticipentManager-webapp
+    [mkdir] Created dir: D:\ParticipentManager_BDA\ParticipentManager\software\target\dist\exploded\common
+    [mkdir] Created dir: D:\ParticipentManager_BDA\ParticipentManager\software\target\dist\exploded\tools
+    [mkdir] Created dir: D:\ParticipentManager_BDA\ParticipentManager\software\target\temp
+
+build:ParticipentManager-api:
+
+build:ParticipentManager-webapp:
+
+BUILD FAILED
+
+D:\ParticipentManager_BDA\ParticipentManager\software\build\build.xml:300: Basedir D:\ParticipentManager_BDA\ParticipentManager\software\ParticipentManager does not exist
+	at org.apache.tools.ant.Project.setBaseDir(Project.java:819)
+	at org.apache.tools.ant.taskdefs.Ant.execute(Ant.java:324)
+	at org.apache.tools.ant.UnknownElement.execute(UnknownElement.java:288)
+	at sun.reflect.GeneratedMethodAccessor17.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:585)
+	at org.apache.tools.ant.dispatch.DispatchUtils.execute(DispatchUtils.java:106)
+	at org.apache.tools.ant.Task.perform(Task.java:348)
+	at org.apache.tools.ant.Target.execute(Target.java:357)
+	at org.apache.tools.ant.Target.performTasks(Target.java:385)
+	at org.apache.tools.ant.Project.executeSortedTargets(Project.java:1337)
+	at org.apache.tools.ant.Project.executeTarget(Project.java:1306)
+	at org.apache.tools.ant.helper.DefaultExecutor.executeTargets(DefaultExecutor.java:41)
+	at org.apache.tools.ant.Project.executeTargets(Project.java:1189)
+	at org.apache.tools.ant.Main.runBuild(Main.java:758)
+	at org.apache.tools.ant.Main.startAnt(Main.java:217)
+	at org.apache.tools.ant.launch.Launcher.run(Launcher.java:257)
+	at org.apache.tools.ant.launch.Launcher.main(Launcher.java:104)

@@ -1,0 +1,64 @@
+
+validate:pre:build:
+     [echo] Checking for existence of GLOBUS_LOCATION envrironment variable.
+     [echo] wscore.relative.dir = ws-core-4.0.3
+     [echo] GLOBUS_LOCATION not set, downloading and installing http://gforge.nci.nih.gov/svnroot/commonlibrary/trunk/techstack-2006/os-independent/ws-core-enum-4.0.3.zip
+     [echo] c:/apps/CommonPackage-webapp/ws-core-4.0.3 already exists.
+
+clean:
+   [delete] Deleting directory D:\SimpleQuery_BDA\SimpleQuery\Software\target\dist
+   [delete] Deleting directory D:\SimpleQuery_BDA\SimpleQuery\Software\target\temp
+
+init:
+     [echo]  ______   ______   _______ 
+     [echo] (____  \ (______) (_______)
+     [echo]  ____)  ) _     _  _______ 
+     [echo] |  __  ( | |   | ||  ___  |
+     [echo] | |__)  )| |__/ / | |   | |
+     [echo] |______/ |_____/  |_|   |_|
+    [mkdir] Created dir: D:\SimpleQuery_BDA\SimpleQuery\Software\target\dist
+    [mkdir] Created dir: D:\SimpleQuery_BDA\SimpleQuery\Software\target\dist\exploded
+    [mkdir] Created dir: D:\SimpleQuery_BDA\SimpleQuery\Software\target\dist\exploded\SimpleQuery-api
+    [mkdir] Created dir: D:\SimpleQuery_BDA\SimpleQuery\Software\target\dist\exploded\SimpleQuery-webapp
+    [mkdir] Created dir: D:\SimpleQuery_BDA\SimpleQuery\Software\target\dist\exploded\common
+    [mkdir] Created dir: D:\SimpleQuery_BDA\SimpleQuery\Software\target\dist\exploded\tools
+    [mkdir] Created dir: D:\SimpleQuery_BDA\SimpleQuery\Software\target\temp
+
+build:SimpleQuery-api:
+
+build:SimpleQuery-webapp:
+
+init:
+   [delete] Deleting directory D:\SimpleQuery_BDA\SimpleQuery\Software\SimpleQuery\build\classes
+    [mkdir] Created dir: D:\SimpleQuery_BDA\SimpleQuery\Software\SimpleQuery\build\classes
+
+compile:
+    [javac] Compiling 30 source files to D:\SimpleQuery_BDA\SimpleQuery\Software\SimpleQuery\build\classes
+    [javac] Note: Some input files use or override a deprecated API.
+    [javac] Note: Recompile with -Xlint:deprecation for details.
+    [javac] Note: Some input files use unchecked or unsafe operations.
+    [javac] Note: Recompile with -Xlint:unchecked for details.
+     [copy] Copying 2 files to D:\SimpleQuery_BDA\SimpleQuery\Software\SimpleQuery\build\classes
+
+build_jar:
+[build_jar] Building jar: D:\SimpleQuery_BDA\SimpleQuery\Software\SimpleQuery\build\SimpleQuery-1.1.2.jar
+
+init:
+   [delete] Deleting directory D:\SimpleQuery_BDA\SimpleQuery\Software\SimpleQuery\build\classes
+    [mkdir] Created dir: D:\SimpleQuery_BDA\SimpleQuery\Software\SimpleQuery\build\classes
+
+compile:
+    [javac] Compiling 30 source files to D:\SimpleQuery_BDA\SimpleQuery\Software\SimpleQuery\build\classes
+    [javac] Note: Some input files use or override a deprecated API.
+    [javac] Note: Recompile with -Xlint:deprecation for details.
+    [javac] Note: Some input files use unchecked or unsafe operations.
+    [javac] Note: Recompile with -Xlint:unchecked for details.
+     [copy] Copying 2 files to D:\SimpleQuery_BDA\SimpleQuery\Software\SimpleQuery\build\classes
+
+build_code_zip:
+
+dist:
+
+build:all:
+
+BUILD SUCCESSFUL
