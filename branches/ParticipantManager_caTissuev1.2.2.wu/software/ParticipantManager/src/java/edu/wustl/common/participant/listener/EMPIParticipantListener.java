@@ -178,7 +178,7 @@ public class EMPIParticipantListener implements MessageListener
 	 * @throws Exception the exception
 	 */
 	public void updateParticipantWithEMPIDetails(final String personDemoGraphics)
-			throws ApplicationException, ParticipantManagerException
+	throws ApplicationException, ParticipantManagerException
 	{
 
 		String clinPortalId = null;
@@ -194,7 +194,7 @@ public class EMPIParticipantListener implements MessageListener
 		boolean isGenerateMgrMessage = false;
 
 		sourceObjectName = edu.wustl.common.participant.utility.PropertyHandler
-				.getValue(Constants.PARTICIPANT_CLASS);
+		.getValue(Constants.PARTICIPANT_CLASS);
 
 		try
 		{
@@ -303,16 +303,16 @@ public class EMPIParticipantListener implements MessageListener
 	 */
 	private void updateParticipant(final Element docEle, final IParticipant partcipantObj,
 			final SessionDataBean sessionData) throws PatientLookupException, BizLogicException
-	{
+			{
 		IParticipant participant = null;
 		String gender = null;
 		Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> partiMedIdColl = null;
 		if (partcipantObj != null)
 		{
 			final String personUpi = docEle.getElementsByTagName("personUpi").item(0)
-					.getFirstChild().getNodeValue();
+			.getFirstChild().getNodeValue();
 			final NodeList childNodeList = docEle.getElementsByTagName("demographics").item(0)
-					.getChildNodes();
+			.getChildNodes();
 			for (int i = 0; i < childNodeList.getLength(); i++)
 			{
 				if ((Constants.UNSPECIFIED.equals(partcipantObj.getGender()) || Constants.UNKNOWN
@@ -342,7 +342,7 @@ public class EMPIParticipantListener implements MessageListener
 
 			LOGGER.info("\n\n\n\n\nPARTIICPANT SUCCESSFULLY UPDATED WITH  EMPI \n\n\n\n\n");
 		}
-	}
+			}
 
 	/**
 	 * Sets the race collection.
@@ -354,27 +354,27 @@ public class EMPIParticipantListener implements MessageListener
 	{
 		label0 :
 		{
-			Collection<IRace<IParticipant>> raceCollection = null;
-			if (partcipantObj.getRaceCollection() == null
-					|| partcipantObj.getRaceCollection().isEmpty())
+		Collection<IRace<IParticipant>> raceCollection = null;
+		if (partcipantObj.getRaceCollection() == null
+				|| partcipantObj.getRaceCollection().isEmpty())
+		{
+			break label0;
+		}
+		final Iterator itr = partcipantObj.getRaceCollection().iterator();
+		IRace<IParticipant> race;
+		do
+		{
+			if (!itr.hasNext())
 			{
 				break label0;
 			}
-			final Iterator itr = partcipantObj.getRaceCollection().iterator();
-			IRace<IParticipant> race;
-			do
-			{
-				if (!itr.hasNext())
-				{
-					break label0;
-				}
-				race = (IRace<IParticipant>) itr.next();
-			}
-			while (!Constants.UNKNOWN.equalsIgnoreCase(race.getRaceName())
-					&& !Constants.NOT_REPORTED.equals(race.getRaceName())
-					&& !Constants.NOTSPECIFIED.equals(race.getRaceName()));
-			raceCollection = getRaceCollection(childNode, partcipantObj);
-			partcipantObj.setRaceCollection(raceCollection);
+			race = (IRace<IParticipant>) itr.next();
+		}
+		while (!Constants.UNKNOWN.equalsIgnoreCase(race.getRaceName())
+				&& !Constants.NOT_REPORTED.equals(race.getRaceName())
+				&& !Constants.NOTSPECIFIED.equals(race.getRaceName()));
+		raceCollection = getRaceCollection(childNode, partcipantObj);
+		partcipantObj.setRaceCollection(raceCollection);
 		}
 	}
 
@@ -390,7 +390,7 @@ public class EMPIParticipantListener implements MessageListener
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
 	private Document getDocument(final String hl7MessageFromQueue)
-			throws ParserConfigurationException, SAXException, IOException
+	throws ParserConfigurationException, SAXException, IOException
 	{
 		Document document = null;
 		final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -425,7 +425,7 @@ public class EMPIParticipantListener implements MessageListener
 	 */
 	private Collection<IRace<IParticipant>> getRaceCollection(final Node childNode,
 			final IParticipant partcipantObj)
-	{
+			{
 		final NodeList subChildNodes = childNode.getChildNodes();
 		final Collection<IRace<IParticipant>> raceCollection = new LinkedHashSet<IRace<IParticipant>>();
 		try
@@ -451,7 +451,7 @@ public class EMPIParticipantListener implements MessageListener
 			Logger.out.info(e.getMessage());
 		}
 		return raceCollection;
-	}
+			}
 
 	/**
 	 * Process parti med id coll.
@@ -471,7 +471,7 @@ public class EMPIParticipantListener implements MessageListener
 		if (partiMedIdColl != null && !partiMedIdColl.isEmpty())
 		{
 			final Collection partiMedIdCollOld = partcipantObj
-					.getParticipantMedicalIdentifierCollection();
+			.getParticipantMedicalIdentifierCollection();
 			if (partiMedIdCollOld != null && !partiMedIdCollOld.isEmpty())
 			{
 				final Iterator itreratorOld = partiMedIdCollOld.iterator();
@@ -483,7 +483,7 @@ public class EMPIParticipantListener implements MessageListener
 					}
 					MRNNotFound = false;
 					partMedIdOld = (IParticipantMedicalIdentifier<IParticipant, ISite>) itreratorOld
-							.next();
+					.next();
 					if (partMedIdOld.getMedicalRecordNumber() != null
 							&& partMedIdOld.getSite() != null)
 					{
@@ -498,7 +498,7 @@ public class EMPIParticipantListener implements MessageListener
 								break;
 							}
 							final IParticipantMedicalIdentifier<IParticipant, ISite> partiMedIdNew = (IParticipantMedicalIdentifier<IParticipant, ISite>) itreratorNew
-									.next();
+							.next();
 							final Long oldSiteIDNew = site.getId();
 							if (oldMRN.equals(partiMedIdNew.getMedicalRecordNumber())
 									&& oldSiteID.equals(oldSiteIDNew))
@@ -529,7 +529,7 @@ public class EMPIParticipantListener implements MessageListener
 					break;
 				}
 				final IParticipantMedicalIdentifier<IParticipant, ISite> partiMediIdNew = (IParticipantMedicalIdentifier<IParticipant, ISite>) iterator1
-						.next();
+				.next();
 				if (partiMediIdNew.getId() == null)
 				{
 					if (count < oldMrnIdList.size())
@@ -549,11 +549,12 @@ public class EMPIParticipantListener implements MessageListener
 	 * @param docEle the doc ele
 	 * @throws BizLogicException
 	 * @throws ParticipantManagerException
+	 * @throws PatientLookupException
 	 *
 	 * @throws Exception the exception
 	 */
 	private void parseDomographicXML(final Element docEle) throws BizLogicException,
-			ParticipantManagerException
+	ParticipantManagerException, PatientLookupException
 	{
 		IParticipantMedicalIdentifier<IParticipant, ISite> participantMedicalIdentifier = null;
 		partiMedIdColl = new LinkedHashSet<IParticipantMedicalIdentifier<IParticipant, ISite>>();
@@ -582,15 +583,23 @@ public class EMPIParticipantListener implements MessageListener
 					mrn = value;
 				}
 			}
-
-			if (Constants.CLINPORTAL_FACILITY_ID.equals(facilityId))
+			//			changes by amol
+			//			will get the value of facilityId from participantManager.properties file
+			final String facilityIdValue;
+			if(PropertyHandler.getValue(Constants.Facility_ID)!=null){
+				facilityIdValue = PropertyHandler.getValue(Constants.Facility_ID);
+			}else{
+				facilityIdValue = Constants.CLINPORTAL_FACILITY_ID ;
+			}
+			//			if (Constants.CLINPORTAL_FACILITY_ID.equals(facilityId))
+			if (facilityIdValue.equals(facilityId))
 			{
 				clinPortalId = mrn;
 			}
 			else
 			{
 				participantMedicalIdentifier = ParticipantManagerUtility
-						.getParticipantMedicalIdentifierObj(mrn, facilityId);
+				.getParticipantMedicalIdentifierObj(mrn, facilityId);
 				if (participantMedicalIdentifier != null)
 				{
 					partiMedIdColl.add(participantMedicalIdentifier);
@@ -671,13 +680,13 @@ public class EMPIParticipantListener implements MessageListener
 	 * @throws ParticipantManagerException
 	 */
 	private IUser getUser(final String loginName, final String activityStatus)
-			throws BizLogicException, ParticipantManagerException
+	throws BizLogicException, ParticipantManagerException
 	{
 		IUser validUser = null;
 		String userClassName = edu.wustl.common.participant.utility.PropertyHandler
-				.getValue(Constants.USER_CLASS);
+		.getValue(Constants.USER_CLASS);
 		final String getActiveUser = "from " + userClassName + " user where user.activityStatus= '"
-				+ activityStatus + "' and user.loginName =" + "'" + loginName + "'";
+		+ activityStatus + "' and user.loginName =" + "'" + loginName + "'";
 		final DefaultBizLogic bizlogic = new DefaultBizLogic();
 		final List users = bizlogic.executeQuery(getActiveUser);
 		if (users != null && !users.isEmpty())
