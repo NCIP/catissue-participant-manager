@@ -23,7 +23,7 @@ public class Constants
 
 	/** The Constant ACTIVITY_STATUS_VALUES. */
 	public static final String ACTIVITY_STATUS_VALUES[] = {"-- Select --", "Active", "Closed",
-			"Disabled"};
+	"Disabled"};
 
 	/** The Constant CDE_NAME_GENDER. */
 	public static final String CDE_NAME_GENDER = "Gender";
@@ -190,6 +190,9 @@ public class Constants
 	/** The Constant HL7_REG_EVENT_TYPE. */
 	public static final String HL7_REG_EVENT_TYPE_A04 = "A04";
 
+	//Changes By Amol
+	public static final String HL7_REG_EVENT_TYPE_A08 = "A08";
+
 	/** The Constant HL7_MERGE_EVENT_TYPE_A34. */
 	public static final String HL7_MERGE_EVENT_TYPE_A34 = "A34";
 
@@ -259,6 +262,8 @@ public class Constants
 	/** The Constant CATISSUE_APPLICATION_NAME. */
 	public static final String CATISSUE_APPLICATION_NAME = "catissue";
 
+	public static final String CATISSUE_APP_NAME = "app.name";
+
 	/** The Constant IS_DELETE_PARTICIPANT. */
 	public static final String IS_DELETE_PARTICIPANT = "isDelete";
 
@@ -296,14 +301,19 @@ public class Constants
 
 	public static final String PARTICIPANT_MANAGER_IMPL_CLASS = "ParticipantManagerIMPlClassName";
 
-	public static final String EMPI_GENERATED_PARTICIPANT_LN="eMPIGeneratedPartipantLN";
+	public static final String EMPI_GENERATED_PARTICIPANT_LN = "eMPIGeneratedPartipantLN";
 
-	public static final String EMPI_GENERATED_PARTICIPANT_FN="eMPIGeneratedPartipantFN";
+	public static final String EMPI_GENERATED_PARTICIPANT_FN = "eMPIGeneratedPartipantFN";
 
-    public static final String EMPI_GENERATED_PARTICIPANT = "eMPIGeneratedPartipant";
+	public static final String EMPI_GENERATED_PARTICIPANT = "eMPIGeneratedPartipant";
 
-	public static final String EMPI_ID_SUCCESS="eMPIIdSucess";
+	public static final String EMPI_ID_SUCCESS = "eMPIIdSucess";
 
+	public static final String Sending_Application = "SendingApplication";
 
+	public static final String Sending_Facility = "SendingFacility";
 
+	public static final String Event_Type_Code = "EventTypeCode";
+
+	public static final String Facility_ID = "FacilityID";
 }
