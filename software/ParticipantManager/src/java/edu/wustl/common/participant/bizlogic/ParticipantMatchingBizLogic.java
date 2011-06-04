@@ -13,6 +13,7 @@ import edu.wustl.common.participant.domain.IParticipant;
 import edu.wustl.common.participant.utility.Constants;
 import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.util.Utility;
+import edu.wustl.common.util.XMLPropertyHandler;
 import edu.wustl.common.util.logger.Logger;
 import edu.wustl.dao.JDBCDAO;
 import edu.wustl.dao.exception.DAOException;
@@ -65,10 +66,11 @@ public class ParticipantMatchingBizLogic
 							ParticipantManagerUtility.setEMPIIdStatus(participant.getId(),
 									Constants.EMPI_ID_PENDING);
 							bizLogic.registerPatientToeMPI(participant);
-//							ParticipantManagerUtility.deleteProcessedParticipant(participant
-//									.getId());
+							//							ParticipantManagerUtility.deleteProcessedParticipant(participant
+							//									.getId());
 							// count of matched patients updated to 0 when no matches found
-							ParticipantManagerUtility.updateProcessedParticipant(participant.getId());
+							ParticipantManagerUtility.updateProcessedParticipant(participant
+									.getId());
 						}
 						else
 						{
@@ -117,9 +119,10 @@ public class ParticipantMatchingBizLogic
 						.getParticipantMedicalIdentifierCollection());
 				columnValueBeanList = new LinkedList<ColumnValueBean>();
 				columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
-				if(null!=patientInformation.getId()){
-				columnValueBeanList.add(new ColumnValueBean("PARTICIPANT_ID", patientInformation
-						.getId(), DBTypes.LONG));
+				if (null != patientInformation.getId())
+				{
+					columnValueBeanList.add(new ColumnValueBean("PARTICIPANT_ID",
+							patientInformation.getId(), DBTypes.LONG));
 				}
 				columnValueBeanList.add(new ColumnValueBean("EMPI_ID", patientInformation.getUpi(),
 						DBTypes.VARCHAR));
@@ -362,8 +365,17 @@ public class ParticipantMatchingBizLogic
 	 */
 	private String getClinicalStudyNames(Long participantId, JDBCDAO dao) throws DAOException
 	{
-		//String query = "SELECT SHORT_TITLE FROM CATISSUE_CLINICAL_STUDY_REG CSR JOIN CATISSUE_SPECIMEN_PROTOCOL CSP ON CSR.CLINICAL_STUDY_ID=CSP.IDENTIFIER WHERE PARTICIPANT_ID=?";
-		String query = "SELECT SHORT_TITLE FROM CATISSUE_COLL_PROT_REG CPR JOIN CATISSUE_SPECIMEN_PROTOCOL CSP ON CPR.COLLECTION_PROTOCOL_ID=CSP.IDENTIFIER WHERE PARTICIPANT_ID=?";
+		String query;
+		if ((XMLPropertyHandler.getValue(Constants.CATISSUE_APP_NAME) != null)
+				&& ((XMLPropertyHandler.getValue(Constants.CATISSUE_APP_NAME)).toLowerCase()
+						.contains(Constants.CATISSUE_APPLICATION_NAME.toLowerCase())))
+		{
+			query = "SELECT SHORT_TITLE FROM CATISSUE_COLL_PROT_REG CPR JOIN CATISSUE_SPECIMEN_PROTOCOL CSP ON CPR.COLLECTION_PROTOCOL_ID=CSP.IDENTIFIER WHERE PARTICIPANT_ID=?";
+		}
+		else
+		{
+			query = "SELECT SHORT_TITLE FROM CATISSUE_CLINICAL_STUDY_REG CSR JOIN CATISSUE_SPECIMEN_PROTOCOL CSP ON CSR.CLINICAL_STUDY_ID=CSP.IDENTIFIER WHERE PARTICIPANT_ID=?";
+		}
 		LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
 		columnValueBeanList.add(new ColumnValueBean("PARTICIPANT_ID", participantId, DBTypes.LONG));
 		List list = dao.executeQuery(query, null, columnValueBeanList);
