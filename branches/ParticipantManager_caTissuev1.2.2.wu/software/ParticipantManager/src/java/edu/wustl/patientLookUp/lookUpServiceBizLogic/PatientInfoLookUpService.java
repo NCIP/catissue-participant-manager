@@ -4,10 +4,8 @@ package edu.wustl.patientLookUp.lookUpServiceBizLogic;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
-import edu.wustl.patientLookUp.domain.Address;
 import edu.wustl.patientLookUp.domain.PatientInformation;
 import edu.wustl.patientLookUp.queryExecutor.IQueryExecutor;
 import edu.wustl.patientLookUp.util.Logger;
@@ -43,7 +41,7 @@ public class PatientInfoLookUpService
 			patientLookUpObj.setQueryExecutor(queryExecutor);
 			patientMatchingList = patientLookUpObj.searchMatchingParticipant(patientInformaton,
 					threshold, maxNoOfRecords);
-	//					patientMatchingList = getDummyMatchingList();
+			//patientMatchingList = getDummyMatchingList(patientInformaton);
 		}
 		catch (IOException e)
 		{
@@ -57,7 +55,7 @@ public class PatientInfoLookUpService
 		return patientMatchingList;
 			}
 
-	private List<PatientInformation> getDummyMatchingList()
+	/*private List<PatientInformation> getDummyMatchingList(PatientInformation patientInformaton)
 	{
 		List<PatientInformation> patientList = new ArrayList<PatientInformation>();
 				for (int i = 0; i < 5; i++)
@@ -71,17 +69,17 @@ public class PatientInfoLookUpService
 					info.setFacilityId("" + i);
 					info.setFacilityVisited("facility " + i);
 					info.setFirstName("name" + i);
-					info.setGender("Male");
+					info.setGender("Male Gender");
 					info.setId(Long.valueOf(i));
 					info.setIsFromEMPI("nope");
 					info.setLastName("lastname" + i);
 					info.setMatchingScore(i);
-					info.setSsn("ssn" + i);
+					info.setSsn(patientInformaton.getSsn());
 					info.setUpi("111111" + i);
 					patientList.add(info);
 				}
 		return patientList;
-	}
+	}*/
 
 	/**
 	 * @param patientInformaton : object which has the user entered patient values.
