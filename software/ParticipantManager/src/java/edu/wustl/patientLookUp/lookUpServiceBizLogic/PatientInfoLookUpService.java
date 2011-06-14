@@ -35,15 +35,15 @@ public class PatientInfoLookUpService
 	public List<PatientInformation> patientLookupService(PatientInformation patientInformaton,
 			IQueryExecutor queryExecutor, int threshold, int maxNoOfRecords)
 			throws PatientLookupException
-	{
+			{
 		try
 		{
 			org.apache.log4j.Logger logger = Logger.getLogger(Logger.class);
 			IPatientLookUp patientLookUpObj = PatientLookUpFactory.getPatientLookupServiceImpl();
 			patientLookUpObj.setQueryExecutor(queryExecutor);
-			//			patientMatchingList = patientLookUpObj.searchMatchingParticipant(patientInformaton,
-			//					threshold, maxNoOfRecords);
-			patientMatchingList = getDummyMatchingList();
+			patientMatchingList = patientLookUpObj.searchMatchingParticipant(patientInformaton,
+					threshold, maxNoOfRecords);
+	//					patientMatchingList = getDummyMatchingList();
 		}
 		catch (IOException e)
 		{
@@ -55,31 +55,31 @@ public class PatientInfoLookUpService
 			throw new PatientLookupException(e.getMessage(), e);
 		}
 		return patientMatchingList;
-	}
+			}
 
 	private List<PatientInformation> getDummyMatchingList()
 	{
 		List<PatientInformation> patientList = new ArrayList<PatientInformation>();
-		for (int i = 0; i < 5; i++)
-		{
-			PatientInformation info = new PatientInformation();
-			info.setActivityStatus("Active");
-			info.setAddress(new Address());
-			info.setCSRPackageName("csrpackageName");
-			info.setDateVisited(new Date());
-			info.setDob(new Date());
-			info.setFacilityId("" + i);
-			info.setFacilityVisited("facility " + i);
-			info.setFirstName("name" + i);
-			info.setGender("Male");
-			info.setId(Long.valueOf(i));
-			info.setIsFromEMPI("nope");
-			info.setLastName("lastname" + i);
-			info.setMatchingScore(i);
-			info.setSsn("ssn" + i);
-			info.setUpi("111111" + i);
-			patientList.add(info);
-		}
+				for (int i = 0; i < 5; i++)
+				{
+					PatientInformation info = new PatientInformation();
+					info.setActivityStatus("Active");
+					info.setAddress(new Address());
+					info.setCSRPackageName("csrpackageName");
+					info.setDateVisited(new Date());
+					info.setDob(new Date());
+					info.setFacilityId("" + i);
+					info.setFacilityVisited("facility " + i);
+					info.setFirstName("name" + i);
+					info.setGender("Male");
+					info.setId(Long.valueOf(i));
+					info.setIsFromEMPI("nope");
+					info.setLastName("lastname" + i);
+					info.setMatchingScore(i);
+					info.setSsn("ssn" + i);
+					info.setUpi("111111" + i);
+					patientList.add(info);
+				}
 		return patientList;
 	}
 
@@ -90,7 +90,7 @@ public class PatientInfoLookUpService
 	 */
 	public List<PatientInformation> patientLookupService(PatientInformation patientInformaton,
 			IQueryExecutor queryExecutor) throws PatientLookupException
-	{
+			{
 		try
 		{
 			FileWriter writer = null;
@@ -121,5 +121,5 @@ public class PatientInfoLookUpService
 			throw new PatientLookupException(e.getMessage(), e);
 		}
 		return patientMatchingList;
-	}
+			}
 }
