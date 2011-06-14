@@ -586,8 +586,8 @@ public class EMPIParticipantListener implements MessageListener
 			//			changes by amol
 			//			will get the value of facilityId from participantManager.properties file
 			final String facilityIdValue;
-			if(PropertyHandler.getValue(Constants.Facility_ID)!=null){
-				facilityIdValue = PropertyHandler.getValue(Constants.Facility_ID);
+			if(edu.wustl.common.participant.utility.PropertyHandler.getValue(Constants.Facility_ID)!=null){
+				facilityIdValue = edu.wustl.common.participant.utility.PropertyHandler.getValue(Constants.Facility_ID);
 			}else{
 				facilityIdValue = Constants.CLINPORTAL_FACILITY_ID ;
 			}
