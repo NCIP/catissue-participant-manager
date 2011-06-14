@@ -4,6 +4,7 @@
 
 package edu.wustl.common.participant.action;
 
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 
 import javax.servlet.http.HttpServletRequest;
@@ -56,7 +57,7 @@ public class ParticipantEMPIGenerationAction extends CommonAddEditAction
 	{
 		ActionForward forward = null;
 		final IParticipantForm participantForm = (IParticipantForm) form;
-		final String isGenerateHL7 = (String) request.getParameter("isGenerateHL7");
+		final String isGenerateHL7 = request.getParameter("isGenerateHL7");
 		final String isGenerateEMPID = request.getParameter("isGenerateEMPIID");
 		String mrn = null;
 		final String key = ParticipantManagerUtility.getParticipantMedicalIdentifierKeyFor(1,
@@ -115,6 +116,9 @@ public class ParticipantEMPIGenerationAction extends CommonAddEditAction
 				else
 				{
 					generateEMPI(request, participantForm);
+					String participantName = this.getParticipantName(participantForm);
+					 setMessage(request, "participant.empiid.generation.message",
+					 participantName);
 					forward = mapping.findForward(edu.wustl.common.util.global.Constants.SUCCESS);
 				}
 			}
@@ -130,6 +134,43 @@ public class ParticipantEMPIGenerationAction extends CommonAddEditAction
 		}
 		return forward;
 
+	}
+
+	private String getParticipantName(IParticipantForm participantForm){
+		String participantName = null;
+		participantName = participantForm.getLastName() + ", " + participantForm.getFirstName();
+		return participantName;
+	}
+
+	private void setMessage(final HttpServletRequest request, final String key,
+			String value) {
+
+		ActionMessages messages = (ActionMessages) request
+				.getAttribute(Globals.MESSAGE_KEY);
+		if (messages == null) {
+			messages = new ActionMessages();
+		}
+		boolean isDuplicateMsg = checkDuplicateMessage(messages, key);
+		if (!isDuplicateMsg) {
+			messages.add("org.apache.struts.action.GLOBAL_MESSAGE",
+					new ActionMessage(key, value));
+			saveMessages(request, messages);
+
+		}
+	}
+
+	private boolean checkDuplicateMessage(final ActionMessages messages,
+			final String key) {
+		Iterator itr = messages.get("org.apache.struts.action.GLOBAL_MESSAGE");
+		boolean isDuplicateMsg = false;
+		while (itr.hasNext()) {
+			ActionMessage message = (ActionMessage) itr.next();
+			if (key.equals(message.getKey())) {
+				isDuplicateMsg = true;
+				break;
+			}
+		}
+		return isDuplicateMsg;
 	}
 
 	/**
