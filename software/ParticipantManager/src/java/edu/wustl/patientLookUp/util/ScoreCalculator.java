@@ -7,6 +7,9 @@ import java.util.Iterator;
 
 import org.apache.commons.codec.language.Metaphone;
 
+import edu.wustl.common.participant.domain.IParticipant;
+import edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
+import edu.wustl.common.participant.domain.ISite;
 import edu.wustl.common.util.XMLPropertyHandler;
 import edu.wustl.patientLookUp.domain.PatientInformation;
 
@@ -61,14 +64,17 @@ public class ScoreCalculator
 		haveDob = 0;
 		haveSSN = 0;
 
-		if (userPatientInfo.getParticipantMedicalIdentifierCollection() != null
-				&& userPatientInfo.getParticipantMedicalIdentifierCollection().size() > 0)
+		if (userPatientInfo.getPmiCollection() != null
+				&& userPatientInfo.getPmiCollection().size() > 0)
 		{
-			Iterator itr = userPatientInfo.getParticipantMedicalIdentifierCollection().iterator();
+			Iterator<IParticipantMedicalIdentifier<IParticipant, ISite>> itr = userPatientInfo.getPmiCollection().iterator();
 			while (itr.hasNext())
 			{
-				String mrn = (String) itr.next();
-				String siteId = (String) itr.next();
+				IParticipantMedicalIdentifier<IParticipant, ISite>pmi=itr.next();
+//				String mrn = (String) itr.next();
+//				String siteId = (String) itr.next();
+				String mrn=pmi.getMedicalRecordNumber();
+				String siteId  =pmi.getSite().getId().toString();
 				score = getMRNScore(mrn, siteId, dbPatientInfo);
 				if (score > 0)
 				{
@@ -418,16 +424,15 @@ public class ScoreCalculator
 	private int getMRNScore(String mrn, String siteId, PatientInformation dbPatientInfo)
 	{
 		int score = 0;
-		if (dbPatientInfo.getParticipantMedicalIdentifierCollection() != null
-				&& dbPatientInfo.getParticipantMedicalIdentifierCollection().size() > 0)
+		if (dbPatientInfo.getPmiCollection() != null
+				&& dbPatientInfo.getPmiCollection().size() > 0)
 		{
-			Iterator<String> itr = dbPatientInfo.getParticipantMedicalIdentifierCollection()
+			Iterator<IParticipantMedicalIdentifier<IParticipant, ISite>> itr = dbPatientInfo.getPmiCollection()
 					.iterator();
 			while (itr.hasNext())
 			{
-				String dbMRN = (String) itr.next();
-				String dbSiteId = (String) itr.next();
-				String dbSiteName = (String) itr.next();
+				IParticipantMedicalIdentifier<IParticipant, ISite>pmi=itr.next();
+				String dbMRN= pmi.getMedicalRecordNumber();
 				// Only MRN is considered because eMPI patients hv no siteID.
 				if (mrn.equals(dbMRN))
 				{

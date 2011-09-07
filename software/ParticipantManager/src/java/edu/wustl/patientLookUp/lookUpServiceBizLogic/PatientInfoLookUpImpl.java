@@ -51,6 +51,8 @@ public class PatientInfoLookUpImpl implements IPatientLookUp
 		List<PatientInformation> matchingParticipantList = null;
 		List<PatientInformation> matchedPatientsBySSN = null;
 		List<PatientInformation> matchedPatientsByMRN = null;
+		List<PatientInformation> matchingParticipantListByName = null;
+
 		try
 		{
 			processLName(patientInformation);
@@ -59,8 +61,8 @@ public class PatientInfoLookUpImpl implements IPatientLookUp
 			processSSN(patientInformation);
 
 			// Perform the match on MRN value if provided by user
-			if (patientInformation.getParticipantMedicalIdentifierCollection() != null
-					&& patientInformation.getParticipantMedicalIdentifierCollection().size() > 0)
+			if (patientInformation.getPmiCollection() != null
+					&& patientInformation.getPmiCollection().size() > 0)
 			{
 				matchedPatientsByMRN = patientInfoByMRNObj.performMathchOnMRN(queryExecutor,
 						patientInformation, threshold, maxNoOfRecords);
@@ -75,13 +77,12 @@ public class PatientInfoLookUpImpl implements IPatientLookUp
 			matchingParticipantList = Utility.mergeMatchedPatientLists(matchedPatientsBySSN,
 					matchedPatientsByMRN);
 
-			// No exact metching records found for  MrN and SSN value, and User has enter Lastname, search for lastname
-			if (matchingParticipantList.size() == 0 && haveLName > 0)
-			{
-				matchingParticipantList = patientInfoByNameObj.performMatchOnName(
+			//perform match on Last name 
+		    matchingParticipantListByName = patientInfoByNameObj.performMatchOnName(
 						patientInformation, queryExecutor, threshold, maxNoOfRecords);
-			}
-
+			// merge both the MRN and SSN and Lname matched patient records...
+			matchingParticipantList = Utility.mergeMatchedPatientLists(matchingParticipantList,
+					matchingParticipantListByName);
 		}
 		catch (Exception e)
 		{

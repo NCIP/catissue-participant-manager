@@ -183,32 +183,19 @@ public class ParticipantLookupLogic implements IParticipantManagerLookupLogic
 						final String ssn = ParticipantManagerUtility.getSSN(patientInfo.getSsn());
 						partcipantNew.setSocialSecurityNumber(ssn);
 					}
-					final Collection participantInfoMedicalIdentifierCollection = patientInfo
-							.getParticipantMedicalIdentifierCollection();
+					final Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> participantInfoMedicalIdentifierCollection = patientInfo
+					.getPmiCollection();
 					final Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> participantMedicalIdentifierCollectionNew = new LinkedHashSet<IParticipantMedicalIdentifier<IParticipant, ISite>>();
 					if (participantInfoMedicalIdentifierCollection != null
 							&& participantInfoMedicalIdentifierCollection.size() > 0)
 					{
 						IParticipantMedicalIdentifier<IParticipant, ISite> participantMedicalIdentifier;
-						for (Iterator iterator = participantInfoMedicalIdentifierCollection
+						for (Iterator<IParticipantMedicalIdentifier<IParticipant, ISite> > iterator = participantInfoMedicalIdentifierCollection
 								.iterator(); iterator.hasNext(); participantMedicalIdentifierCollectionNew
 								.add(participantMedicalIdentifier))
 						{
-							final String mrn = (String) iterator.next();
-							final String siteIdStr = (String) iterator.next();
-							Long siteId = null;
-							final String siteName = (String) iterator.next();
-							final ISite site = (ISite) ParticipantManagerUtility.getSiteInstance();
-							if (siteIdStr != null && !"".equals(siteIdStr))
-							{
-								siteId = Long.valueOf(siteIdStr);
-							}
-							site.setId(siteId);
-							site.setName(siteName);
-							participantMedicalIdentifier = (IParticipantMedicalIdentifier<IParticipant, ISite>) ParticipantManagerUtility
-									.getPMIInstance();
-							participantMedicalIdentifier.setMedicalRecordNumber(mrn);
-							participantMedicalIdentifier.setSite(site);
+							IParticipantMedicalIdentifier<IParticipant, ISite>  pmi =  iterator.next();
+							participantMedicalIdentifier= pmi;
 						}
 
 					}

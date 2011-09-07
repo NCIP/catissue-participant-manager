@@ -13,6 +13,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import edu.wustl.common.participant.domain.IParticipant;
+import edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
+import edu.wustl.common.participant.domain.ISite;
+import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.patientLookUp.domain.PatientInformation;
 import edu.wustl.patientLookUp.util.Constants;
 import edu.wustl.patientLookUp.util.Logger;
@@ -43,7 +47,7 @@ public class XQueryExecutorImpl extends AbstractQueryExecutor
 	/* (non-Javadoc)
 	 * @see edu.wustl.patientLookUp.queryExecutor.AbstractQueryExecutor#executeQueryForMRN(java.lang.String)
 	 */
-	public List<PatientInformation> executeQueryForMRN(String mrn, String siteId,
+	public List<PatientInformation> executeQueryForMRN(String mrn, String siteId,String facilityId,
 			Set<Long> protocolIdSet, String pmiObjName) throws PatientLookupException
 	{
 		List<PatientInformation> patientInformationList = new ArrayList<PatientInformation>();
@@ -52,6 +56,7 @@ public class XQueryExecutorImpl extends AbstractQueryExecutor
 			String query = QueryGenerator.getMRNQuery();
 			statement = getConnection().prepareStatement(query);
 			statement.setString(1, mrn);
+			statement.setString(2, facilityId);
 			rs = statement.executeQuery();
 			if (rs != null)
 			{
@@ -285,35 +290,59 @@ public class XQueryExecutorImpl extends AbstractQueryExecutor
 			String medicalRecNumber = null;
 			String facilityId = null;
 			ResultSet result = null;
+			Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> newPmiColl = null;
 			Collection<String> patientMedicalIdentifierColl = null;
+
 			statement = getConnection().prepareStatement(query);
+
 			for (int i = 0; i < matchedPatientsList.size(); i++)
 			{
 				PatientInformation patientInfo = (PatientInformation) matchedPatientsList.get(i);
-				statement.setString(1, patientInfo.getUpi());
-				result = statement.executeQuery();
 
-				if (result != null)
+				newPmiColl = new LinkedList<IParticipantMedicalIdentifier<IParticipant, ISite>>();
+				patientMedicalIdentifierColl = new LinkedList<String>();
+				Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> pmiColl = patientInfo
+						.getPmiCollection();
+
+				for (IParticipantMedicalIdentifier<IParticipant, ISite> iParticipantMedicalIdentifier : pmiColl)
 				{
-					patientMedicalIdentifierColl = new LinkedList<String>();
-					while (result.next())
+					String facilityID = iParticipantMedicalIdentifier.getSite().getFacilityId();
+					statement.setString(1, patientInfo.getUpi());
+					statement.setString(2, facilityID);
+					result = statement.executeQuery();
+
+					if (result != null)
 					{
-						//patientInfo.setDateVisited(Utility.parse(result.getString("regDate"),Constants.DATE_FORMAT_YYYY_MM_DD));
-						//patientInfo.setFacilityVisited(PropertyHandler.getValue((String) result.getString("facility")));
-						medicalRecNumber = (String) result.getString("mrn");
-						facilityId = (String) result.getString("facility_id");
-						String facilityName = (String) result.getString("print_name");
-						if (!patientMedicalIdentifierColl.contains(medicalRecNumber))
+						while (result.next())
 						{
-							patientMedicalIdentifierColl.add(medicalRecNumber);
-							patientMedicalIdentifierColl.add(facilityId);
-							patientMedicalIdentifierColl.add(facilityName);
+							//patientInfo.setDateVisited(Utility.parse(result.getString("regDate"),Constants.DATE_FORMAT_YYYY_MM_DD));
+							//patientInfo.setFacilityVisited(PropertyHandler.getValue((String) result.getString("facility")));
+							medicalRecNumber = (String) result.getString("mrn");
+							facilityId = (String) result.getString("facility_id");
+							String facilityName = (String) result.getString("print_name");
+
+							if (!patientMedicalIdentifierColl.contains(medicalRecNumber))
+							{
+								patientMedicalIdentifierColl.add(medicalRecNumber);
+								patientMedicalIdentifierColl.add(facilityId);
+								patientMedicalIdentifierColl.add(facilityName);
+
+								IParticipantMedicalIdentifier<IParticipant, ISite> pmiObj = ParticipantManagerUtility
+										.getPMIInstance();
+								pmiObj.setMedicalRecordNumber(medicalRecNumber);
+								ISite site = (ISite) ParticipantManagerUtility.getSiteInstance();
+								site.setId(Long.valueOf(facilityId));
+								site.setName(facilityName);
+								pmiObj.setSite(site);
+								newPmiColl.add(pmiObj);
+							}
 						}
+						//					patientInfo
+						//							.setParticipantMedicalIdentifierCollection(patientMedicalIdentifierColl);
+						result.close();
 					}
-					patientInfo
-							.setParticipantMedicalIdentifierCollection(patientMedicalIdentifierColl);
-					result.close();
 				}
+				patientInfo.setPmiCollection(newPmiColl);
 			}
 			statement.close();
 		}
@@ -323,6 +352,12 @@ public class XQueryExecutorImpl extends AbstractQueryExecutor
 			throw new PatientLookupException(e.getMessage(), e);
 
 		}
+		catch (Exception e)
+		{
+			Logger.out.info(e.getMessage(), e);
+			throw new PatientLookupException(e.getMessage(), e);
+		}
+
 		finally
 		{
 			closeConnection();

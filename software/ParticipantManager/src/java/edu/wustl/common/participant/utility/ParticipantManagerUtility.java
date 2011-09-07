@@ -1194,7 +1194,8 @@ public class ParticipantManagerUtility
 			patientInformation.setDob(participant.getBirthDate());
 		}
 		patientInformation.setGender(participant.getGender());
-		Collection<String> participantInfoMedicalIdentifierCollection = new LinkedList<String>();
+		//Collection<String> participantInfoMedicalIdentifierCollection = new LinkedList<String>();
+		Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> participantInfoMedicalIdentifierCollection = new LinkedList<IParticipantMedicalIdentifier<IParticipant,ISite>>();
 		Collection participantMedicalIdentifierCollection = participant
 				.getParticipantMedicalIdentifierCollection();
 		if (participantMedicalIdentifierCollection != null)
@@ -1210,17 +1211,18 @@ public class ParticipantManagerUtility
 						.next();
 				if (participantMedicalIdentifier.getMedicalRecordNumber() != null)
 				{
-					participantInfoMedicalIdentifierCollection.add(participantMedicalIdentifier
-							.getMedicalRecordNumber());
-					participantInfoMedicalIdentifierCollection.add(String
-							.valueOf((participantMedicalIdentifier.getSite()).getId()));
+					participantInfoMedicalIdentifierCollection.add(participantMedicalIdentifier);
+//							.getMedicalRecordNumber());
+//					participantInfoMedicalIdentifierCollection.add(String
+//							.valueOf((participantMedicalIdentifier.getSite()).getId()));
 					//participantInfoMedicalIdentifierCollection.add(((ISite) participantMedicalIdentifier.getSite()).getName());
 				}
 			}
 			while (true);
 		}
-		patientInformation
-				.setParticipantMedicalIdentifierCollection(participantInfoMedicalIdentifierCollection);
+//		patientInformation
+//				.setParticipantMedicalIdentifierCollection(participantInfoMedicalIdentifierCollection);
+		patientInformation.setPmiCollection(participantInfoMedicalIdentifierCollection);
 		Collection<String> participantInfoRaceCollection = new HashSet<String>();
 		Collection participantRaceCollection = participant.getRaceCollection();
 		if (participantRaceCollection != null)

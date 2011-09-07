@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -182,7 +183,7 @@ public class SQLQueryExecutorImpl extends AbstractQueryExecutor
 	 * @return list of mrn matched patients from db
 	 * @throws PatientLookupException : PatientLookupException
 	 */
-	public List<PatientInformation> executeQueryForMRN(String mrn, String siteId,
+	public List<PatientInformation> executeQueryForMRN(String mrn, String siteId,String facilityId,
 			Set<Long> protocolIdSet, String pmiObjName) throws PatientLookupException
 	{
 		List<PatientInformation> patientInformationList = new ArrayList<PatientInformation>();
@@ -242,7 +243,7 @@ public class SQLQueryExecutorImpl extends AbstractQueryExecutor
 			{
 				IParticipant participant = (IParticipant) list.get(i);
 				Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> participantInfoMedIdCol = null;
-				Collection<String> participantMedIdCol = null;
+				Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> participantMedIdCol = null;
 				if (participant != null)
 				{
 					patientInfo = new PatientInformation();
@@ -278,7 +279,8 @@ public class SQLQueryExecutorImpl extends AbstractQueryExecutor
 					if (participantInfoMedIdCol != null && !participantInfoMedIdCol.isEmpty())
 					{
 						Iterator iterator = participantInfoMedIdCol.iterator();
-						participantMedIdCol = new ArrayList<String>();
+						participantMedIdCol = new  LinkedHashSet<IParticipantMedicalIdentifier<IParticipant, ISite>>();
+							//new ArrayList<String>();
 						while (iterator.hasNext())
 						{
 							IParticipantMedicalIdentifier<IParticipant, ISite> participantMedId = (IParticipantMedicalIdentifier<IParticipant, ISite>) iterator
@@ -286,14 +288,12 @@ public class SQLQueryExecutorImpl extends AbstractQueryExecutor
 							if (participantMedId.getMedicalRecordNumber() != null
 									&& !"".equals(participantMedId.getMedicalRecordNumber()))
 							{
-								participantMedIdCol.add(participantMedId.getMedicalRecordNumber());
-								participantMedIdCol.add(String.valueOf(participantMedId.getSite()
-										.getId()));
-								participantMedIdCol.add(participantMedId.getSite().getName());
+								participantInfoMedIdCol.add(participantMedId);
 							}
 						}
 					}
-					patientInfo.setParticipantMedicalIdentifierCollection(participantMedIdCol);
+					//patientInfo.setParticipantMedicalIdentifierCollection(participantMedIdCol);
+					patientInfo.setPmiCollection(participantInfoMedIdCol);
 					patientInfoList.add(patientInfo);
 				}
 			}

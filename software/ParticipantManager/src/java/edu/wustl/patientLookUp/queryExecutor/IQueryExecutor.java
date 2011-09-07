@@ -27,7 +27,7 @@ public interface IQueryExecutor
 	void setDBParameteres(String dbURL, String dbUser, String dbPassword, String dbDriver,
 			String dbSchema) throws PatientLookupException;
 
-	List<PatientInformation> executeQueryForMRN(String mrn, String siteId,
+	List<PatientInformation> executeQueryForMRN(String mrn, String siteId,String facilityId,
 			Set<Long> protocolIdSet, String pmiObjName) throws PatientLookupException;
 
 	List<PatientInformation> executetQueryForSSN(String ssn, Set<Long> protocolIdSet,

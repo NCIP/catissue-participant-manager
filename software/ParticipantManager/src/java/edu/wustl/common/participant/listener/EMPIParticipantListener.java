@@ -313,7 +313,7 @@ public class EMPIParticipantListener implements MessageListener
 		{
 			final String personUpi = docEle.getElementsByTagName("personUpi").item(0)
 					.getFirstChild().getNodeValue();
-			final NodeList childNodeList = docEle.getElementsByTagName("demographics").item(0)
+			/*final NodeList childNodeList = docEle.getElementsByTagName("demographics").item(0)
 					.getChildNodes();
 			for (int i = 0; i < childNodeList.getLength(); i++)
 			{
@@ -325,14 +325,14 @@ public class EMPIParticipantListener implements MessageListener
 					final Element ele = (Element) childNodeList.item(i);
 					final String value = getNodeValue(ele, "id");
 					gender = PropertyHandler.getValue(value);
-					partcipantObj.setGender(gender);
+					//partcipantObj.setGender(gender);
 				}
 				if (Constants.EMPI_DEMOGRAPHIC_XML_RACE_COLLECTION.equals(childNodeList.item(i)
 						.getNodeName()))
 				{
-					setRaceCollection(partcipantObj, childNodeList.item(i));
+					//setRaceCollection(partcipantObj, childNodeList.item(i));
 				}
-			}
+			}*/
 			partiMedIdColl = getPartiMedIdColl();
 			processPartiMedIdColl(partiMedIdColl, partcipantObj);
 			participant = partcipantObj;
