@@ -8,6 +8,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import edu.wustl.common.participant.domain.IParticipant;
+import edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
+import edu.wustl.common.participant.domain.ISite;
 import edu.wustl.patientLookUp.domain.PatientInformation;
 import edu.wustl.patientLookUp.queryExecutor.IQueryExecutor;
 import edu.wustl.patientLookUp.util.PatientLookupException;
@@ -39,22 +42,28 @@ public class PatientInfoByMRN
 		List<PatientInformation> patientListByMRN = null;
 		try
 		{
-			Iterator<String> itr = patientInformation.getParticipantMedicalIdentifierCollection()
+			Iterator<IParticipantMedicalIdentifier<IParticipant, ISite>>  itr = patientInformation.getPmiCollection()
 					.iterator();
 			while (itr.hasNext())
 			{
-				String mrn = (String) itr.next();
-				String siteId = (String) itr.next();
+				IParticipantMedicalIdentifier<IParticipant, ISite> pmi= itr.next();
+//				String mrn = (String) itr.next();
+//				String siteId = (String) itr.next();
+				String mrn= pmi.getMedicalRecordNumber();
 				if (mrn != null)
 				{
-					patientListByMRN = queryExecutor.executeQueryForMRN(mrn, siteId,
+					/*Bug#20878:facility Id is passed to get participants on based of facilityIds and MRN.
+					*/
+					String siteId = String.valueOf(pmi.getSite().getId());
+					String facilityId = String.valueOf(pmi.getSite().getFacilityId());
+					patientListByMRN = queryExecutor.executeQueryForMRN(mrn, siteId,facilityId,
 							patientInformation.getProtocolIdSet(), patientInformation
 									.getPmiObjName());
 					Utility.populatePatientDataMap(patientListByMRN, patientDataMap);
 					// If exact MRN match not found perform the fuzzy match on MRN.
-					mrnFuzzyMatch1(mrn, siteId, queryExecutor, patientInformation
+					mrnFuzzyMatch1(mrn, siteId,facilityId, queryExecutor, patientInformation
 							.getProtocolIdSet(), patientInformation.getPmiObjName());
-					mrnFuzzyMatch2(mrn, siteId, queryExecutor, patientInformation
+					mrnFuzzyMatch2(mrn, siteId,facilityId, queryExecutor, patientInformation
 							.getProtocolIdSet(), patientInformation.getPmiObjName());
 				}
 			}
@@ -83,7 +92,7 @@ public class PatientInfoByMRN
 	 * @return List of MRN partially matched patients.
 	 * @throws PatientLookupException : PatientLookupException
 	 */
-	private void mrnFuzzyMatch1(String mrn, String siteId, IQueryExecutor queryExecutor,
+	private void mrnFuzzyMatch1(String mrn, String siteId, String facilityId, IQueryExecutor queryExecutor,
 			Set<Long> protocolIdSet, String pmiObjName) throws PatientLookupException
 	{
 		List<PatientInformation> patientListByMRN = null;
@@ -103,7 +112,7 @@ public class PatientInfoByMRN
 					tempMRNStr.append(mrn.charAt(j));
 				}
 			}
-			patientListByMRN = queryExecutor.executeQueryForMRN(tempMRNStr.toString(), siteId,
+			patientListByMRN = queryExecutor.executeQueryForMRN(tempMRNStr.toString(), siteId,facilityId,
 					protocolIdSet, pmiObjName);
 			// For removing the duplicate MRN matched records
 			Utility.populatePatientDataMap(patientListByMRN, patientDataMap);
@@ -121,7 +130,7 @@ public class PatientInfoByMRN
 	 * @return list of MRN partially matched patients.
 	 * @throws PatientLookupException
 	 */
-	private void mrnFuzzyMatch2(String mrn, String siteId, IQueryExecutor queryExecutor,Set<Long> protocolIdSet,String pmiObjName)
+	private void mrnFuzzyMatch2(String mrn, String siteId, String facilityId,IQueryExecutor queryExecutor,Set<Long> protocolIdSet,String pmiObjName)
 			throws PatientLookupException
 	{
 		List<PatientInformation> patientListByMRN = null;
@@ -136,7 +145,7 @@ public class PatientInfoByMRN
 			{
 				charArray[i] = ++charArray[i];
 				tempMRNStr.append(charArray);
-				patientListByMRN = queryExecutor.executeQueryForMRN(tempMRNStr.toString(), siteId,
+				patientListByMRN = queryExecutor.executeQueryForMRN(tempMRNStr.toString(), siteId,facilityId,
 						protocolIdSet, pmiObjName);
 				// For removing the duplicate MRN matched records
 				Utility.populatePatientDataMap(patientListByMRN, patientDataMap);
@@ -147,7 +156,7 @@ public class PatientInfoByMRN
 			{
 				charArray[i] = --charArray[i];
 				tempMRNStr.append(charArray);
-				patientListByMRN = queryExecutor.executeQueryForMRN(tempMRNStr.toString(), siteId,
+				patientListByMRN = queryExecutor.executeQueryForMRN(tempMRNStr.toString(), siteId,facilityId,
 						protocolIdSet, pmiObjName);
 				// For removing the duplicate MRN matched records
 				Utility.populatePatientDataMap(patientListByMRN, patientDataMap);

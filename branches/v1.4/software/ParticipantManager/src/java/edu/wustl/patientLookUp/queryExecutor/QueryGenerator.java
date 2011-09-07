@@ -66,8 +66,8 @@ public class QueryGenerator
 				+ "       '$e1/Encounter[medicalRecordNumber/value = $mrn]'"
 				+ "    	passing e1.\"XMLDATA\" as \"e1\","
 				+ "       cast (? as varchar(255)) as \"mrn\")"
-				+ "	where e1.facility in "
-				+" (5572,2574,4674,3049,5107,6729,2572,3148,3269,160559,6116)"
+				+ "	where e1.facility =? "
+				//+" (5572,2574,4674,3049,5107,6729,2572,3148,3269,160559,6116)"
 				+ "	and current timestamp between e1.start_ts and e1.end_ts)"
 				+ "   and current timestamp between d1.start_ts and d1.end_ts)"
 				+ " select ap.upi,ap.lastname,ap.firstname,ap.middlename,ap.dob,ap.ssn,"
@@ -263,7 +263,7 @@ public class QueryGenerator
 			 		" columns mrn varchar(255) path 'medicalRecordNumber/value'," +
 			 		" facility varchar(255) path 'facility/id') ex1 " +
 			 		" where e1.upi = ? " +
-			 		" and e1.facility in (5572,2574,4674,3049,5107,6729,2572,3148,3269,160559,6116)" +
+			 		" and e1.facility = ? " +
 			 		" and current timestamp between e1.start_ts and e1.end_ts " +
 			 		" and e1.facility = fac.facility_conceptid";
 

@@ -10,6 +10,8 @@ import java.util.List;
 
 import edu.wustl.common.exception.ApplicationException;
 import edu.wustl.common.participant.domain.IParticipant;
+import edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
+import edu.wustl.common.participant.domain.ISite;
 import edu.wustl.common.participant.utility.Constants;
 import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.util.Utility;
@@ -108,7 +110,7 @@ public class ParticipantMatchingBizLogic
 			{
 				patientInformation = (PatientInformation) matchPartpantLst.get(i);
 				raceValues = getRaceValues(patientInformation.getRaceCollection());
-				mrnValue = getMRNValues(patientInformation.getParticipantMedicalIdentifierCollection());
+				mrnValue = getMRNValues(patientInformation.getPmiCollection());
 				columnValueBeanList = new LinkedList<ColumnValueBean>();
 				columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
 				if (null != patientInformation.getId())
@@ -267,12 +269,14 @@ public class ParticipantMatchingBizLogic
 		String mrn = "";
 		if (patientMedicalIdentifierColl != null)
 		{
-			for (Iterator iterator = patientMedicalIdentifierColl.iterator(); iterator.hasNext();)
+			for (Iterator<IParticipantMedicalIdentifier<IParticipant, ISite>> iterator = patientMedicalIdentifierColl.iterator(); iterator.hasNext();)
 			{
-				mrnId = (String) iterator.next();
-				siteId = (String) iterator.next();
-				siteName = (String) iterator.next();
+				IParticipantMedicalIdentifier<IParticipant, ISite> pmi =iterator.next();
+				mrnId=pmi.getMedicalRecordNumber();
+				siteId= pmi.getSite().getId().toString();
+				siteName=pmi.getSite().getName();
 				mrn = mrnId + ":" + siteId + ":" + siteName;
+				mrn=mrn.trim();
 				if (mrnValue.length() == 0)
 				{
 					mrnValue.append(mrn);

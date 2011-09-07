@@ -1,4 +1,5 @@
 
+
 package edu.wustl.patientLookUp.domain;
 
 import java.util.Collection;
@@ -6,6 +7,10 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
+
+import edu.wustl.common.participant.domain.IParticipant;
+import edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
+import edu.wustl.common.participant.domain.ISite;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -253,7 +258,7 @@ public class PatientInformation
 
 	/** A collection of medical record identification number that refers to a Participant. */
 
-	private Collection<String> participantMedicalIdentifierCollection = new LinkedHashSet<String>();// = new HashSet();
+	private Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> pmiCollection = new LinkedHashSet<IParticipantMedicalIdentifier<IParticipant, ISite>>();// = new HashSet();
 
 	/** Participant's race origination. */
 	private Collection<String> raceCollection = new HashSet<String>();
@@ -263,9 +268,9 @@ public class PatientInformation
 	 *
 	 * @return patient's participantMedicalIdentifierCollection.
 	 */
-	public Collection<String> getParticipantMedicalIdentifierCollection()
+	public Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> getPmiCollection()
 	{
-		return participantMedicalIdentifierCollection;
+		return pmiCollection;
 	}
 
 	/**
@@ -274,10 +279,10 @@ public class PatientInformation
 	 * @param participantMedicalIdentifierCollection :
 	 * patient's participantMedicalIdentifierCollection.
 	 */
-	public void setParticipantMedicalIdentifierCollection(
-			Collection<String> participantMedicalIdentifierCollection)
+	public void setPmiCollection(
+			Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> participantMedicalIdentifierCollection)
 	{
-		this.participantMedicalIdentifierCollection = participantMedicalIdentifierCollection;
+		this.pmiCollection = participantMedicalIdentifierCollection;
 	}
 
 	/**
