@@ -263,7 +263,7 @@ public class QueryGenerator
 			 		" columns mrn varchar(255) path 'medicalRecordNumber/value'," +
 			 		" facility varchar(255) path 'facility/id') ex1 " +
 			 		" where e1.upi = ? " +
-			 		" and e1.facility = ? " +
+			 		" and e1.facility in (@@) " +
 			 		" and current timestamp between e1.start_ts and e1.end_ts " +
 			 		" and e1.facility = fac.facility_conceptid";
 

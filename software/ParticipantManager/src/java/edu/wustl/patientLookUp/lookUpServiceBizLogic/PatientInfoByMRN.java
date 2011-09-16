@@ -24,6 +24,7 @@ import edu.wustl.patientLookUp.util.Utility;
 public class PatientInfoByMRN
 {
 
+	edu.wustl.common.util.logger.Logger log = edu.wustl.common.util.logger.Logger.getCommonLogger(PatientInfoByMRN.class);
 	final private Map<String, PatientInformation> patientDataMap = new LinkedHashMap<String, PatientInformation>();
 
 	/**
@@ -68,7 +69,9 @@ public class PatientInfoByMRN
 				}
 			}
 			matchedParticipantList.addAll(patientDataMap.values());
+			log.debug("performMathchOnMRN() -> matchedParticipantList size:"+matchedParticipantList.size());
 			queryExecutor.fetchRegDateFacilityAndMRNOfPatient(matchedParticipantList);
+			log.debug("performMathchOnMRN() -> matchedParticipantList after fetchRegDateFacilityAndMRNOfPatient size:"+matchedParticipantList.size());
 			Utility.calculateScore(matchedParticipantList, patientInformation);
 			Utility.sortListByScore(matchedParticipantList);
 			matchedParticipantList = Utility.processMatchingListForFilteration(
