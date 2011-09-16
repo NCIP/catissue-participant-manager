@@ -2,8 +2,10 @@
 package edu.wustl.patientLookUp.queryExecutor;
 
 import java.sql.PreparedStatement;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -30,7 +32,7 @@ import edu.wustl.patientLookUp.util.Utility;
  */
 public class XQueryExecutorImpl extends AbstractQueryExecutor
 {
-
+	edu.wustl.common.util.logger.Logger log = edu.wustl.common.util.logger.Logger.getCommonLogger(XQueryExecutorImpl.class);
 	PreparedStatement statement = null;
 	ResultSet rs = null;
 	LinkedHashSet<String> lastNameMatchUPIList = null;
@@ -51,31 +53,36 @@ public class XQueryExecutorImpl extends AbstractQueryExecutor
 			Set<Long> protocolIdSet, String pmiObjName) throws PatientLookupException
 	{
 		List<PatientInformation> patientInformationList = new ArrayList<PatientInformation>();
-		try
+		if (Utility.isNumeric(facilityId))
 		{
-			String query = QueryGenerator.getMRNQuery();
-			statement = getConnection().prepareStatement(query);
-			statement.setString(1, mrn);
-			statement.setString(2, facilityId);
-			rs = statement.executeQuery();
-			if (rs != null)
+			try
 			{
-				patientInformationList = populatePatientInfo(rs);
-			}
+				String query = QueryGenerator.getMRNQuery();
+				statement = getConnection().prepareStatement(query);
+				statement.setString(1, mrn);
+				statement.setLong(2, Long.valueOf(facilityId));
+				log.debug("MRN query::"+query); 
+				log.debug("MRN::"+mrn+"::facilityId::"+facilityId);
+				rs = statement.executeQuery();
+				if (rs != null)
+				{
+					patientInformationList = populatePatientInfo(rs);
+				}
 
-			rs.close();
-			statement.close();
-		}
-		catch (SQLException e)
-		{
-			// TODO Auto-generated catch block
-			Logger.out.info(e.getMessage(), e);
-			Logger.out.info("Error while retriving matched patients based on MRN");
-			throw new PatientLookupException(e.getMessage(), e);
-		}
-		finally
-		{
-			closeConnection();
+				rs.close();
+				statement.close();
+			}
+			catch (SQLException e)
+			{
+				// TODO Auto-generated catch block
+				Logger.out.info(e.getMessage(), e);
+				Logger.out.info("Error while retriving matched patients based on MRN");
+				throw new PatientLookupException(e.getMessage(), e);
+			}
+			finally
+			{
+				closeConnection();
+			}
 		}
 		return patientInformationList;
 	}
@@ -292,8 +299,7 @@ public class XQueryExecutorImpl extends AbstractQueryExecutor
 			ResultSet result = null;
 			Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> newPmiColl = null;
 			Collection<String> patientMedicalIdentifierColl = null;
-
-			statement = getConnection().prepareStatement(query);
+			Statement stmt = getConnection().createStatement();//Statement(query);
 
 			for (int i = 0; i < matchedPatientsList.size(); i++)
 			{
@@ -303,24 +309,38 @@ public class XQueryExecutorImpl extends AbstractQueryExecutor
 				patientMedicalIdentifierColl = new LinkedList<String>();
 				Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> pmiColl = patientInfo
 						.getPmiCollection();
-
+				StringBuffer facilityIds = new StringBuffer();
 				for (IParticipantMedicalIdentifier<IParticipant, ISite> iParticipantMedicalIdentifier : pmiColl)
 				{
 					String facilityID = iParticipantMedicalIdentifier.getSite().getFacilityId();
-					statement.setString(1, patientInfo.getUpi());
-					statement.setString(2, facilityID);
-					result = statement.executeQuery();
+					if (Utility.isNumeric(facilityID))
+					{
+						facilityIds.append(facilityID).append(",");
+					}
+				}
+				if (facilityIds.length() > 1)
+				{
+					String facilityIdInput = facilityIds.toString().substring(0,
+							facilityIds.length() - 1);
+					query = query.replace("?", patientInfo.getUpi());
+					query = query.replace("@@", facilityIdInput);
+					log.debug("fetchRegDateFacilityAndMRNOfPatient :: query::" + query
+							+ ":: UPI ::" + patientInfo.getUpi() + "::facilityID :: "
+							+ facilityIdInput);
+					result = stmt.executeQuery(query);
 
 					if (result != null)
 					{
 						while (result.next())
 						{
-							//patientInfo.setDateVisited(Utility.parse(result.getString("regDate"),Constants.DATE_FORMAT_YYYY_MM_DD));
-							//patientInfo.setFacilityVisited(PropertyHandler.getValue((String) result.getString("facility")));
 							medicalRecNumber = (String) result.getString("mrn");
 							facilityId = (String) result.getString("facility_id");
 							String facilityName = (String) result.getString("print_name");
-
+							log.debug("fetchRegDateFacilityAndMRNOfPatient from CIDER :: medicalRecNumber::: "
+											+ medicalRecNumber
+											+ ":: facilityId :: "
+											+ facilityId
+											+ ":: facilityName" + facilityName);
 							if (!patientMedicalIdentifierColl.contains(medicalRecNumber))
 							{
 								patientMedicalIdentifierColl.add(medicalRecNumber);
@@ -337,27 +357,25 @@ public class XQueryExecutorImpl extends AbstractQueryExecutor
 								newPmiColl.add(pmiObj);
 							}
 						}
-						//					patientInfo
-						//							.setParticipantMedicalIdentifierCollection(patientMedicalIdentifierColl);
 						result.close();
 					}
 				}
 				patientInfo.setPmiCollection(newPmiColl);
+				log.debug("fetchRegDateFacilityAndMRNOfPatient after CIDER matches::  pmiColl size is::"
+								+ newPmiColl.size());
 			}
-			statement.close();
+			stmt.close();
 		}
 		catch (SQLException e)
 		{
 			Logger.out.info(e.getMessage(), e);
 			throw new PatientLookupException(e.getMessage(), e);
-
 		}
 		catch (Exception e)
 		{
 			Logger.out.info(e.getMessage(), e);
 			throw new PatientLookupException(e.getMessage(), e);
 		}
-
 		finally
 		{
 			closeConnection();

@@ -2,6 +2,7 @@
 package edu.wustl.patientLookUp.util;
 
 import java.text.ParseException;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,6 +13,7 @@ import java.util.Map;
 
 import org.apache.commons.codec.language.Metaphone;
 
+import edu.wustl.common.util.logger.Logger;
 import edu.wustl.patientLookUp.domain.PatientInformation;
 
 /**
@@ -101,7 +103,7 @@ public class Utility
 	 * check whether the ssn numeric value or not.
 	 * @param ssn : ssn
 	 * @return ssn
-	 */
+	
 	public static int isNumeric(final String ssn)
 	{
 		int number = 0;
@@ -115,6 +117,25 @@ public class Utility
 			number = 0;
 		}
 		return number;
+	} */
+	
+	public static boolean isNumeric(String numString)
+	{
+		
+		boolean isNumeric = false;
+		try
+		{
+			long longValue = Long.parseLong(numString);
+			if (longValue >= 0)
+			{
+				isNumeric ^= true;
+			}
+		}
+		catch (NumberFormatException exp)
+		{
+			Logger.out.error("EXCEPTION WHILE CONVERTING STRING TO LONG ");
+		}
+		return isNumeric;
 	}
 
 	/**
