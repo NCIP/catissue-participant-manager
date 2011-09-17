@@ -306,7 +306,7 @@ public class SQLQueryExecutorImpl extends AbstractQueryExecutor
 		return patientInfoList;
 	}
 
-	public void fetchRegDateFacilityAndMRNOfPatient(List<PatientInformation> patientMatchingList)
+	public void fetchRegDateFacilityAndMRNOfPatient(List<PatientInformation> patientMatchingList, List<Long> facilityIdList)
 			throws PatientLookupException
 	{
 		// TODO Auto-generated method stub

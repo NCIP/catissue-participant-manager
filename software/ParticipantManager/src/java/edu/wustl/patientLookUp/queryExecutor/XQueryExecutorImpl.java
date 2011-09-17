@@ -287,10 +287,11 @@ public class XQueryExecutorImpl extends AbstractQueryExecutor
 	/* (non-Javadoc)
 	 * @see edu.wustl.patientLookUp.queryExecutor.AbstractQueryExecutor#
 	 * fetchRegDateFacilityAndMRNOfPatient(java.util.List)
+	 * fetch MRN, facility ids (which is required to send in HL7) based on facility ids from the application 
 	 */
-	public void fetchRegDateFacilityAndMRNOfPatient(List<PatientInformation> matchedPatientsList)
+	public void fetchRegDateFacilityAndMRNOfPatient(List<PatientInformation> matchedPatientsList, List<Long> facilityIdList)
 			throws PatientLookupException
-	{
+	{		
 		try
 		{
 			String query = QueryGenerator.getQuery();
@@ -310,13 +311,9 @@ public class XQueryExecutorImpl extends AbstractQueryExecutor
 				Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> pmiColl = patientInfo
 						.getPmiCollection();
 				StringBuffer facilityIds = new StringBuffer();
-				for (IParticipantMedicalIdentifier<IParticipant, ISite> iParticipantMedicalIdentifier : pmiColl)
+				for (Long facId : facilityIdList)
 				{
-					String facilityID = iParticipantMedicalIdentifier.getSite().getFacilityId();
-					if (Utility.isNumeric(facilityID))
-					{
-						facilityIds.append(facilityID).append(",");
-					}
+					facilityIds.append(facId).append(",");
 				}
 				if (facilityIds.length() > 1)
 				{

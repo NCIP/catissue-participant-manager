@@ -43,9 +43,10 @@ public interface IQueryExecutor
 	 * This method will fetch the mrn,facility visited and dataVisited values of each patients.
 	 * in the matched patient list
 	 * @param patientMatchingList : list of matched patients
+	 * @param facilityIdList : list of facility ids to search for patients
 	 * @throws PatientLookupException : PatientLookupException
 	 */
-	void fetchRegDateFacilityAndMRNOfPatient(List<PatientInformation> patientMatchingList)
+	void fetchRegDateFacilityAndMRNOfPatient(List<PatientInformation> patientMatchingList, List<Long> facilityIdList)
 			throws PatientLookupException;;
 
 }

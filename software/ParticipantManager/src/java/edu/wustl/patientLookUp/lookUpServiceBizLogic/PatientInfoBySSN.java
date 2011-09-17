@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.patientLookUp.domain.PatientInformation;
 import edu.wustl.patientLookUp.queryExecutor.IQueryExecutor;
 import edu.wustl.patientLookUp.util.PatientLookupException;
@@ -47,7 +48,8 @@ public class PatientInfoBySSN
 				ssnFuzzyMatch1(patientInfo, queryExecutor);
 				ssnFuzzyMatch2(patientInfo, queryExecutor);
 				matchedParticipantList.addAll(patientDataMap.values());
-				queryExecutor.fetchRegDateFacilityAndMRNOfPatient(matchedParticipantList);
+				List<Long> facilityIdList= ParticipantManagerUtility.getFacilityIds(patientInfo);
+				queryExecutor.fetchRegDateFacilityAndMRNOfPatient(matchedParticipantList,facilityIdList);
 				Utility.calculateScore(matchedParticipantList, patientInfo);
 				Utility.sortListByScore(matchedParticipantList);
 				matchedParticipantList = Utility.processMatchingListForFilteration(
