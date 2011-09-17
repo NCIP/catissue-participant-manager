@@ -199,6 +199,31 @@ public class ParticipantManagerUtility
 		}
 		return partiMedId;
 	}
+	/**
+	 * 
+	 * @param patientInformation
+	 * @return
+	 */
+	public static List<Long> getFacilityIds (PatientInformation patientInformation)
+	{
+		List<Long> facilityIdList =  new ArrayList<Long>();
+		Collection <IParticipantMedicalIdentifier<IParticipant, ISite>>  pmiColl = patientInformation.getPmiCollection();
+		for (IParticipantMedicalIdentifier<IParticipant, ISite> pmi : pmiColl)
+		{
+			String mrn= pmi.getMedicalRecordNumber();
+			if (mrn != null)
+			{
+				/*Bug#20878:facility Id is passed to get participants on based of facilityIds and MRN.
+				*/
+				String facilityId = String.valueOf(pmi.getSite().getFacilityId());
+				if(edu.wustl.patientLookUp.util.Utility.isNumeric(facilityId))
+				{
+					facilityIdList.add(Long.valueOf(facilityId));
+				}
+			}
+		}
+		return facilityIdList;
+	}
 
 	/**
 	 * Gets the site object.

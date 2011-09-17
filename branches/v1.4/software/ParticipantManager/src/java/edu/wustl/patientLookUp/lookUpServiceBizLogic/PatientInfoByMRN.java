@@ -11,6 +11,7 @@ import java.util.Set;
 import edu.wustl.common.participant.domain.IParticipant;
 import edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
 import edu.wustl.common.participant.domain.ISite;
+import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.patientLookUp.domain.PatientInformation;
 import edu.wustl.patientLookUp.queryExecutor.IQueryExecutor;
 import edu.wustl.patientLookUp.util.PatientLookupException;
@@ -45,6 +46,7 @@ public class PatientInfoByMRN
 		{
 			Iterator<IParticipantMedicalIdentifier<IParticipant, ISite>>  itr = patientInformation.getPmiCollection()
 					.iterator();
+			List<Long> facilityIdList= ParticipantManagerUtility.getFacilityIds(patientInformation);
 			while (itr.hasNext())
 			{
 				IParticipantMedicalIdentifier<IParticipant, ISite> pmi= itr.next();
@@ -57,6 +59,7 @@ public class PatientInfoByMRN
 					*/
 					String siteId = String.valueOf(pmi.getSite().getId());
 					String facilityId = String.valueOf(pmi.getSite().getFacilityId());
+					
 					patientListByMRN = queryExecutor.executeQueryForMRN(mrn, siteId,facilityId,
 							patientInformation.getProtocolIdSet(), patientInformation
 									.getPmiObjName());
@@ -70,7 +73,7 @@ public class PatientInfoByMRN
 			}
 			matchedParticipantList.addAll(patientDataMap.values());
 			log.debug("performMathchOnMRN() -> matchedParticipantList size:"+matchedParticipantList.size());
-			queryExecutor.fetchRegDateFacilityAndMRNOfPatient(matchedParticipantList);
+			queryExecutor.fetchRegDateFacilityAndMRNOfPatient(matchedParticipantList,facilityIdList);
 			log.debug("performMathchOnMRN() -> matchedParticipantList after fetchRegDateFacilityAndMRNOfPatient size:"+matchedParticipantList.size());
 			Utility.calculateScore(matchedParticipantList, patientInformation);
 			Utility.sortListByScore(matchedParticipantList);

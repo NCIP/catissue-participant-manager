@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.apache.commons.codec.language.Metaphone;
 
+import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.patientLookUp.domain.PatientInformation;
 import edu.wustl.patientLookUp.queryExecutor.IQueryExecutor;
 import edu.wustl.patientLookUp.util.PatientLookupException;
@@ -57,14 +58,14 @@ public class PatientInfoByName
 								.getParticipantObjName());
 				matchedPatientsByName.addAll(matchedPatientsByMetaPhone);
 			}
-
+			List<Long> facilityIdList= ParticipantManagerUtility.getFacilityIds(patientInformation);
 			Utility.calculateScore(matchedPatientsByName, patientInformation);
 			Utility.sortListByScore(matchedPatientsByName);
 			matchedPatientsByName = Utility.processMatchingListForFilteration(
 					matchedPatientsByName, threshold, maxNoOfRecords);
 			Utility.populatePatientDataMap(matchedPatientsByName, patientDataMap);
 			matchedParticipantList.addAll(patientDataMap.values());
-			queryExecutor.fetchRegDateFacilityAndMRNOfPatient(matchedPatientsByName);
+			queryExecutor.fetchRegDateFacilityAndMRNOfPatient(matchedPatientsByName,facilityIdList);
 			return matchedParticipantList;
 		}
 		catch (Exception e)
