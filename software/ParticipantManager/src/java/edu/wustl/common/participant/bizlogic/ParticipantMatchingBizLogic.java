@@ -264,7 +264,7 @@ public class ParticipantMatchingBizLogic
 	{
 		StringBuffer mrnValue = new StringBuffer();
 		String mrnId = "";
-		String siteId = "";
+		String facilityId = "";
 		String siteName = "";
 		String mrn = "";
 		if (patientMedicalIdentifierColl != null)
@@ -273,9 +273,10 @@ public class ParticipantMatchingBizLogic
 			{
 				IParticipantMedicalIdentifier<IParticipant, ISite> pmi =iterator.next();
 				mrnId=pmi.getMedicalRecordNumber();
-				siteId= pmi.getSite().getId().toString();
+				//siteId= pmi.getSite().getId().toString();
+				facilityId=  pmi.getSite().getFacilityId();
 				siteName=pmi.getSite().getName();
-				mrn = mrnId + ":" + siteId + ":" + siteName;
+				mrn = mrnId + ":" + facilityId + ":" + siteName;
 				mrn=mrn.trim();
 				if (mrnValue.length() == 0)
 				{

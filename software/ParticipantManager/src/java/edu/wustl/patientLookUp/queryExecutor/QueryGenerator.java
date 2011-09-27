@@ -12,6 +12,7 @@ public class QueryGenerator
 {
 
 	private static String dbSchema = null;
+	public static String INTERSECT="INTERSECT";
 
 	/**
 	 * Constructor.
@@ -49,7 +50,7 @@ public class QueryGenerator
 				+ " dob,dx1.ssn,dx1.gender,dx1.demo"
 				+ " from "
 				+ dbSchema
-				+ ".demographics d1, xmltable('$d1/Person/demographicsCollection/demographics'"
+				+ ".demographics d1, xmltable('$d1/Person[activeUpiFlag = \"A\"]/demographicsCollection/demographics'"
 				+ " passing d1.\"XMLDATA\" as \"d1\""
 				+ " columns"
 				+ " firstName varchar(255)  path 'personName/firstName',"
@@ -67,7 +68,6 @@ public class QueryGenerator
 				+ "    	passing e1.\"XMLDATA\" as \"e1\","
 				+ "       cast (? as varchar(255)) as \"mrn\")"
 				+ "	where e1.facility =? "
-				//+" (5572,2574,4674,3049,5107,6729,2572,3148,3269,160559,6116)"
 				+ "	and current timestamp between e1.start_ts and e1.end_ts)"
 				+ "   and current timestamp between d1.start_ts and d1.end_ts)"
 				+ " select ap.upi,ap.lastname,ap.firstname,ap.middlename,ap.dob,ap.ssn,"
@@ -99,7 +99,7 @@ public class QueryGenerator
 				+ " from "
 				+ dbSchema
 				+ ".demographics d1, "
-				+ "xmltable('$d1/Person/demographicsCollection/demographics[socialSecurityNumber = $pssn]'"
+				+ "xmltable('$d1/Person[activeUpiFlag = \"A\"]/demographicsCollection/demographics[socialSecurityNumber = $pssn]'"
 				+ "  passing d1.\"XMLDATA\" as \"d1\","
 				+ "  cast (? as varchar(9)) as \"pssn\""
 				+ "  columns "
@@ -141,7 +141,7 @@ public class QueryGenerator
 				+ " from "
 				+ dbSchema
 				+ ".demographics d1,"
-				+ " xmltable('$d1/Person/demographicsCollection/demographics[personName/lastNameCompressed"
+				+ " xmltable('$d1/Person[activeUpiFlag = \"A\"]/demographicsCollection/demographics[personName/lastNameCompressed"
 				+ "[.>= $plname and .< $plnamemax]]'"
 				+ " passing d1.\"XMLDATA\" as \"d1\", "
 				+ " cast (? as varchar(255)) as \"plname\","
@@ -182,7 +182,7 @@ public class QueryGenerator
 				+ " as dob,dx1.ssn,dx1.gender,dx1.demo"
 				+ " from "
 				+ dbSchema
-				+ ".demographics d1, xmltable('$d1/Person/demographicsCollection/demographics"
+				+ ".demographics d1, xmltable('$d1/Person[activeUpiFlag = \"A\"]/demographicsCollection/demographics"
 				+ "[personName/lastNameMetaphone = $plnamemp]'"
 				+ " passing d1.\"XMLDATA\" as \"d1\","
 				+ " cast (? as varchar(20)) as \"plnamemp\""
@@ -256,14 +256,14 @@ public class QueryGenerator
 
 		*/
 
-		String query="select distinct ex1.mrn,fac.facility_id,RTRIM(fac.print_name) as print_name from "
+		String query="select distinct ex1.mrn,ex1.facility,RTRIM(fac.print_name) as print_name from "
 			 		+ dbSchema + ".encounters e1,"
 			 		+ dbSchema + ".facility fac, xmltable('$e/Encounter'" +
 			 		" passing e1.\"XMLDATA\" as \"e\" " +
 			 		" columns mrn varchar(255) path 'medicalRecordNumber/value'," +
 			 		" facility varchar(255) path 'facility/id') ex1 " +
 			 		" where e1.upi = ? " +
-			 		" and e1.facility in (@@) " +
+			 		//" and e1.facility in (@@) " +
 			 		" and current timestamp between e1.start_ts and e1.end_ts " +
 			 		" and e1.facility = fac.facility_conceptid";
 

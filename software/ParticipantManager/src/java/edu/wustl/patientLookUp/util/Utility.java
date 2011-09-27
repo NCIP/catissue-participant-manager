@@ -2,7 +2,6 @@
 package edu.wustl.patientLookUp.util;
 
 import java.text.ParseException;
-
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,6 +36,7 @@ public class Utility
 	private static String dbflname = "";
 	private static String lnamemeta = "";
 	private static String db_lnamemeta = "";
+	private static  edu.wustl.common.util.logger.Logger log = edu.wustl.common.util.logger.Logger.getCommonLogger(Utility.class);
 
 	/**
 	 * @param name : user entered name.
@@ -197,6 +197,10 @@ public class Utility
 			PatientInformation dbPatientInfo = (PatientInformation) matchingPatientList.get(i);
 			if (dbPatientInfo.getMatchingScore() >= threshold)
 			{
+				log.debug(" In method where participant gets filtered based on score and threshold");
+				log.debug(" patient "+dbPatientInfo.getLastName()+","+dbPatientInfo.getFirstName()+" score is= "+dbPatientInfo.getMatchingScore()+
+						"  is > than threshold ="+threshold);
+				
 				filteredList.add(dbPatientInfo);
 				if (filteredList.size() >= max_no_of_records)
 				{

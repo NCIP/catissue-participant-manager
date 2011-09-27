@@ -1063,9 +1063,10 @@ public class ParticipantManagerUtility
 						&& (participantMedicalIdentifier.getSite()).getId() != null)
 				{
 					String siteName = participantMedicalIdentifier.getSite().getName();
-					mrn.append(participantMedicalIdentifier.getMedicalRecordNumber());
-					mrn.append(':');
 					mrn.append(siteName);
+					mrn.append(": ");
+					mrn.append(participantMedicalIdentifier.getMedicalRecordNumber());
+					//mrn.append(siteName);
 					mrn.append("\n<br>");
 				}
 			}

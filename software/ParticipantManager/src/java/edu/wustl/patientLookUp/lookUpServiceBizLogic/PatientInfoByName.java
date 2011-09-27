@@ -23,6 +23,7 @@ public class PatientInfoByName
 {
 
 	private Map<String, PatientInformation> patientDataMap = new LinkedHashMap<String, PatientInformation>();
+	edu.wustl.common.util.logger.Logger log = edu.wustl.common.util.logger.Logger.getCommonLogger(PatientInfoByName.class);
 
 	/**
 	 * This method will perform the patient match on lastName and also perform the
@@ -58,12 +59,25 @@ public class PatientInfoByName
 								.getParticipantObjName());
 				matchedPatientsByName.addAll(matchedPatientsByMetaPhone);
 			}
+			log.debug("***** After executetQueryForPhonetic ****" );
+			Long time1=System.currentTimeMillis();
 			List<Long> facilityIdList= ParticipantManagerUtility.getFacilityIds(patientInformation);
+			log.debug("@@@@@@@@@ Score calculation started from mactches based on NAME @@@@@@@@@@@@@@@@@@@@@");
+			log.debug("no of participants on Mathches On NAME ="+matchedPatientsByName.size());
+
 			Utility.calculateScore(matchedPatientsByName, patientInformation);
+			Long time2=System.currentTimeMillis();
+			log.debug("Time taken for calculateScore::"+(time2-time1));
 			Utility.sortListByScore(matchedPatientsByName);
+			Long time3=System.currentTimeMillis();
+			log.debug("Time taken for sortListByScore::"+(time3-time2));
 			matchedPatientsByName = Utility.processMatchingListForFilteration(
 					matchedPatientsByName, threshold, maxNoOfRecords);
+			log.debug("no of patients on NAme matches after filteration based on score "+matchedPatientsByName.size());
+			log.debug("@@@@@@@@@ Score calculation ends from mactches based on NAME @@@@@@@@@@@@@@@@@@@@@");
 			Utility.populatePatientDataMap(matchedPatientsByName, patientDataMap);
+			Long time4=System.currentTimeMillis();
+			log.debug("Time taken for processMatchingListForFilteration::"+(time4-time3));
 			matchedParticipantList.addAll(patientDataMap.values());
 			queryExecutor.fetchRegDateFacilityAndMRNOfPatient(matchedPatientsByName,facilityIdList);
 			return matchedParticipantList;

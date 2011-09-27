@@ -333,7 +333,7 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 	 * @param mrnString the mrn string
 	 *
 	 * @return the parti medi id coln collection
-	 *
+	 * mrnId + ":" + facilityId + ":" + siteName;
 	 * @throws BizLogicException the biz logic exception
 	 * @throws ParticipantManagerException
 	 * @throws Exception the exception
@@ -362,7 +362,7 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 	 * @param value the value
 	 *
 	 * @return the participant medical identifier obj
-	 *
+	 * mrnId + ":" + facilityId + ":" + siteName;
 	 * @throws BizLogicException the biz logic exception
 	 * @throws ParticipantManagerException
 	 * @throws Exception the exception
@@ -380,6 +380,7 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 		{
 			participantMedicalIdentifier = ParticipantManagerUtility.getPMIInstance();
 			participantMedicalIdentifier.setMedicalRecordNumber(mrn);
+			siteObj.setFacilityId(facilityId);
 			participantMedicalIdentifier.setSite(siteObj);
 		}
 		return participantMedicalIdentifier;

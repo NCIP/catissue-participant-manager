@@ -75,11 +75,14 @@ public class PatientInfoByMRN
 			log.debug("performMathchOnMRN() -> matchedParticipantList size:"+matchedParticipantList.size());
 			queryExecutor.fetchRegDateFacilityAndMRNOfPatient(matchedParticipantList,facilityIdList);
 			log.debug("performMathchOnMRN() -> matchedParticipantList after fetchRegDateFacilityAndMRNOfPatient size:"+matchedParticipantList.size());
+			log.debug("@@@@@@@@@ Score calculation started from mactches based on MRN @@@@@@@@@@@@@@@@@@@@@");
+			log.debug("no of participants on Mathches On MRN ="+matchedParticipantList.size());
 			Utility.calculateScore(matchedParticipantList, patientInformation);
 			Utility.sortListByScore(matchedParticipantList);
 			matchedParticipantList = Utility.processMatchingListForFilteration(
 					matchedParticipantList, threshold, maxNoOfRecords);
-
+			log.debug("no of patients on MRN matches after filteration based on score "+matchedParticipantList.size());
+			log.debug("@@@@@@@@@ Score calculation ends from mactches based on MRN @@@@@@@@@@@@@@@@@@@@@");
 		}
 		catch (Exception e)
 		{

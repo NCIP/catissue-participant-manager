@@ -21,7 +21,8 @@ public class PatientInfoBySSN
 {
 
 	private Map<String, PatientInformation> patientDataMap = new LinkedHashMap<String, PatientInformation>();
-
+	edu.wustl.common.util.logger.Logger log = edu.wustl.common.util.logger.Logger.getCommonLogger(PatientInfoBySSN.class);
+	
 	/**
 	 * This method will fetch the SSN matched patients from the DB.
 	 * @param queryExecutor :  object of query executor class.
@@ -50,10 +51,14 @@ public class PatientInfoBySSN
 				matchedParticipantList.addAll(patientDataMap.values());
 				List<Long> facilityIdList= ParticipantManagerUtility.getFacilityIds(patientInfo);
 				queryExecutor.fetchRegDateFacilityAndMRNOfPatient(matchedParticipantList,facilityIdList);
+				log.debug("@@@@@@@@@ Score calculation started from mactches based on SSN @@@@@@@@@@@@@@@@@@@@@");
+				log.debug("no of participants on Mathches On SSN ="+matchedParticipantList.size());
 				Utility.calculateScore(matchedParticipantList, patientInfo);
 				Utility.sortListByScore(matchedParticipantList);
 				matchedParticipantList = Utility.processMatchingListForFilteration(
 						matchedParticipantList, threshold, maxNoOfRecords);
+				log.debug("no of patients on SSN matches after filteration based on score "+matchedParticipantList.size());
+				log.debug("@@@@@@@@@ Score calculation ends from mactches based on SSN @@@@@@@@@@@@@@@@@@@@@");
 			}
 		}
 		catch (Exception e)
