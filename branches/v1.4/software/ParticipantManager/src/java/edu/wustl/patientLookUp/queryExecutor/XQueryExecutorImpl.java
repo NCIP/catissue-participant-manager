@@ -2,10 +2,8 @@
 package edu.wustl.patientLookUp.queryExecutor;
 
 import java.sql.PreparedStatement;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -57,6 +55,7 @@ public class XQueryExecutorImpl extends AbstractQueryExecutor
 		{
 			try
 			{
+				Long time1= System.currentTimeMillis();
 				String query = QueryGenerator.getMRNQuery();
 				statement = getConnection().prepareStatement(query);
 				statement.setString(1, mrn);
@@ -64,6 +63,8 @@ public class XQueryExecutorImpl extends AbstractQueryExecutor
 				log.debug("MRN query::"+query); 
 				log.debug("MRN::"+mrn+"::facilityId::"+facilityId);
 				rs = statement.executeQuery();
+				Long time2= System.currentTimeMillis();
+				log.debug("time for execution for MRN query:: " + (time2-time1));
 				if (rs != null)
 				{
 					patientInformationList = populatePatientInfo(rs);
@@ -99,11 +100,16 @@ public class XQueryExecutorImpl extends AbstractQueryExecutor
 		try
 		{
 			String queryByName = QueryGenerator.getNameQuery();
-
+			Long time1= System.currentTimeMillis();
 			statement = getConnection().prepareStatement(queryByName);
 			statement.setString(1, lastName);
 			statement.setString(2, lastName + "ZZ");
+			log.debug("query By Name::"+queryByName); 
+			log.debug("lastName::"+lastName);
+			log.debug("lastName::"+lastName+"ZZ");
 			rs = statement.executeQuery();
+			Long time2= System.currentTimeMillis();
+			log.debug("time for execution for Name query:: " + (time2-time1));
 			if (rs != null)
 			{
 				patientInformationList = populatePatientInfo(rs);
@@ -134,10 +140,15 @@ public class XQueryExecutorImpl extends AbstractQueryExecutor
 		List<PatientInformation> patientInformationList = new ArrayList<PatientInformation>();
 		try
 		{
+			Long time1= System.currentTimeMillis();
 			String queryByMetaPhone = QueryGenerator.getMetaPhoneQuery();
+			log.debug("query By MetaPhone::"+queryByMetaPhone); 
+			log.debug("MetaPhone value::"+lMetaPhone);
 			statement = getConnection().prepareStatement(queryByMetaPhone);
 			statement.setString(1, lMetaPhone);
 			rs = statement.executeQuery();
+			Long time2= System.currentTimeMillis();
+			log.debug("time for execution for MetaPhone query:: " + (time2-time1));
 			if (rs != null)
 			{
 				patientInformationList = populatePatientInfo(rs);
@@ -169,9 +180,14 @@ public class XQueryExecutorImpl extends AbstractQueryExecutor
 		try
 		{
 			String queryBySSN = QueryGenerator.getSSNQuery();
+			Long time1= System.currentTimeMillis();
 			statement = getConnection().prepareStatement(queryBySSN);
 			statement.setString(1, ssn);
+			log.debug("query By SSN::"+queryBySSN); 
+			log.debug("ssn value::"+ssn);
 			rs = statement.executeQuery();
+			Long time2= System.currentTimeMillis();
+			log.debug("time for execution for SSN query:: " + (time2-time1));
 			if (rs != null)
 			{
 				patientInformationList = populatePatientInfo(rs);
@@ -300,7 +316,9 @@ public class XQueryExecutorImpl extends AbstractQueryExecutor
 			ResultSet result = null;
 			Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> newPmiColl = null;
 			Collection<String> patientMedicalIdentifierColl = null;
-			Statement stmt = getConnection().createStatement();//Statement(query);
+			Long time1 = System.currentTimeMillis();
+			//Statement stmt = getConnection().createStatement();
+			statement = getConnection().prepareStatement(query);
 
 			for (int i = 0; i < matchedPatientsList.size(); i++)
 			{
@@ -308,30 +326,30 @@ public class XQueryExecutorImpl extends AbstractQueryExecutor
 
 				newPmiColl = new LinkedList<IParticipantMedicalIdentifier<IParticipant, ISite>>();
 				patientMedicalIdentifierColl = new LinkedList<String>();
-				Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> pmiColl = patientInfo
-						.getPmiCollection();
-				StringBuffer facilityIds = new StringBuffer();
-				for (Long facId : facilityIdList)
+				
+			//	Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> pmiColl = patientInfo
+			//			.getPmiCollection();
+				
+			//	for (IParticipantMedicalIdentifier<IParticipant, ISite> iParticipantMedicalIdentifier : pmiColl)
 				{
-					facilityIds.append(facId).append(",");
-				}
-				if (facilityIds.length() > 1)
-				{
-					String facilityIdInput = facilityIds.toString().substring(0,
-							facilityIds.length() - 1);
-					query = query.replace("?", patientInfo.getUpi());
-					query = query.replace("@@", facilityIdInput);
+					//String facilityID = iParticipantMedicalIdentifier.getSite().getFacilityId();
+					//String upi="'"+patientInfo.getUpi()+"'";
+					//query=query.replace("@@", patientInfo.getUpi());
+					
+					statement.setString(1,patientInfo.getUpi() );
 					log.debug("fetchRegDateFacilityAndMRNOfPatient :: query::" + query
-							+ ":: UPI ::" + patientInfo.getUpi() + "::facilityID :: "
-							+ facilityIdInput);
-					result = stmt.executeQuery(query);
+						+ ":: UPI ::" + patientInfo.getUpi());
+					//statement.setString(2, facilityID);
+					result = statement.executeQuery();
 
 					if (result != null)
 					{
+						Long time2= System.currentTimeMillis();
+						log.debug(" time for execution= "+ (time2-time1) );
 						while (result.next())
 						{
 							medicalRecNumber = (String) result.getString("mrn");
-							facilityId = (String) result.getString("facility_id");
+							facilityId = (String) result.getString("facility");
 							String facilityName = (String) result.getString("print_name");
 							log.debug("fetchRegDateFacilityAndMRNOfPatient from CIDER :: medicalRecNumber::: "
 											+ medicalRecNumber
@@ -348,7 +366,8 @@ public class XQueryExecutorImpl extends AbstractQueryExecutor
 										.getPMIInstance();
 								pmiObj.setMedicalRecordNumber(medicalRecNumber);
 								ISite site = (ISite) ParticipantManagerUtility.getSiteInstance();
-								site.setId(Long.valueOf(facilityId));
+							//	site.setId(Long.valueOf(facilityId));
+								site.setFacilityId(facilityId);
 								site.setName(facilityName);
 								pmiObj.setSite(site);
 								newPmiColl.add(pmiObj);
@@ -361,7 +380,7 @@ public class XQueryExecutorImpl extends AbstractQueryExecutor
 				log.debug("fetchRegDateFacilityAndMRNOfPatient after CIDER matches::  pmiColl size is::"
 								+ newPmiColl.size());
 			}
-			stmt.close();
+			statement.close();
 		}
 		catch (SQLException e)
 		{

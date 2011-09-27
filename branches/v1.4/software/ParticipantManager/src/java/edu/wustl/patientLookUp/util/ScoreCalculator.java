@@ -43,7 +43,7 @@ public class ScoreCalculator
 
 	/** The score. */
 	private int score;
-
+	edu.wustl.common.util.logger.Logger log = edu.wustl.common.util.logger.Logger.getCommonLogger(ScoreCalculator.class);
 	/**
 	 * This method will calculate the score value each patients in the matched patient list
 	 * by comparing it with the user entered patient information.
@@ -56,6 +56,9 @@ public class ScoreCalculator
 	public int calculateScore(final PatientInformation userPatientInfo,
 			PatientInformation dbPatientInfo)
 	{
+		log.debug("***SCORE CALCULATION STARTED FOR PATIENT CP PATIENT="+userPatientInfo.getLastName()+"::Fn="+userPatientInfo.getFirstName() );
+		log.debug("CIDER PATIENT NAME="+dbPatientInfo.getLastName()+"::FN="+dbPatientInfo.getFirstName()+"::UPI="+dbPatientInfo.getUpi());
+		
 		score = 0;
 		haveLname = 0;
 		haveFname = 0;
@@ -140,7 +143,10 @@ public class ScoreCalculator
 		{
 			score = Integer.valueOf(XMLPropertyHandler
 					.getValue(Constants.PARTICIPANT_LOOKUP_CUTOFF));
+			log.debug("score is assigned with cut off bonus values > 15");
 		}
+		log.debug("***SCORE CALCULATION ENDS FOR PATIENT:: CP PATIENT="+userPatientInfo.getLastName()+"::"+userPatientInfo.getFirstName() );
+		log.debug("***FINAL SCORE VALUE ::"+score);
 		return score;
 	}
 
@@ -169,6 +175,7 @@ public class ScoreCalculator
 			}
 		}
 		score = getRScore(raceTypes, dbRaceCollection);
+		log.debug("race match score::"+score);
 		return score;
 	}
 
@@ -191,19 +198,22 @@ public class ScoreCalculator
 			while (iterator.hasNext())
 			{
 				raceName = (String) iterator.next();
-			}
-		}
-		if (raceTypes != null)
-		{
-			for (int k = 0; k < raceTypes.length; k++)
-			{
-				if (raceTypes[k].charAt(0) == raceName.charAt(0))
+				//}
+				//}
+				if (raceTypes != null)
 				{
-					score = Integer.valueOf(XMLPropertyHandler
-							.getValue(Constants.PARTICIPANT_RACE_EXACT));
-					haveBonus++;
-					haveNumber++;
-					break;
+					for (int k = 0; k < raceTypes.length; k++)
+					{
+						if (raceTypes[k].charAt(0) == raceName.charAt(0))
+						{
+							score = Integer.valueOf(XMLPropertyHandler
+									.getValue(Constants.PARTICIPANT_RACE_EXACT));
+							haveBonus++;
+							haveNumber++;
+							log.debug("race partial match based on first character match:: CP race= "+raceTypes[k]+"::cider race="+raceName+"::score="+score);
+							break;
+						}
+					}
 				}
 			}
 		}
@@ -227,7 +237,9 @@ public class ScoreCalculator
 			score = Integer
 					.valueOf(XMLPropertyHandler.getValue(Constants.PARTICIPANT_GENDER_EXACT));
 			haveBonus++;
+			log.debug("Gender exact match :: CP gender= "+gender+"::cider gender="+dbGender+"::score="+score);
 		}
+		log.debug("Gender match score="+score);
 		return score;
 	}
 
@@ -245,17 +257,21 @@ public class ScoreCalculator
 		String dob = "";
 		haveNumber += 5;
 		dob = dobUser.toString();
-		if (dob.compareTo(dobDB.toString()) == 0)
+		String dobDBStr=edu.wustl.common.util.Utility.parseDateToString(dobDB, Constants.DATE_FORMAT_YYYY_MM_DD);
+		if (dob.compareTo(dobDBStr) == 0)
 		{
 			score += Integer.valueOf(XMLPropertyHandler.getValue(Constants.PARTICIPANT_DOB_EXACT));
 			haveDob = 1;
 			haveBonus += 5;
+			log.debug("DOB exact match CP DOB="+dob+"::cider dob="+dobDB+"::score="+score);
+			
 		}
 		else if (haveNumber > 0 && haveFname > 0)
 		{
 			score += checkDateOfBirth(dobUser, dobDB);
 			haveDob = 1;
 		}
+		log.debug("DOB score="+score);
 		return score;
 	}
 
@@ -276,6 +292,7 @@ public class ScoreCalculator
 			score = Integer.valueOf(XMLPropertyHandler.getValue(Constants.PARTICIPANT_SSN_EXACT));
 			haveSSN = 1;
 			haveBonus += 5;
+			log.debug("SSN exact match :: CP SSN="+ssn+"::cider SSN="+dbSSN+"::score="+score);
 		}
 		else
 		{
@@ -290,6 +307,7 @@ public class ScoreCalculator
 			}
 
 		}
+		log.debug("SSN score= "+score);
 		return score;
 	}
 
@@ -324,6 +342,7 @@ public class ScoreCalculator
 			score = getSSNPartialScore(tempssnStr.toString(), dbSSN);
 			if (score > 0)
 			{
+				log.debug("SSN partial match based on fuzzy logic(interchanging digits):: CP SSN="+tempssnStr+"::cider SSN="+dbSSN+"::score="+score);
 				break;
 			}
 			tempssnStr.delete(0, tempssnStr.length());
@@ -369,6 +388,7 @@ public class ScoreCalculator
 				score = getSSNPartialScore(tempssnStr.toString(), dbSSN);
 				if (score > 0)
 				{
+					log.debug("SSN partial match based on fuzzy logic(incrementing and decrementing digits):: CP SSN="+tempssnStr+"::cider SSN="+dbSSN+"::score="+score);
 					break;
 				}
 				charArray[i] = ++charArray[i];
@@ -438,6 +458,7 @@ public class ScoreCalculator
 				{
 					score = Integer.valueOf(XMLPropertyHandler
 							.getValue(Constants.PARTICIPANT_PMI_EXACT));
+					log.debug("MRN exact match :: CP MRN="+mrn+"::eMPI MRN="+dbMRN+"score::"+score);
 				}
 				else
 				{
@@ -453,6 +474,7 @@ public class ScoreCalculator
 
 				}
 			}
+			log.debug("MRN score::"+score);
 		}
 		return score;
 	}
@@ -488,6 +510,7 @@ public class ScoreCalculator
 			score = getMRNPartialScore(tempssnStr.toString(), dbMRN);
 			if (score > 0)
 			{
+				log.debug("MRN partial match based on fuzzy logic (interchanging digits) performed on CP MRN="+tempssnStr+"::eMPI MRN="+dbMRN+"score::"+score);
 				break;
 			}
 			tempssnStr.delete(0, tempssnStr.length());
@@ -522,6 +545,7 @@ public class ScoreCalculator
 				score = getMRNPartialScore(tempssnStr.toString(), dbMRN);
 				if (score > 0)
 				{
+					log.debug("MRN partial match based on fuzzy logicperformed(increneting and decrementing digits) on CP MRN="+tempssnStr+"::eMPI MRN="+dbMRN+"score::"+score);
 					break;
 				}
 			}
@@ -533,6 +557,7 @@ public class ScoreCalculator
 				score = getMRNPartialScore(tempssnStr.toString(), dbMRN);
 				if (score > 0)
 				{
+					log.debug("MRN partial match based on fuzzy logicperformed (increneting and decrementing digits) on CP MRN="+tempssnStr+"::eMPI MRN="+dbMRN+"score::"+score);
 					break;
 				}
 				charArray[i] = ++charArray[i];
@@ -579,11 +604,13 @@ public class ScoreCalculator
 			score = Integer.valueOf(XMLPropertyHandler
 					.getValue(Constants.PARTICIPANT_MIDDLE_NAME_EXACT));
 			haveBonus++;
+			log.debug("middle name exact match:: CP MN="+mName+"::cider MN="+dbLName+"::score="+score);
 		}
 		else
 		{
 			score = getMNamePartialScore(mName, dbLName);
 		}
+		log.debug("MN match score="+score);
 		return score;
 	}
 
@@ -605,6 +632,8 @@ public class ScoreCalculator
 			score = Integer.valueOf(XMLPropertyHandler
 					.getValue(Constants.PARTICIPANT_MIDDLE_NAME_PARTIAL));
 			haveBonus++;
+			log.debug("*** Logic for MN partial match::mName.length() == 1 || dbLName.length() == 1) && (mName.charAt(0) == dbLName.charAt(0))");
+			log.debug("middle name partial match:: CP MN="+mName+"::cider MN="+dbLName+"::score="+score);
 		}
 		return score;
 	}
@@ -627,6 +656,7 @@ public class ScoreCalculator
 					.getValue(Constants.PARTICIPANT_FIRST_NAME_EXACT));
 			haveFname = 1;
 			haveBonus += 5;
+			log.debug(" FN exact match:: CP FN="+fname+"::cider FN="+dbLName+"::score="+score);
 		}
 		else
 		{
@@ -635,8 +665,11 @@ public class ScoreCalculator
 				score = Integer.valueOf(XMLPropertyHandler
 						.getValue(Constants.PARTICIPANT_FIRST_NAME_PARTIAL));
 				haveFname = 1;
+				log.debug(" FN partial match:: based on first character macthes on CP and cider FN");
+				log.debug("CP FN="+fname+"::cider FN="+dbLName+"::score="+score);
 			}
 		}
+		log.debug(" FN match score="+score);
 		return score;
 	}
 
@@ -676,6 +709,7 @@ public class ScoreCalculator
 		{
 			score = Integer.valueOf(XMLPropertyHandler
 					.getValue(Constants.PARTICIPANT_LAST_NAME_EXACT));
+			log.debug("Last name :: exact match :: CP LN="+lname+":: cider LN="+dbLName+"::score="+score);
 			haveLname = 1;
 			haveBonus += 5;
 		}
@@ -684,7 +718,9 @@ public class ScoreCalculator
 			score = Integer.valueOf(XMLPropertyHandler
 					.getValue(Constants.PARTICIPANT_LAST_NAME_PARTIAL));
 			haveLname = 1;
+			log.debug("Last name :: partial match :: CP LN metaphone="+lnamemeta+":: cider LN metaphone="+db_lnamemeta+"::score="+score);
 		}
+		log.debug("Last name :: score= "+score);
 		return score;
 	}
 
@@ -703,10 +739,12 @@ public class ScoreCalculator
 		if (compareMonthYear(userBirthDate, dbPatientBirthDate))
 		{
 			score = Integer.valueOf(XMLPropertyHandler.getValue(Constants.PARTICIPANT_DOB_PARTIAL));
+			log.debug("DOB partial match absed on same month and year:: CP DOB="+userBirthDate+"::cider dob="+dbPatientBirthDate+"::score="+score);
 		}
 		else if (compareDateMonthYear(userBirthDate, dbPatientBirthDate))
 		{
 			score = Integer.valueOf(XMLPropertyHandler.getValue(Constants.PARTICIPANT_DOB_PARTIAL));
+			log.debug("DOB partial match based on same month and date and year in between(+2, -2) :: CP DOB="+userBirthDate+"::cider dob="+dbPatientBirthDate+"::score="+score);
 		}
 		/*else if (compareDateYear(userBirthDate, dbPatientBirthDate))
 		{

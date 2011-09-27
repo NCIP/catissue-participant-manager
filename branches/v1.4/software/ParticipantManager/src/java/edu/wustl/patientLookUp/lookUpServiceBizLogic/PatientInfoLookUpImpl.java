@@ -17,6 +17,8 @@ import edu.wustl.patientLookUp.util.Utility;
 public class PatientInfoLookUpImpl implements IPatientLookUp
 {
 
+	edu.wustl.common.util.logger.Logger log = edu.wustl.common.util.logger.Logger.getCommonLogger(PatientInfoLookUpImpl.class);
+
 	private int haveLName = 0;
 	private int haveFName = 0;
 	private int haveMName = 0;
@@ -59,7 +61,7 @@ public class PatientInfoLookUpImpl implements IPatientLookUp
 			processFName(patientInformation);
 			processMName(patientInformation);
 			processSSN(patientInformation);
-
+			log.debug("*************************Matching starts for Patient*******************"+patientInformation.getLastName()+"::"+patientInformation.getFirstName());
 			// Perform the match on MRN value if provided by user
 			if (patientInformation.getPmiCollection() != null
 					&& patientInformation.getPmiCollection().size() > 0)
@@ -83,6 +85,7 @@ public class PatientInfoLookUpImpl implements IPatientLookUp
 			// merge both the MRN and SSN and Lname matched patient records...
 			matchingParticipantList = Utility.mergeMatchedPatientLists(matchingParticipantList,
 					matchingParticipantListByName);
+			log.debug("*************************Matching ends for a Patient*******************");
 		}
 		catch (Exception e)
 		{
