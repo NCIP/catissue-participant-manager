@@ -26,6 +26,7 @@ import edu.wustl.dao.exception.DAOException;
 import wustl.patientLookUp.domain.PatientInformation;
 import wustl.patientLookUp.lookUpServiceBizLogic.PatientInfoLookUpService;
 import wustl.patientLookUp.queryExecutor.SQLQueryExecutorImpl;
+import wustl.patientLookUp.util.Constants;
 import wustl.patientLookUp.util.PatientLookupException;
 import wustl.patientLookUp.util.Utility;
 import wustl.patientLookUp.queryExecutor.IQueryExecutor;

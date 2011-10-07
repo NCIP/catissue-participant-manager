@@ -4,12 +4,11 @@
 <project name="ParticipantManager" default="compile" xmlns:ivy="antlib:org.apache.ivy.ant" basedir="../">
 
     <property name="software.dir" value="${basedir}/.."/>
-    <property name="lib.dir" value="${base.dir}/src/lib"/>
-    <property name="build.dir" value="${base.dir}/build"/>
-    <property name="src.dir" value="${base.dir}/src/java"/>
+    <property name="lib.dir" value="${basedir}/lib"/>
+    <property name="dist.dir" value="${basedir}/dist"/>
+    <property name="src.dir" value="${basedir}/src/main/java"/>
     <property name="wc.jar.details" value="Participant Manager"/>
     <property name="wc.jar.version" value="1.0"/>
-    <property name="wc.jar.creator" value="Virender"/>
     <property name="temp.src.classes.dir" value="${software.dir}/target/temp/src/classes"/>
     <property name="local-ivy-repo.dir" value="${software.dir}/local-ivy-repo"/>
 
@@ -22,10 +21,9 @@
     <target name="clean">
     </target>
 
-    <target name="compile" depends="init,retrieve-ivy-files">
+    <target name="compile" depends="init, retrieve-ivy-files">
         <echo>Compiling Participant Manager source code :</echo>
-        <javac destdir="${temp.src.classes.dir}" includes="**/*.*" debug="on"
-               includeAntRuntime="false" target="1.5">
+        <javac destdir="${temp.src.classes.dir}" includes="**/*.*" debug="on" includeAntRuntime="false" target="1.5">
             <src path="${src.dir}"/>
             <classpath>
                 <fileset dir="${lib.dir}">
@@ -82,12 +80,10 @@
     <property name="common.dir" location="${software.dir}/common"/>
     <property name="target.dir" location="${software.dir}/target"/>
 
-
     <property name="bda-utils.dir" location="${target.dir}/bda-utils"/>
     <property name="project.properties.file" value="${software.dir}/build/project.properties"/>
     <property file="${project.properties.file}"/>
     <import file="${bda-utils.dir}/bda-build-utils-${bda.version}.xml"/>
-
 
     <path id="bda-utils.classpath">
         <fileset dir="${bda-utils.dir}">
@@ -105,15 +101,15 @@
     <taskdef resource="net/sf/antcontrib/antcontrib.properties" classpathref="bda-utils.classpath"/>
 
     <property name="ivy.settings.file" location="${common.dir}/ivy/cbiit-ivy-settings.xml"/>
+
     <target name="ivy-settings">
         <property name="ivy.dep.file" value="${common.dir}/bda-download/ivy-bda.xml"/>
         <ivy:settings file="${ivy.settings.file}"/>
-
     </target>
+
     <target name="retrieve-ivy-files" depends="ivy-settings" description="Updates the local ivy repository">
         <ivy:resolve refresh="true" conf="app_lib"/>
         <ivy:retrieve pattern="${lib.dir}/[artifact]-[revision].[ext]" conf="app_lib"/>
-
     </target>
 
     <!--ivy:retrieve related tags end here-->
