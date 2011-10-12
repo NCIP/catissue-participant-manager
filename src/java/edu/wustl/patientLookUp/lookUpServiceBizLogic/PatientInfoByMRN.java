@@ -45,6 +45,7 @@ public class PatientInfoByMRN
 			{
 				String mrn = (String) itr.next();
 				String siteId = (String) itr.next();
+				itr.next();
 				if(mrn!=null){
 					patientListByMRN = queryExecutor.executeQueryForMRN(mrn, siteId,patientInformation.getProtocolIdSet(),patientInformation.getPmiObjName());
 					if (patientListByMRN != null && !patientListByMRN.isEmpty() )
