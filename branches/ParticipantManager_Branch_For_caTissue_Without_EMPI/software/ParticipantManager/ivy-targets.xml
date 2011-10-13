@@ -11,9 +11,9 @@
     <property name="organization" value="gov.nih.nci.catissue"/>
 
     <!-- CHANGE THE NEXT PROPERTIES TO MATCH YOUR PROJECT -->
-    <property name="pub.revision" value="1.2"/>
-    <property name="revision" value="1.2"/>
-    <property name="module" value="AdvancedQuery"/>
+    <property name="pub.revision" value="${wc.jar.version}"/>
+    <property name="revision" value="${wc.jar.version}"/>
+    <property name="module" value="ParticipantManager"/>
 
 
     <!-- IVY -->
