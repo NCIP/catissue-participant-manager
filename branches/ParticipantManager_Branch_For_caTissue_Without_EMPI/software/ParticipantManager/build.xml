@@ -1,7 +1,7 @@
 <?xml version ="1.0"?>
 
 <!--Ant Script for create Build for DAO -->
-<project name="ParticipantManager" default="compile" xmlns:ivy="antlib:org.apache.ivy.ant" basedir="../">
+<project name="ParticipantManager" default="compile" xmlns:ivy="antlib:org.apache.ivy.ant" basedir=".">
 
     <property name="software.dir" value="${basedir}/.."/>
     <property name="lib.dir" value="${basedir}/lib"/>
@@ -69,9 +69,11 @@
                     <fileset dir="${src.dir}" includes="**/*" />
                 </zip>
         -->
+<!--
         <copy todir="${dist.dir}">
             <fileset dir="${src.dir}" includes="**/*"/>
         </copy>
+-->
     </target>
 
     <target name="dist" depends="build_jar" />
