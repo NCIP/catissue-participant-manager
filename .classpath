@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="src" path="software/ParticipantManager/conf"/>
+	<classpathentry kind="src" path="software/ParticipantManager/src/test/resources"/>
+	<classpathentry kind="src" path="software/ParticipantManager/src/main/resources"/>
+	<classpathentry kind="src" path="software/ParticipantManager/src/test/java"/>
+	<classpathentry kind="src" path="software/ParticipantManager/src/main/java"/>
+	<classpathentry kind="lib" path="software/ParticipantManager/lib/ant-contrib.jar"/>
+	<classpathentry kind="lib" path="software/ParticipantManager/lib/catissuecore.jar"/>
+	<classpathentry kind="lib" path="software/ParticipantManager/lib/com.ibm.mq.jar"/>
+	<classpathentry kind="lib" path="software/ParticipantManager/lib/com.ibm.mqbind.jar"/>
+	<classpathentry kind="lib" path="software/ParticipantManager/lib/com.ibm.mqjms.jar"/>
+	<classpathentry kind="lib" path="software/ParticipantManager/lib/commonpackage-1.1.8.3.7.jar"/>
+	<classpathentry kind="lib" path="software/ParticipantManager/lib/commons-codec-1.3.jar"/>
+	<classpathentry kind="lib" path="software/ParticipantManager/lib/csmapi-4.2.jar"/>
+	<classpathentry kind="lib" path="software/ParticipantManager/lib/DAO-1.1.9.4.jar"/>
+	<classpathentry kind="lib" path="software/ParticipantManager/lib/dom4j-1.6.jar"/>
+	<classpathentry kind="lib" path="software/ParticipantManager/lib/domain-authentication-manager.jar"/>
+	<classpathentry kind="lib" path="software/ParticipantManager/lib/hibernate3.jar"/>
+	<classpathentry kind="lib" path="software/ParticipantManager/lib/j2ee.jar"/>
+	<classpathentry kind="lib" path="software/ParticipantManager/lib/log4j-1.2.9.jar"/>
+	<classpathentry kind="lib" path="software/ParticipantManager/lib/query.jar"/>
+	<classpathentry kind="lib" path="software/ParticipantManager/lib/securityManager-1.1.7.4.jar"/>
+	<classpathentry kind="lib" path="software/ParticipantManager/lib/servlet.jar"/>
+	<classpathentry kind="lib" path="software/ParticipantManager/lib/struts.jar"/>
+	<classpathentry kind="lib" path="software/ParticipantManager/lib/washu-commons-1.1.7.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
