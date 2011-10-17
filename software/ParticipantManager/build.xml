@@ -1,7 +1,7 @@
 <?xml version ="1.0"?>
 
 <!--Ant Script for create Build for DAO -->
-<project name="ParticipantManager" default="compile" xmlns:ivy="antlib:org.apache.ivy.ant" basedir=".">
+<project name="ParticipantManager" default="dist" xmlns:ivy="antlib:org.apache.ivy.ant" basedir=".">
 
     <import file="ivy-targets.xml" />
 
