@@ -436,9 +436,28 @@ public class ParticipantManagerUtility
 		{
 			//get all the associated CS ids for the MISC if  match within MICS is enabled
 			Set<Long> protocolIdList = getProtocolIdLstForMICSEnabledForMatching(protocolId);
-
-			matchParticipantList = findMatchedParticipants(participant, lookupAlgorithm,
-					protocolIdList);
+			String participantCode = participant.getParticipantCode();
+			if(!"".equals(participantCode))
+			{
+				JDBCDAO dao = getJDBCDAO();
+				List<ColumnValueBean> valueList = new ArrayList<ColumnValueBean>();
+				ColumnValueBean bean = new ColumnValueBean(participantCode);
+				valueList.add(bean);
+				List result =  dao.executeQuery("select identifier from catissue_participant where hashcode=?", valueList);
+				if(!result.isEmpty())
+				{
+					matchParticipantList = new ArrayList<DefaultLookupResult>();
+					DefaultLookupResult defaultResult = new DefaultLookupResult();
+					defaultResult.setExactMatching(true);
+					defaultResult.setObject(((List)result.get(0)).get(0));
+					matchParticipantList.add(defaultResult);
+				}
+			}
+			else if (isCallToLookupLogicNeeded(participant))
+			{
+				matchParticipantList = findMatchedParticipants(participant, lookupAlgorithm,
+						protocolIdList);
+			}
 		}
 		catch (Exception exp)
 		{
