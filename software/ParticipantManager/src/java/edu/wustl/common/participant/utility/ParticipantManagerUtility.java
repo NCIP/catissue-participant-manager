@@ -452,6 +452,7 @@ public class ParticipantManagerUtility
 					defaultResult.setObject(((List)result.get(0)).get(0));
 					matchParticipantList.add(defaultResult);
 				}
+				dao.closeSession();
 			}
 			else if (isCallToLookupLogicNeeded(participant))
 			{
