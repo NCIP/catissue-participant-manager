@@ -5,6 +5,8 @@
 
     <import file="ivy-targets.xml" />
 
+    <property file="${basedir}/conf/participant-manager.properties"/>
+
     <property name="software.dir" value="${basedir}/.."/>
     <property name="lib.dir" value="${basedir}/lib"/>
     <property name="dist.dir" value="${basedir}/dist"/>
