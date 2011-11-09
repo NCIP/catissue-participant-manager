@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<ivy-module version="2.0">
-	<info organisation="gov.nih.nci.catissue" module="participant-manager" revision="${participant-manager.jar.version}" status="release" />
-	<publications>
-		<artifact name="ParticipantManager" ext="jar" type="jar" />
-	</publications>
-</ivy-module>
