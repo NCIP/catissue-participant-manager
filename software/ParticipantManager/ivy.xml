@@ -1,5 +1,12 @@
 <ivy-module version="2.0">
-    <info organisation="gov.nih.nci.catissue" module="participant-manager"/>
+	
+	<info organisation="gov.nih.nci.catissue" module="participant-manager" revision="${participant-manager.jar.version}" status="integration" />
+	
+	<publications>
+		<artifact name="ParticipantManager" ext="jar" type="jar" />
+		<artifact name="participant-manager" ext="pom" type="pom" />
+	</publications>
+	
     <dependencies>
 
 <!--
