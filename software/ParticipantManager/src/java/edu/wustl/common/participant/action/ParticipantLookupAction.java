@@ -64,40 +64,26 @@ public class ParticipantLookupAction extends SecureAction
 				final IParticipant participant = (IParticipant) abstractDomain;
 				final boolean isCallToLkupLgic = ParticipantManagerUtility
 						.isCallToLookupLogicNeeded(participant);
-//				if (isCallToLkupLgic)
-//				{
+				if (isCallToLkupLgic)
+				{
 					List matchPartpantLst = ParticipantManagerUtility
 							.getListOfMatchingParticipants(participant, null, participantForm
 									.getCpId());
 
-//					if (matchPartpantLst!=null&&!matchPartpantLst.isEmpty()&&!"".equals(participant.getParticipantCode()))
-//					{
-//						target = "participantEdit";
-//						DefaultLookupResult result = (DefaultLookupResult)matchPartpantLst.get(0);
-//						participantForm.setId(Long.valueOf(result.getObject().toString()));
-//						request.setAttribute("participantId", result.getObject().toString());
-//						request.setAttribute("participantCodeId", result.getObject());
-//						
-//					}
-//					else 
-					if (matchPartpantLst!=null&&!matchPartpantLst.isEmpty())
+					if (!matchPartpantLst.isEmpty())
 					{
 						target = edu.wustl.common.util.global.Constants.SUCCESS;
-						DefaultLookupResult result = (DefaultLookupResult)matchPartpantLst.get(0);
-						IParticipant part = (IParticipant) result.getObject();
-						request.setAttribute("selectedParticipantForHashCode", part.getId());
 						storeLists(request, matchPartpantLst);
 					}
-					
 					else
 					{
 						target = Constants.PARTICIPANT_ADD_FORWARD;
 					}
-//				}
-//				else
-//				{
-//					target = Constants.PARTICIPANT_ADD_FORWARD;
-//				}
+				}
+				else
+				{
+					target = Constants.PARTICIPANT_ADD_FORWARD;
+				}
 				setRequestAttributes(request);
 			}
 		}
