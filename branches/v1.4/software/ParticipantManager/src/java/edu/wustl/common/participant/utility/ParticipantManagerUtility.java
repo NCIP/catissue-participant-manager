@@ -436,9 +436,71 @@ public class ParticipantManagerUtility
 		{
 			//get all the associated CS ids for the MISC if  match within MICS is enabled
 			Set<Long> protocolIdList = getProtocolIdLstForMICSEnabledForMatching(protocolId);
+			String participantCode = participant.getParticipantCode();
+			if(!"".equals(participantCode))
+			{
+				DAO dao = getDAO();
+				String fetchByNameQry = getParticipantCodeQry(protocolIdList);
+				List<ColumnValueBean> valueList = new ArrayList<ColumnValueBean>();
+				ColumnValueBean participantCodeValue = new ColumnValueBean(participantCode);
+				ColumnValueBean activityStatusValue = new ColumnValueBean("Disabled");
+				valueList.add(participantCodeValue);
+				valueList.add(activityStatusValue);
+				List patientInfoList =  dao.executeQuery(fetchByNameQry, valueList);
+				if(!patientInfoList.isEmpty())
+				{
+					IParticipant patientInfo = (IParticipant) patientInfoList.get(0);
+					matchParticipantList = new ArrayList<DefaultLookupResult>();
+					
+					final DefaultLookupResult result = new DefaultLookupResult();
+					final IParticipant partcipantNew = (IParticipant) ParticipantManagerUtility
+							.getParticipantInstance();
+					if(null!=patientInfo.getId()){
+					partcipantNew.setId(patientInfo.getId());
+					}
+					partcipantNew.setLastName(patientInfo.getLastName());
+					partcipantNew.setFirstName(patientInfo.getFirstName());
+					partcipantNew.setMiddleName(patientInfo.getMiddleName());
+					partcipantNew.setBirthDate(patientInfo.getBirthDate());
+					partcipantNew.setDeathDate(patientInfo.getDeathDate());
+					partcipantNew.setVitalStatus(patientInfo.getVitalStatus());
+					partcipantNew.setGender(patientInfo.getGender());
+					partcipantNew.setEmpiId(patientInfo.getEmpiId());
+					partcipantNew.setActivityStatus(patientInfo.getActivityStatus());
+					if (patientInfo.getSocialSecurityNumber() != null && !"".equals(patientInfo.getSocialSecurityNumber()))
+					{
+						final String ssn = ParticipantManagerUtility.getSSN(patientInfo.getSocialSecurityNumber());
+						partcipantNew.setSocialSecurityNumber(ssn);
+					}
+					final Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> participantInfoMedicalIdentifierCollection = patientInfo
+					.getParticipantMedicalIdentifierCollection();
+					final Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> participantMedicalIdentifierCollectionNew = new LinkedHashSet<IParticipantMedicalIdentifier<IParticipant, ISite>>();
+					if (participantInfoMedicalIdentifierCollection != null
+							&& participantInfoMedicalIdentifierCollection.size() > 0)
+					{
+						IParticipantMedicalIdentifier<IParticipant, ISite> participantMedicalIdentifier;
+						for (Iterator<IParticipantMedicalIdentifier<IParticipant, ISite> > iterator = participantInfoMedicalIdentifierCollection
+								.iterator(); iterator.hasNext(); participantMedicalIdentifierCollectionNew
+								.add(participantMedicalIdentifier))
+						{
+							IParticipantMedicalIdentifier<IParticipant, ISite>  pmi =  iterator.next();
+							participantMedicalIdentifier= pmi;
+						}
 
-			matchParticipantList = findMatchedParticipants(participant, lookupAlgorithm,
-					protocolIdList);
+					}
+					partcipantNew
+							.setParticipantMedicalIdentifierCollection(participantMedicalIdentifierCollectionNew);
+					result.setObject(partcipantNew);
+					result.setWeight(new Double(100));
+					matchParticipantList.add(result);
+				}
+				dao.closeSession();
+			}
+			else if (isCallToLookupLogicNeeded(participant))
+			{
+				matchParticipantList = findMatchedParticipants(participant, lookupAlgorithm,
+						protocolIdList);
+			}
 		}
 		catch (Exception exp)
 		{
@@ -1886,6 +1948,23 @@ public class ParticipantManagerUtility
 		return fetchByMRNQry;
 	}
 
+	/**
+	 * 
+	 * @param protocolIdSet
+	 * @param participantObjName
+	 * @return
+	 * @throws ParticipantManagerException
+	 */
+	public static String getParticipantCodeQry(Set<Long> protocolIdSet)
+	throws ParticipantManagerException
+	{
+		String fetchByNameQry = null;
+		IParticipantManager participantManagerImplObj = getParticipantMgrImplObj();
+		
+		fetchByNameQry = participantManagerImplObj.getParticipantCodeQuery(protocolIdSet);
+		
+		return fetchByNameQry;
+	}
 	/**
 	 * Fetch the PI and coordinators IDs.
 	 * @param participantId
