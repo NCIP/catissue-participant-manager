@@ -62,8 +62,7 @@ public class ParticipantLookupAction extends SecureAction
 				final edu.wustl.common.domain.AbstractDomainObject abstractDomain = domainObjectFactory
 						.getDomainObject(abstractForm.getFormId(), abstractForm);
 				final IParticipant participant = (IParticipant) abstractDomain;
-				final boolean isCallToLkupLgic = ParticipantManagerUtility
-						.isCallToLookupLogicNeeded(participant);
+
 //				if (isCallToLkupLgic)
 //				{
 					List matchPartpantLst = ParticipantManagerUtility
