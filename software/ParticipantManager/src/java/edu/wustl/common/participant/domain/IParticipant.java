@@ -263,6 +263,8 @@ public interface IParticipant
 	public String getParticipantCode();
 	
 	public void  setParticipantCode(String participantCode);
+	
+	public IParticipant clone();
 
 
 }

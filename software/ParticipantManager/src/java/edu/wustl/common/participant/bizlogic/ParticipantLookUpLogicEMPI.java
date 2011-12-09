@@ -156,4 +156,21 @@ public class ParticipantLookUpLogicEMPI implements IParticipantManagerLookupLogi
 		}
 		return empiParticipantsList;
 	}
+
+	public boolean isCallToLookupLogicNeeded(IParticipant participant)
+	{
+		boolean flag = true;
+		if ((participant.getFirstName() == null || participant.getFirstName().length() == 0)
+				&& (participant.getMiddleName() == null || participant.getMiddleName().length() == 0)
+				&& (participant.getLastName() == null || participant.getLastName().length() == 0)
+				&& (participant.getSocialSecurityNumber() == null || participant
+						.getSocialSecurityNumber().length() == 0)
+				&& participant.getBirthDate() == null
+				&& (participant.getParticipantMedicalIdentifierCollection() == null || participant
+						.getParticipantMedicalIdentifierCollection().size() == 0))
+		{
+			flag = false;
+		}
+		return flag;
+	}
 }

@@ -69,6 +69,8 @@ public class Constants
 
 	/** The Constant PARTICIPANT_LOOKUP_ALGO. */
 	public static final String PARTICIPANT_LOOKUP_ALGO = "ParticipantLookupAlgo";
+	
+	public static final String PARTICIPANT_HASHCODE_LOOKUP_ALGO = "ParticipantHashcodeLookupAlgo";
 
 	/** The Constant PARTICIPANT_LOOKUP_SUCCESS. */
 	public static final String PARTICIPANT_LOOKUP_SUCCESS = "success";
