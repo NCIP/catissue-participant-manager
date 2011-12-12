@@ -227,6 +227,17 @@ public interface IParticipant
 	 * @return the empi id
 	 */
 	String getEmpiId();
+	
+	/**
+	 * @return
+	 */
+	public Integer getBirthYear() ;
+	
+	/**
+	 * 
+	 * @param birthYear
+	 */
+	public void setBirthYear(Integer birthYear);
 
 	/**
 	 * Gets the empi id status.
