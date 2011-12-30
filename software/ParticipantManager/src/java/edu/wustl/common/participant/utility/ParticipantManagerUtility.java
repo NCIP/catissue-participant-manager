@@ -438,7 +438,7 @@ public class ParticipantManagerUtility
 			//get all the associated CS ids for the MISC if  match within MICS is enabled
 			Set<Long> protocolIdList = getProtocolIdLstForMICSEnabledForMatching(protocolId);
 			String participantCode = participant.getParticipantCode();
-			if (!"".equals(participantCode))
+			if (participantCode!=null && !"".equals(participantCode))
 			{
 				lookupAlgorithm = Constants.PARTICIPANT_HASHCODE_LOOKUP_ALGO;
 
