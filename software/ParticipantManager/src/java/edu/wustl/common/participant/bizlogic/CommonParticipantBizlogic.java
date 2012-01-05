@@ -355,12 +355,15 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 				{
 					newPMICollection.add(partiMedobj);
 				}
-				boolean checkDuplicate = siteIdset.add(site.getId());
-				if (!checkDuplicate)
+				if (site != null)
 				{
-					throw new BizLogicException(null, null, "errors.participant.mediden.duplicate", "");
+					boolean checkDuplicate = siteIdset.add(site.getId());
+					if (!checkDuplicate)
+					{
+						throw new BizLogicException(null, null,
+								"errors.participant.mediden.duplicate", "");
+					}
 				}
-
 			}
 		}
 		participant.setParticipantMedicalIdentifierCollection(newPMICollection);
