@@ -5,16 +5,20 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 
+import edu.wustl.common.beans.SessionDataBean;
 import edu.wustl.common.exception.ApplicationException;
 import edu.wustl.common.exception.BizLogicException;
 import edu.wustl.common.participant.client.IParticipantManager;
 import edu.wustl.common.participant.domain.IParticipant;
+import edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
 import edu.wustl.common.participant.domain.IRace;
+import edu.wustl.common.participant.domain.ISite;
 import edu.wustl.common.participant.utility.Constants;
 import edu.wustl.common.participant.utility.MQMessageWriter;
 import edu.wustl.common.participant.utility.ParticipantManagerException;
@@ -31,6 +35,9 @@ import edu.wustl.dao.daofactory.IDAOFactory;
 import edu.wustl.dao.exception.DAOException;
 import edu.wustl.dao.query.generator.ColumnValueBean;
 import edu.wustl.dao.query.generator.DBTypes;
+import edu.wustl.patientLookUp.domain.PatientInformation;
+import edu.wustl.patientLookUp.queryExecutor.IQueryExecutor;
+import edu.wustl.patientLookUp.util.PatientLookupException;
 
 /**
  * The Class EMPIParticipantRegistrationBizLogic.
@@ -184,6 +191,8 @@ public class EMPIParticipantRegistrationBizLogic {
 			jdbcdao.closeSession();
 		}
 	}
+
+
 
 	/**
 	 * Gets the jDBCDAO.
@@ -621,7 +630,7 @@ public class EMPIParticipantRegistrationBizLogic {
 	private String getQueryForPICordinators() throws DAOException,
 			ParticipantManagerException, BizLogicException {
 
-		String PartiManagerImplClassName = (String) edu.wustl.common.participant.utility.PropertyHandler
+		String PartiManagerImplClassName = edu.wustl.common.participant.utility.PropertyHandler
 				.getValue(Constants.PARTICIPANT_MANAGER_IMPL_CLASS);
 
 		IParticipantManager participantManagerImplObj = (IParticipantManager) ParticipantManagerUtility
@@ -924,5 +933,71 @@ public class EMPIParticipantRegistrationBizLogic {
 			jdbcdao.closeSession();
 		}
 	}
+
+	/**
+	 * This method will associate participant with given participantId with the given UPI & also will send the
+	 * message to cider for same.
+	 * @param participantId participant with which to assign empi
+	 * @param upi empi id to be associated.
+	 * @return Updated participant having empi set.
+	 * @throws PatientLookupException exception.
+	 */
+	public IParticipant associatePatientWithEmpi(Long participantId,String upi) throws PatientLookupException
+	{
+		IParticipant participant = null;
+		try
+		{
+			IQueryExecutor queryExecutor = ParticipantManagerUtility.getXQueryExecutor();
+			participant = ParticipantManagerUtility.getParticipantById(participantId);
+			final PatientInformation cpPatientInfo = ParticipantManagerUtility
+					.populatePatientObject(participant, null);
+			final List<PatientInformation> empiPatient = queryExecutor.getPatientByUpi(upi,
+					cpPatientInfo);
+			if (!empiPatient.isEmpty())
+			{
+				PatientInformation patientInfo = empiPatient.get(0);
+				Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> newPmiCollection = new HashSet<IParticipantMedicalIdentifier<IParticipant,ISite>>();
+					for(IParticipantMedicalIdentifier<IParticipant, ISite> pmi : patientInfo.getPmiCollection())
+					{
+							if(pmi.getSite()!=null)
+							{
+								final IParticipantMedicalIdentifier<IParticipant, ISite> newPmi = ParticipantManagerUtility.getParticipantMedicalIdentifierObj(pmi.getMedicalRecordNumber(), pmi.getSite().getFacilityId());
+								if(newPmi!=null)
+								{
+									newPmiCollection.add(newPmi);
+								}
+							}
+					}
+				patientInfo.setPmiCollection(newPmiCollection);
+
+				CommonParticipantBizlogic bizLogic = new CommonParticipantBizlogic();
+				final IParticipant participantEmpi = bizLogic.getParticipantObj(patientInfo);
+				bizLogic.updateParticipantFromEmpi(participant, participantEmpi);
+				participant
+						.setEmpiIdStatus(edu.wustl.common.participant.utility.Constants.EMPI_ID_CREATED);
+
+				SessionDataBean sessionData = ParticipantManagerUtility.getValidSessionBean();
+				bizLogic.update(participant, participant, sessionData);
+
+				registerPatientToeMPI(participant);
+
+			}
+
+		}
+		catch (Exception exc)
+		{
+			throw new PatientLookupException("Error occured while retrieving matched Patient", exc);
+		}
+		if(participant==null)
+		{
+			throw new PatientLookupException("Participant with given EMPI Id does not exists",null);
+		}
+		return participant;
+		//CommonParticipantBizlogic.update(dao, participant, oldParticipant)
+
+	}
+
+
+
 
 }

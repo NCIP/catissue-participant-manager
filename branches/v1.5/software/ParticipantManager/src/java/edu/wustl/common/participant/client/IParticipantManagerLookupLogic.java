@@ -15,7 +15,7 @@ public interface IParticipantManagerLookupLogic extends LookupLogic
 	 * @return List
 	 * @throws Exception Exception.
 	 */
-	List lookup(LookupParameters params,Set<Long> csList) throws Exception;
-	
+	List lookup(LookupParameters params,Set<Long> csList,Integer threshHold) throws Exception;
+
 	boolean isCallToLookupLogicNeeded(IParticipant participant);
 }

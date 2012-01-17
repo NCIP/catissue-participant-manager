@@ -196,7 +196,7 @@ public class EMPIParticipantListener implements MessageListener
 		SessionDataBean sessionData = null;
 		boolean isGenerateMgrMessage = false;
 
-		sourceObjectName = (String)edu.wustl.common.participant.utility.PropertyHandler.getValue(Constants.PARTICIPANT_CLASS);
+		sourceObjectName = edu.wustl.common.participant.utility.PropertyHandler.getValue(Constants.PARTICIPANT_CLASS);
 
 		try
 		{
@@ -219,22 +219,18 @@ public class EMPIParticipantListener implements MessageListener
 
 			loginName = XMLPropertyHandler.getValue(Constants.HL7_LISTENER_ADMIN_USER);
 			//loginName = Constants.CLINPORTAL_EMPI_ADMIN_LOGIN_ID;
-			validUser = getUser(loginName, Constants.ACTIVITY_STATUS_ACTIVE);
 
-			if (validUser != null)
-			{
-				sessionData = getSessionDataBean(validUser);
+			sessionData = ParticipantManagerUtility.getValidSessionBean();
+
+
 				updateParticipant(docEle, partcipantObj, sessionData);
 				if (isGenerateMgrMessage)
 				{
 					final EMPIParticipantRegistrationBizLogic eMPIPartiReg = new EMPIParticipantRegistrationBizLogic();
 					eMPIPartiReg.sendMergeMessage(partcipantObj, oldParticipantId, oldEMPIID);
 				}
-			}
-			else
-			{
-				checkUserAccount(loginName);
-			}
+
+
 
 		}
 		catch (PatientLookupException e)
@@ -490,7 +486,7 @@ public class EMPIParticipantListener implements MessageListener
 							&& partMedIdOld.getSite() != null)
 					{
 						final String oldMRN = partMedIdOld.getMedicalRecordNumber();
-						final ISite site = (ISite) partMedIdOld.getSite();
+						final ISite site = partMedIdOld.getSite();
 						final Long oldSiteID = site.getId();
 						itreratorNew = partiMedIdColl.iterator();
 						do
@@ -536,7 +532,7 @@ public class EMPIParticipantListener implements MessageListener
 				{
 					if (count < oldMrnIdList.size())
 					{
-						partiMediIdNew.setId(Long.valueOf(((Long) oldMrnIdList.get(count))
+						partiMediIdNew.setId(Long.valueOf((oldMrnIdList.get(count))
 								.longValue()));
 					}
 					count++;
@@ -606,73 +602,10 @@ public class EMPIParticipantListener implements MessageListener
 		setParticipantId(clinPortalId);
 	}
 
-	/**
-	 * Gets the session data bean.
-	 *
-	 * @param validUser the valid user
-	 *
-	 * @return the session data bean
-	 */
-	private SessionDataBean getSessionDataBean(final IUser validUser)
-	{
-		final SessionDataBean sessionData = new SessionDataBean();
-		sessionData.setAdmin(validUser.getAdminuser());
-		sessionData.setUserName(validUser.getLoginName());
-		sessionData.setUserId(validUser.getId());
-		sessionData.setFirstName(validUser.getFirstName());
-		sessionData.setLastName(validUser.getLastName());
-		sessionData.setCsmUserId(validUser.getCsmUserId().toString());
-		return sessionData;
-	}
 
-	/**
-	 * Check user account.
-	 *
-	 * @param loginName the login name
-	 * @throws Exception
-	 * @throws BizLogicException
-	 *
-	 * @throws BizLogicException the biz logic exception
-	 * @throws Exception the exception
-	 */
-	private void checkUserAccount(final String loginName) throws BizLogicException, Exception
-	{
-		if (getUser(loginName, Constants.ACTIVITY_STATUS_CLOSED) != null)
-		{
-			throw new Exception(loginName + " Closed user. Sending back to the login Page");
-		}
-		else
-		{
-			throw new Exception(loginName + "Invalid user. Sending back to the login Page");
-		}
-	}
 
-	/**
-	 * Gets the user.
-	 *
-	 * @param loginName the login name
-	 * @param activityStatus the activity status
-	 *
-	 * @return the user
-	 *
-	 * @throws BizLogicException the biz logic exception
-	 * @throws ParticipantManagerException
-	 */
-	private IUser getUser(final String loginName, final String activityStatus)
-			throws BizLogicException, ParticipantManagerException
-	{
-		IUser validUser = null;
-		String userClassName=(String)edu.wustl.common.participant.utility.PropertyHandler.getValue(Constants.USER_CLASS);
-		final String getActiveUser = "from "+userClassName+" user where user.activityStatus= '"
-				+ activityStatus + "' and user.loginName =" + "'" + loginName + "'";
-		final DefaultBizLogic bizlogic = new DefaultBizLogic();
-		final List users = bizlogic.executeQuery(getActiveUser);
-		if (users != null && !users.isEmpty())
-		{
-			validUser = (IUser) users.get(0);
-		}
-		return validUser;
-	}
+
+
 
 	/**
 	 * Gets the old empi id.

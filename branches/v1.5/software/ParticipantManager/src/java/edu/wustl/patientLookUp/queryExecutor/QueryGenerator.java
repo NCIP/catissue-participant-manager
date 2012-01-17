@@ -214,6 +214,45 @@ public class QueryGenerator
 	}
 
 	/**
+	 * @return return the query for fetchign demographics data based on UPI.
+	 */
+	public static String getUPIQuery()
+	{
+		String query = "with all_persons(upi,lastname,firstname,middlename,dob,ssn,gender,demo) as ( "
+				+ " select d1.upi,dx1.lastname,dx1.firstname,dx1.middlename,date(dx1.dateofbirth) "
+				+ " as dob,dx1.ssn,dx1.gender,dx1.demo"
+				+ " from "
+				+ dbSchema
+				+ ".demographics d1, xmltable('$d1/Person[activeUpiFlag = \"A\"]'"
+				+ " passing d1.\"XMLDATA\" as \"d1\" "
+				+ " columns firstName varchar(255)  path 'personName/firstName',"
+				+ " lastName varchar(255)   path 'personName/lastName',"
+				+ " middleName varchar(255) path 'personName/middleName',"
+				+ " ssn varchar(12)        path 'socialSecurityNumber',"
+				+ " dateOfBirth timestamp  path 'dateOfBirth',"
+				+ " gender bigint          path 'gender/id',"
+				+ " demo xml               path '.') dx1"
+				+ " where d1.UPI = ? and current timestamp between d1.start_ts and d1.end_ts)"
+				+ " select ap.upi,ap.lastname,ap.firstname,ap.middlename,ap.dob,ap.ssn,"
+				+ " ap.gender,dx1.race as raceID,"
+				+ " dx1.address,dx1.city,dx1.state as stateid,dx1.zip"
+				+ " from all_persons ap, xmltable('for $race in "
+				+ " $demo/(raceCollection/race,.[not(raceCollection/race)]/<nothing/>),"
+				+ " $addr in $demo/(addressCollection/address,"
+				+ ".[not(addressCollection/address)]/<nothing/>)"
+				+ " let $ad := $addr[type/id = 5280]"
+				+ " return <return><r>{$race}</r><ad>{$ad}</ad></return>'"
+				+ " passing ap.demo as \"demo\""
+				+ " columns race    bigint      path 'r/race/id',"
+				+ " address varchar(255) path 'ad/address/line1',"
+				+ " city    varchar(100) path 'ad/address/city',"
+				+ " state   bigint      path 'ad/address/state/id',"
+				+ " zip     varchar(20) path 'ad/address/postalCode') dx1";
+
+		return query;
+	}
+
+	/**
 	 * @return return the query for fetching mrn,facility Visited,date visited.
 	 */
 	public static String getQuery()

@@ -270,12 +270,12 @@ public interface IParticipant
 	 * @param gridValueSelected the gridValueSelected to set
 	 */
 	public void setGridValueSelected(String gridValueSelected);
-	
+
 	public String getParticipantCode();
-	
+
 	public void  setParticipantCode(String participantCode);
 	
-	public IParticipant clone();
+		public IParticipant clone();
 
 
 }

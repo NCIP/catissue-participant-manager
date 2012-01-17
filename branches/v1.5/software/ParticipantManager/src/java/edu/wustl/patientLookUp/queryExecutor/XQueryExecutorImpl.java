@@ -60,7 +60,7 @@ public class XQueryExecutorImpl extends AbstractQueryExecutor
 				statement = getConnection().prepareStatement(query);
 				statement.setString(1, mrn);
 				statement.setLong(2, Long.valueOf(facilityId));
-				log.debug("MRN query::"+query); 
+				log.debug("MRN query::"+query);
 				log.debug("MRN::"+mrn+"::facilityId::"+facilityId);
 				rs = statement.executeQuery();
 				Long time2= System.currentTimeMillis();
@@ -104,7 +104,7 @@ public class XQueryExecutorImpl extends AbstractQueryExecutor
 			statement = getConnection().prepareStatement(queryByName);
 			statement.setString(1, lastName);
 			statement.setString(2, lastName + "ZZ");
-			log.debug("query By Name::"+queryByName); 
+			log.debug("query By Name::"+queryByName);
 			log.debug("lastName::"+lastName);
 			log.debug("lastName::"+lastName+"ZZ");
 			rs = statement.executeQuery();
@@ -142,7 +142,7 @@ public class XQueryExecutorImpl extends AbstractQueryExecutor
 		{
 			Long time1= System.currentTimeMillis();
 			String queryByMetaPhone = QueryGenerator.getMetaPhoneQuery();
-			log.debug("query By MetaPhone::"+queryByMetaPhone); 
+			log.debug("query By MetaPhone::"+queryByMetaPhone);
 			log.debug("MetaPhone value::"+lMetaPhone);
 			statement = getConnection().prepareStatement(queryByMetaPhone);
 			statement.setString(1, lMetaPhone);
@@ -183,7 +183,7 @@ public class XQueryExecutorImpl extends AbstractQueryExecutor
 			Long time1= System.currentTimeMillis();
 			statement = getConnection().prepareStatement(queryBySSN);
 			statement.setString(1, ssn);
-			log.debug("query By SSN::"+queryBySSN); 
+			log.debug("query By SSN::"+queryBySSN);
 			log.debug("ssn value::"+ssn);
 			rs = statement.executeQuery();
 			Long time2= System.currentTimeMillis();
@@ -228,7 +228,7 @@ public class XQueryExecutorImpl extends AbstractQueryExecutor
 			while (rs.next())
 			{
 				raceCollection = null;
-				patientInfo = (PatientInformation) patientDataMap.get((rs.getString("upi").trim()));
+				patientInfo = patientDataMap.get((rs.getString("upi").trim()));
 				if (patientInfo == null)
 				{
 					patientInfo = new PatientInformation();
@@ -257,7 +257,7 @@ public class XQueryExecutorImpl extends AbstractQueryExecutor
 
 					if (rs.getString("gender") != null)
 					{
-						patientInfo.setGender(PropertyHandler.getValue((String) rs
+						patientInfo.setGender(PropertyHandler.getValue(rs
 								.getString("gender")));
 					}
 					if (rs.getString("raceID") != null)
@@ -303,11 +303,11 @@ public class XQueryExecutorImpl extends AbstractQueryExecutor
 	/* (non-Javadoc)
 	 * @see edu.wustl.patientLookUp.queryExecutor.AbstractQueryExecutor#
 	 * fetchRegDateFacilityAndMRNOfPatient(java.util.List)
-	 * fetch MRN, facility ids (which is required to send in HL7) based on facility ids from the application 
+	 * fetch MRN, facility ids (which is required to send in HL7) based on facility ids from the application
 	 */
 	public void fetchRegDateFacilityAndMRNOfPatient(List<PatientInformation> matchedPatientsList, List<Long> facilityIdList)
 			throws PatientLookupException
-	{		
+	{
 		try
 		{
 			String query = QueryGenerator.getQuery();
@@ -322,20 +322,20 @@ public class XQueryExecutorImpl extends AbstractQueryExecutor
 
 			for (int i = 0; i < matchedPatientsList.size(); i++)
 			{
-				PatientInformation patientInfo = (PatientInformation) matchedPatientsList.get(i);
+				PatientInformation patientInfo = matchedPatientsList.get(i);
 
 				newPmiColl = new LinkedList<IParticipantMedicalIdentifier<IParticipant, ISite>>();
 				patientMedicalIdentifierColl = new LinkedList<String>();
-				
+
 			//	Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> pmiColl = patientInfo
 			//			.getPmiCollection();
-				
+
 			//	for (IParticipantMedicalIdentifier<IParticipant, ISite> iParticipantMedicalIdentifier : pmiColl)
 				{
 					//String facilityID = iParticipantMedicalIdentifier.getSite().getFacilityId();
 					//String upi="'"+patientInfo.getUpi()+"'";
 					//query=query.replace("@@", patientInfo.getUpi());
-					
+
 					statement.setString(1,patientInfo.getUpi() );
 					log.debug("fetchRegDateFacilityAndMRNOfPatient :: query::" + query
 						+ ":: UPI ::" + patientInfo.getUpi());
@@ -348,9 +348,9 @@ public class XQueryExecutorImpl extends AbstractQueryExecutor
 						log.debug(" time for execution= "+ (time2-time1) );
 						while (result.next())
 						{
-							medicalRecNumber = (String) result.getString("mrn");
-							facilityId = (String) result.getString("facility");
-							String facilityName = (String) result.getString("print_name");
+							medicalRecNumber = result.getString("mrn");
+							facilityId = result.getString("facility");
+							String facilityName = result.getString("print_name");
 							log.debug("fetchRegDateFacilityAndMRNOfPatient from CIDER :: medicalRecNumber::: "
 											+ medicalRecNumber
 											+ ":: facilityId :: "
@@ -415,6 +415,51 @@ public class XQueryExecutorImpl extends AbstractQueryExecutor
 			}
 		}
 		return raceValue;
+	}
+
+	/* (non-Javadoc)
+	 * @see edu.wustl.patientLookUp.queryExecutor.IQueryExecutor#getPatientByUpi(java.lang.String, edu.wustl.patientLookUp.domain.PatientInformation)
+	 */
+	public List<PatientInformation> getPatientByUpi(String upi,
+			PatientInformation patientInformation) throws PatientLookupException
+	{
+		List<Long> facilityIdList = ParticipantManagerUtility.getFacilityIds(patientInformation);
+		List<PatientInformation> patientInformationList = new ArrayList<PatientInformation>();
+		String upiQuery = QueryGenerator.getUPIQuery();
+		try
+		{
+			Long time1 = System.currentTimeMillis();
+			statement = getConnection().prepareStatement(upiQuery);
+			statement.setString(1, upi);
+
+			log.debug("query By UPI::" + upiQuery);
+			log.debug("UPI value::" + upi);
+			rs = statement.executeQuery();
+			Long time2 = System.currentTimeMillis();
+			log.debug("time for execution for UPI query:: " + (time2 - time1));
+			if (rs != null)
+			{
+				patientInformationList.addAll(populatePatientInfo(rs));
+			}
+
+			rs.close();
+			statement.close();
+			fetchRegDateFacilityAndMRNOfPatient(patientInformationList, facilityIdList);
+		}
+		catch (SQLException e)
+		{
+			Logger.out.info(e.getMessage(), e);
+			Logger.out.info("Error while retriving the matched patients based on SSN\n");
+			throw new PatientLookupException(e.getMessage(), e);
+		}
+		finally
+		{
+			closeConnection();
+		}
+
+		return patientInformationList;
+
+
 	}
 
 }
