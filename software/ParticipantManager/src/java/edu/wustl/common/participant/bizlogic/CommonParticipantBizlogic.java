@@ -1,7 +1,9 @@
 package edu.wustl.common.participant.bizlogic;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -14,6 +16,7 @@ import edu.wustl.common.cde.CDEManager;
 import edu.wustl.common.exception.ApplicationException;
 import edu.wustl.common.exception.BizLogicException;
 import edu.wustl.common.exception.ErrorKey;
+import edu.wustl.common.lookup.DefaultLookupResult;
 import edu.wustl.common.participant.domain.IEthnicity;
 import edu.wustl.common.participant.domain.IParticipant;
 import edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
@@ -41,6 +44,7 @@ import edu.wustl.dao.exception.AuditException;
 import edu.wustl.dao.exception.DAOException;
 import edu.wustl.dao.query.generator.ColumnValueBean;
 import edu.wustl.dao.query.generator.DBTypes;
+import edu.wustl.patientLookUp.domain.PatientInformation;
 
 /**
  * The Class CommonParticipantBizlogic.
@@ -807,32 +811,7 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 		return participant;
 	}
 
-	/**
-	 * Gets the user.
-	 *
-	 * @param loginName the login name
-	 * @param activityStatus the activity status
-	 *
-	 * @return the user
-	 *
-	 * @throws BizLogicException the biz logic exception
-	 * @throws ParticipantManagerException
-	 */
-	public IUser getUser(final String loginName, final String activityStatus)
-			throws BizLogicException, ParticipantManagerException
-	{
-		IUser validUser = null;
-		String userClassName = (String) edu.wustl.common.participant.utility.PropertyHandler
-				.getValue(Constants.USER_CLASS);
-		final String getActiveUser = "from " + userClassName + " user where user.activityStatus= '"
-				+ activityStatus + "' and user.loginName =" + "'" + loginName + "'";
-		final List users = this.executeQuery(getActiveUser);
-		if (users != null && !users.isEmpty())
-		{
-			validUser = (IUser) users.get(0);
-		}
-		return validUser;
-	}
+
 	/**
 	 * Update participant in database.
 	 *
@@ -845,7 +824,7 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 			throws BizLogicException, ParticipantManagerException
 	{
 		final String loginName = XMLPropertyHandler.getValue(Constants.HL7_LISTENER_ADMIN_USER);
-		final IUser validUser = getUser(loginName, Constants.ACTIVITY_STATUS_ACTIVE);
+		final IUser validUser = ParticipantManagerUtility.getUser(loginName, Constants.ACTIVITY_STATUS_ACTIVE);
 		if (validUser != null)
 		{
 			SessionDataBean sessionData = ParticipantManagerUtility.getSessionDataBean(validUser);
@@ -862,7 +841,7 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 	public ISite getSite(final String siteName) throws ParticipantManagerException, BizLogicException
 	{
 		ISite site = null;
-		String siteClassName = (String) edu.wustl.common.participant.utility.PropertyHandler
+		String siteClassName = edu.wustl.common.participant.utility.PropertyHandler
 				.getValue(Constants.SITE_CLASS);
 		final String getSite = "from " + siteClassName + " site where site.name= '"
 				+ siteName + "'";
@@ -876,6 +855,410 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 			throw new BizLogicException(null, null, null);
 		}
 		return site;
+	}
+
+	/**
+	 * This method will retrieve the matched participant stored in DB for given id
+	 * @param participantId for which to search maching patients.
+	 * @return list of matched patients
+	 * @throws DAOException exception
+	 * @throws BizLogicException exception
+	 * @throws ParseException exception
+	 * @throws ParticipantManagerException exception
+	 */
+	public List<DefaultLookupResult> retrieveMatchedParticipantList(final long participantId)
+			throws DAOException, BizLogicException, ParseException, ParticipantManagerException
+	{
+		JDBCDAO dao = null;
+		List<DefaultLookupResult> matchPartpantLst = null;
+		try
+		{
+			dao = ParticipantManagerUtility.getJDBCDAO();
+
+			final String query = "SELECT * FROM CATISSUE_MATCHED_PARTICIPANT WHERE SEARCHED_PARTICIPANT_ID=? order by ORDER_NO";
+
+			final LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
+			columnValueBeanList.add(new ColumnValueBean("SEARCHED_PARTICIPANT_ID", participantId,
+					DBTypes.LONG));
+			final List matchPartpantLstTemp = dao.executeQuery(query, null, columnValueBeanList);
+			matchPartpantLst = populateParticipantList(matchPartpantLstTemp);
+		}
+		catch (DAOException e)
+		{
+			//LOGGER.info(e.getMessage());
+			throw new DAOException(e.getErrorKey(), e, e.getMsgValues());
+		}
+		finally
+		{
+			dao.closeSession();
+		}
+		return matchPartpantLst;
+	}
+
+//	/**
+//	 * This method will search for the
+//	 * @param participantId
+//	 * @param upi
+//	 * @return
+//	 * @throws DAOException
+//	 * @throws BizLogicException
+//	 * @throws ParseException
+//	 * @throws ParticipantManagerException
+//	 */
+//	public List<DefaultLookupResult> getMatchedParticipantByEmpi(final long participantId,String upi)
+//			throws DAOException, BizLogicException, ParseException, ParticipantManagerException
+//	{
+//		JDBCDAO dao = null;
+//		List<DefaultLookupResult> matchPartpantLst = null;
+//		try
+//		{
+//			dao = ParticipantManagerUtility.getJDBCDAO();
+//
+//			final String query = "SELECT * FROM CATISSUE_MATCHED_PARTICIPANT WHERE SEARCHED_PARTICIPANT_ID=? and EMPI_ID = ? order by ORDER_NO";
+//
+//			final LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
+//			columnValueBeanList.add(new ColumnValueBean("SEARCHED_PARTICIPANT_ID", participantId,
+//					DBTypes.LONG));
+//			columnValueBeanList.add(new ColumnValueBean("EMPI_ID", upi));
+//			final List matchPartpantLstTemp = dao.executeQuery(query, null, columnValueBeanList);
+//			if(matchPartpantLstTemp.isEmpty())
+//			{
+//				throw new BizLogicException(ErrorKey.getErrorKey(""), null, "No participant found");
+//			}
+//			matchPartpantLst = populateParticipantList(matchPartpantLstTemp);
+//		}
+//		catch (DAOException e)
+//		{
+//			//LOGGER.info(e.getMessage());
+//			throw new DAOException(e.getErrorKey(), e, e.getMsgValues());
+//		}
+//		finally
+//		{
+//			dao.closeSession();
+//		}
+//		return matchPartpantLst;
+//	}
+
+	/**
+	 * Populate participant list.
+	 *
+	 * @param matchPartpantLstTmp the match partpant lst tmp
+	 *
+	 * @return the list
+	 *
+	 * @throws ParseException the parse exception
+	 * @throws BizLogicException the biz logic exception
+	 * @throws ParticipantManagerException
+	 * @throws Exception the exception
+	 */
+	private List<DefaultLookupResult> populateParticipantList(final List matchPartpantLstTmp)
+			throws BizLogicException, ParseException, ParticipantManagerException
+
+	{
+		final List<DefaultLookupResult> matchPartpantLst = new ArrayList<DefaultLookupResult>();
+		for (int i = 0; i < matchPartpantLstTmp.size(); i++)
+		{
+			final List participantValueList = (List) matchPartpantLstTmp.get(i);
+			if (!participantValueList.isEmpty() && participantValueList.get(0) != null
+					&& !"".equals(participantValueList.get(0)))
+			{
+				final IParticipant participant = getParticipantObj(participantValueList);
+				final DefaultLookupResult result = new DefaultLookupResult();
+				result.setObject(participant);
+				matchPartpantLst.add(result);
+			}
+		}
+		return matchPartpantLst;
+	}
+
+	/**
+	 * Gets the participant obj.
+	 *
+	 * @param participantValueList the participant value list
+	 *
+	 * @return the participant obj
+	 *
+	 * @throws BizLogicException the biz logic exception
+	 * @throws ParseException the parse exception
+	 * @throws ParticipantManagerException
+	 * @throws Exception the exception
+	 */
+	private IParticipant getParticipantObj(final List participantValueList)
+			throws BizLogicException, ParseException, ParticipantManagerException
+	{
+		final IParticipant participant = (IParticipant) ParticipantManagerUtility
+				.getParticipantInstance();
+
+		participant.setId(Long.valueOf((String) participantValueList.get(0)));
+		participant.setEmpiId((String) participantValueList.get(1));
+
+		final String lastName = (String) participantValueList.get(2);
+		final String firstName = (String) participantValueList.get(3);
+		final String middleName = (String) participantValueList.get(4);
+
+		participant.setLastName(ParticipantManagerUtility.modifyNameWithProperCase(lastName));
+		participant.setFirstName(ParticipantManagerUtility.modifyNameWithProperCase(firstName));
+		participant.setMiddleName(ParticipantManagerUtility.modifyNameWithProperCase(middleName));
+		if (participantValueList.get(5) != null && !"".equals(participantValueList.get(5)))
+		{
+			final String dateStr = (String) participantValueList.get(5);
+			final Date date = Utility.parseDate(dateStr, Constants.DATE_FORMAT);
+			participant.setBirthDate(date);
+		}
+		participant.setGender((String) participantValueList.get(6));
+		participant.setSocialSecurityNumber((String) participantValueList.get(7));
+		participant.setActivityStatus((String) participantValueList.get(8));
+		if (participantValueList.get(9) != null && !("".equals(participantValueList.get(9))))
+		{
+			final String dateStr = (String) participantValueList.get(9);
+			final Date date = Utility.parseDate(dateStr, Constants.DATE_FORMAT);
+			participant.setDeathDate(date);
+		}
+		participant.setVitalStatus((String) participantValueList.get(10));
+		final String mrnString = (String) participantValueList.get(11);
+		if (mrnString != null && !"".equals(mrnString))
+		{
+			final Collection partiMediIdColn = getPartiMediIdColnCollection(mrnString);
+			participant.setParticipantMedicalIdentifierCollection(partiMediIdColn);
+		}
+		final String raceString = (String) participantValueList.get(12);
+		if (raceString != null && !"".equals(raceString))
+		{
+			final Collection raceCollection = getRaceCollection(raceString);
+			participant.setRaceCollection(raceCollection);
+		}
+		return participant;
+	}
+
+	/**
+	 * Gets the participant obj.
+	 *
+	 * @param participantValueList the participant value list
+	 *
+	 * @return the participant obj
+	 *
+	 * @throws BizLogicException the biz logic exception
+	 * @throws ParseException the parse exception
+	 * @throws ParticipantManagerException
+	 * @throws Exception the exception
+	 */
+	public static  IParticipant getParticipantObj(PatientInformation patientInfo)
+			throws BizLogicException, ParseException, ParticipantManagerException
+	{
+		final IParticipant participant = (IParticipant) ParticipantManagerUtility
+				.getParticipantInstance();
+
+		participant.setId(patientInfo.getId());
+		participant.setEmpiId(patientInfo.getUpi());
+
+		final String lastName = patientInfo.getLastName();
+		final String firstName = patientInfo.getFirstName();
+		final String middleName = patientInfo.getMiddleName();
+
+		participant.setLastName(ParticipantManagerUtility.modifyNameWithProperCase(lastName));
+		participant.setFirstName(ParticipantManagerUtility.modifyNameWithProperCase(firstName));
+		participant.setMiddleName(ParticipantManagerUtility.modifyNameWithProperCase(middleName));
+
+		participant.setBirthDate(patientInfo.getDob());
+
+		participant.setGender(patientInfo.getGender());
+		participant.setSocialSecurityNumber(patientInfo.getSsn());
+		participant.setActivityStatus(patientInfo.getActivityStatus());
+		participant.setDeathDate(patientInfo.getDeathDate());
+
+		participant.setVitalStatus(patientInfo.getVitalStatus());
+		participant.setParticipantMedicalIdentifierCollection(patientInfo.getPmiCollection());
+		participant.setRaceCollection(patientInfo.getRaceCollection());
+
+		return participant;
+	}
+
+	/**
+	 * Gets the race collection.
+	 *
+	 * @param raceString the race string
+	 *
+	 * @return the race collection
+	 *
+	 * @throws BizLogicException the biz logic exception
+	 * @throws ParticipantManagerException
+	 */
+	private Collection getRaceCollection(final String raceString) throws BizLogicException,
+			ParticipantManagerException
+	{
+		final Collection<IRace> raceCollection = new LinkedHashSet<IRace>();
+		final String racevalues[] = raceString.split(",");
+		for (int i = 0; i < racevalues.length; i++)
+		{
+			final IRace race = (IRace) ParticipantManagerUtility.getRaceInstance();
+			final String raceName = racevalues[i];
+			race.setRaceName(raceName);
+			raceCollection.add(race);
+		}
+		return raceCollection;
+	}
+
+	/**
+	 * Gets the parti medi id coln collection.
+	 *
+	 * @param mrnString the mrn string
+	 *
+	 * @return the parti medi id coln collection
+	 * mrnId + ":" + facilityId + ":" + siteName;
+	 * @throws BizLogicException the biz logic exception
+	 * @throws ParticipantManagerException
+	 * @throws Exception the exception
+	 */
+	private Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> getPartiMediIdColnCollection(
+			final String mrnString) throws BizLogicException, ParticipantManagerException
+	{
+		final Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> partiMediIdColn = new LinkedHashSet<IParticipantMedicalIdentifier<IParticipant, ISite>>();
+		final String values[] = mrnString.split(",");
+		for (int i = 0; i < values.length; i++)
+		{
+			final String value = values[i];
+			final IParticipantMedicalIdentifier<IParticipant, ISite> participantMedicalIdentifier = getParticipantMedicalIdentifierObj(value);
+			if (participantMedicalIdentifier != null)
+			{
+				partiMediIdColn.add(participantMedicalIdentifier);
+			}
+		}
+
+		return partiMediIdColn;
+	}
+
+	/**
+	 * Gets the participant medical identifier obj.
+	 *
+	 * @param value the value
+	 *
+	 * @return the participant medical identifier obj
+	 * mrnId + ":" + facilityId + ":" + siteName;
+	 * @throws BizLogicException the biz logic exception
+	 * @throws ParticipantManagerException
+	 * @throws Exception the exception
+	 */
+	private IParticipantMedicalIdentifier<IParticipant, ISite> getParticipantMedicalIdentifierObj(
+			final String value) throws BizLogicException, ParticipantManagerException
+
+	{
+		IParticipantMedicalIdentifier<IParticipant, ISite> participantMedicalIdentifier = null;
+		final String values[] = value.split(":");
+		final String mrn = values[0];
+		final String facilityId = values[1];
+		final ISite siteObj = ParticipantManagerUtility.getSiteObject(facilityId);
+		if (siteObj != null)
+		{
+			participantMedicalIdentifier = ParticipantManagerUtility.getPMIInstance();
+			participantMedicalIdentifier.setMedicalRecordNumber(mrn);
+			siteObj.setFacilityId(facilityId);
+			participantMedicalIdentifier.setSite(siteObj);
+		}
+		return participantMedicalIdentifier;
+	}
+
+	/**
+	 * Updating the old participant with new mrn value.
+	 *
+	 * @param participant : participant .
+	 * @param participantEMPI : participantEMPI
+	 */
+	public void updateParticipantFromEmpi(final IParticipant participant, final IParticipant participantEMPI)
+	{
+		final Collection<IParticipantMedicalIdentifier<IParticipant, ISite>>  medIdColTemp = new LinkedHashSet<IParticipantMedicalIdentifier<IParticipant, ISite>>();
+		final Collection<IParticipantMedicalIdentifier<IParticipant, ISite>>  medIdColLocal = participant.getParticipantMedicalIdentifierCollection();
+		if (medIdColLocal != null && !medIdColLocal.isEmpty())
+		{
+			 final Iterator<IParticipantMedicalIdentifier<IParticipant, ISite>> iterator = medIdColLocal.iterator();
+			while (iterator.hasNext())
+			{
+				Long localSiteID = null;
+
+				 final IParticipantMedicalIdentifier<IParticipant, ISite> partMedIdLocal = iterator.next();
+				final String localMRN = partMedIdLocal.getMedicalRecordNumber();
+				if (partMedIdLocal.getSite() != null)
+				{
+					localSiteID = partMedIdLocal.getSite().getId();
+				}
+				if ((localMRN != null && !"".equals(localMRN))
+						&& (localSiteID != null && localSiteID != -1))
+				{
+					final Collection<IParticipantMedicalIdentifier<IParticipant, ISite>>  medIdColEMPI = participantEMPI
+							.getParticipantMedicalIdentifierCollection();
+
+					if (medIdColEMPI == null)
+					{
+						medIdColTemp.add(partMedIdLocal);
+					}
+					else if (!medIdColEMPI.isEmpty())
+					{
+						//check weather this empi site and local site matches
+						//if yes then override local mrn with empi mrn and pmi id
+						// if no then add empi pmi to medIdColTemp
+						/**
+						 * empi object pmi update - >
+						 * if local and empi object has same site then don't add else add.
+						 */
+
+						removeDuplicatesMRN(medIdColEMPI, partMedIdLocal, localMRN, localSiteID,
+								medIdColTemp);
+					}
+				}
+			}
+
+			if (!medIdColTemp.isEmpty())
+			{
+				participantEMPI.getParticipantMedicalIdentifierCollection().addAll(medIdColTemp);
+			}
+		}
+		participant.setParticipantMedicalIdentifierCollection(participantEMPI.getParticipantMedicalIdentifierCollection());
+		participant.setEmpiId(participantEMPI.getEmpiId());
+		participant.setEmpiIdStatus(participantEMPI.getEmpiIdStatus());
+
+	}
+
+	/**
+	 * Removes the duplicates mrn.
+	 *
+	 * @param medIdColEMPI the med id col empi
+	 * @param partMedIdLocal the part med id local
+	 * @param localMRN the local mrn
+	 * @param localSiteID the local site id
+	 * @param medIdColTemp the med id col temp
+	 */
+	private void removeDuplicatesMRN(final Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> medIdColEMPI,
+			final IParticipantMedicalIdentifier partMedIdLocal, final String localMRN,
+			final Long localSiteID, final Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> medIdColTemp)
+	{
+		boolean MRNNotFound = false;
+		final Iterator<IParticipantMedicalIdentifier<IParticipant, ISite>> itrEMPI = medIdColEMPI.iterator();
+		while (itrEMPI.hasNext())
+		{
+			MRNNotFound = false;
+			Long empiSite = null;
+			final IParticipantMedicalIdentifier<IParticipant, ISite> partiMedIdEMPI = itrEMPI.next();
+			final String empiMRN = partiMedIdEMPI.getMedicalRecordNumber();
+			if (partiMedIdEMPI.getSite() != null)
+			{
+				empiSite = partiMedIdEMPI.getSite().getId();
+			}
+			if ((empiMRN.equals(localMRN)) && (empiSite.equals(localSiteID)))
+			{
+				partiMedIdEMPI.setId(partMedIdLocal.getId());
+				MRNNotFound = true;
+				break;
+			}
+			if ((!empiMRN.equals(localMRN)) && (empiSite.equals(localSiteID)))
+			{
+				partiMedIdEMPI.setId(partMedIdLocal.getId());
+				MRNNotFound = true;
+				break;
+			}
+		}
+		if (!MRNNotFound)
+		{
+			medIdColTemp.add(partMedIdLocal);
+		}
 	}
 
 }

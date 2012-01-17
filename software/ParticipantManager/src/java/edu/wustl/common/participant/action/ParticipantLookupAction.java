@@ -67,7 +67,7 @@ public class ParticipantLookupAction extends SecureAction
 //				{
 					List matchPartpantLst = ParticipantManagerUtility
 							.getListOfMatchingParticipants(participant, null, participantForm
-									.getCpId());
+									.getCpId(),null);
 
 //					if (matchPartpantLst!=null&&!matchPartpantLst.isEmpty()&&!"".equals(participant.getParticipantCode()))
 //					{

@@ -3,7 +3,6 @@ package edu.wustl.patientLookUp.queryExecutor;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -254,12 +253,12 @@ public class SQLQueryExecutorImpl extends AbstractQueryExecutor
 					if (participant.getBirthDate() != null
 							&& !"".equals(participant.getBirthDate()))
 					{
-						patientInfo.setDob((Date) participant.getBirthDate());
+						patientInfo.setDob(participant.getBirthDate());
 					}
 					if ((participant.getDeathDate()) != null
 							&& !("".equals(participant.getDeathDate())))
 					{
-						patientInfo.setDeathDate((Date) participant.getDeathDate());
+						patientInfo.setDeathDate(participant.getDeathDate());
 					}
 					patientInfo.setVitalStatus(participant.getVitalStatus());
 
@@ -311,5 +310,11 @@ public class SQLQueryExecutorImpl extends AbstractQueryExecutor
 	{
 		// TODO Auto-generated method stub
 
+	}
+
+	public List<PatientInformation> getPatientByUpi(String upi,PatientInformation patientInformation)
+	{
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

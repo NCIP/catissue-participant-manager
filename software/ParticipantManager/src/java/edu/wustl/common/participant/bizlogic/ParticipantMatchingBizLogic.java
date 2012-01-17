@@ -1,6 +1,7 @@
 
 package edu.wustl.common.participant.bizlogic;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -21,6 +22,7 @@ import edu.wustl.dao.exception.DAOException;
 import edu.wustl.dao.query.generator.ColumnValueBean;
 import edu.wustl.dao.query.generator.DBTypes;
 import edu.wustl.patientLookUp.domain.PatientInformation;
+import edu.wustl.patientLookUp.util.PatientLookupException;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -56,7 +58,7 @@ public class ParticipantMatchingBizLogic
 					if (isCallToLkupLgic)
 					{
 						List matchPartpantLst = ParticipantManagerUtility.getListOfMatchingParticipants(participant,
-								Constants.PARTICIPANT_LOOKUP_ALGO_EMPI, null);
+								Constants.PARTICIPANT_LOOKUP_ALGO_EMPI, null,null);
 						if (matchPartpantLst.size() == 0
 								&& (participant.getBirthDate() != null || (participant.getSocialSecurityNumber() != null && !""
 										.equals(participant.getSocialSecurityNumber()))))
@@ -82,6 +84,31 @@ public class ParticipantMatchingBizLogic
 				logger.info("Matches fetched for participant : " + identifier);
 			}
 		}
+	}
+
+
+
+	/**
+	 * Method which will search for matched for given participant id with the given threshhold.
+	 * @param ParticipantId participant Id
+	 * @param threshHold threshhold for matching algorithm
+	 * @return List of matched patientInformation objects.
+	 * @throws ApplicationException exception
+	 * @throws PatientLookupException exception
+	 */
+	public List getMatchedParticipantList(Long ParticipantId, Integer threshHold)
+			throws ApplicationException, PatientLookupException
+	{
+		List matchPartpantLst = new ArrayList();
+		logger.info("Fetching matches for participant : " + ParticipantId);
+		IParticipant participant = ParticipantManagerUtility.getParticipantById(ParticipantId);
+		boolean isCallToLkupLgic = ParticipantManagerUtility.isCallToLookupLogicNeeded(participant);
+		if (isCallToLkupLgic)
+		{
+			matchPartpantLst.addAll(ParticipantManagerUtility.getListOfMatchingParticipants(
+					participant, Constants.PARTICIPANT_LOOKUP_ALGO_EMPI, null, threshHold));
+		}
+		return matchPartpantLst;
 	}
 
 	/**

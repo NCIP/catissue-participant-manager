@@ -1,13 +1,6 @@
 
 package edu.wustl.common.participant.bizlogic;
 
-import edu.wustl.common.participant.client.IParticipantManagerLookupLogic;
-import edu.wustl.common.participant.domain.IParticipant;
-import edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
-import edu.wustl.common.participant.domain.ISite;
-import edu.wustl.common.participant.utility.Constants;
-import edu.wustl.common.participant.utility.ParticipantManagerException;
-import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -15,14 +8,18 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.servlet.http.HttpServletRequest;
-
 import edu.wustl.common.exception.ApplicationException;
 import edu.wustl.common.exception.BizLogicException;
 import edu.wustl.common.lookup.DefaultLookupParameters;
 import edu.wustl.common.lookup.DefaultLookupResult;
-import edu.wustl.common.lookup.LookupLogic;
 import edu.wustl.common.lookup.LookupParameters;
+import edu.wustl.common.participant.client.IParticipantManagerLookupLogic;
+import edu.wustl.common.participant.domain.IParticipant;
+import edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
+import edu.wustl.common.participant.domain.ISite;
+import edu.wustl.common.participant.utility.Constants;
+import edu.wustl.common.participant.utility.ParticipantManagerException;
+import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.util.XMLPropertyHandler;
 import edu.wustl.dao.JDBCDAO;
 import edu.wustl.dao.exception.DAOException;
@@ -100,7 +97,7 @@ public class ParticipantLookupLogic implements IParticipantManagerLookupLogic
 	/* (non-Javadoc)
 	 * @see edu.wustl.common.lookup.LookupLogic#lookup(edu.wustl.common.lookup.LookupParameters)
 	 */
-	public List<DefaultLookupResult> lookup(LookupParameters params, Set<Long> csSet)
+	public List<DefaultLookupResult> lookup(LookupParameters params, Set<Long> csSet,Integer threshHold)
 			throws PatientLookupException
 	{
 		if (params == null)

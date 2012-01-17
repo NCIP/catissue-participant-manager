@@ -1,18 +1,17 @@
 
 package edu.wustl.common.participant.bizlogic;
 
-import edu.wustl.common.participant.client.IParticipantManagerLookupLogic;
-import edu.wustl.common.participant.domain.IParticipant;
-import edu.wustl.common.participant.utility.Constants;
-import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 import edu.wustl.common.exception.BizLogicException;
 import edu.wustl.common.lookup.DefaultLookupParameters;
-import edu.wustl.common.lookup.LookupLogic;
 import edu.wustl.common.lookup.LookupParameters;
+import edu.wustl.common.participant.client.IParticipantManagerLookupLogic;
+import edu.wustl.common.participant.domain.IParticipant;
+import edu.wustl.common.participant.utility.Constants;
+import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.util.XMLPropertyHandler;
 import edu.wustl.common.util.logger.Logger;
 import edu.wustl.patientLookUp.domain.PatientInformation;
@@ -28,7 +27,7 @@ public class ParticipantLookUpLogicEMPI implements IParticipantManagerLookupLogi
 {
 
 	/** The cutoff points. */
-	protected static transient int cutoffPoints;
+	protected int cutoffPoints;
 
 	/** The total points. */
 	protected static transient int totalPoints;
@@ -42,9 +41,32 @@ public class ParticipantLookUpLogicEMPI implements IParticipantManagerLookupLogi
 	/* (non-Javadoc)
 	 * @see edu.wustl.common.lookup.LookupLogic#lookup(edu.wustl.common.lookup.LookupParameters)
 	 */
-	public List lookup(final LookupParameters params,Set<Long> csSet) throws PatientLookupException
+	public List lookup(final LookupParameters params,Set<Long> csSet,Integer threshHold) throws PatientLookupException
 	{
+		cutoffPoints = getCutOffPoints(threshHold);
 		return  lookup(params);
+	}
+
+	/**
+	 * Cut off point can be given explicitely or used default.
+	 * If threshhold is given then it will be used or default value will be returned.
+	 * @param threshHold threshhold passed by caller
+	 * @return threshhold if valida value is present else will return default value.
+	 */
+	private int getCutOffPoints(Integer threshHold)
+	{
+		int cutoff;
+		if(threshHold!=null && threshHold>0)
+		{
+			cutoff=threshHold;
+
+		}
+		else
+		{
+			cutoff = Integer
+				.valueOf(XMLPropertyHandler.getValue(Constants.EMPITHRESHOLD));
+		}
+		return cutoff;
 	}
 
 	/**
@@ -97,7 +119,7 @@ public class ParticipantLookUpLogicEMPI implements IParticipantManagerLookupLogi
 		{
 			for (int i = 0; i < participantsEMPI.size(); i++)
 			{
-				final PatientInformation empiPatientInformation = (PatientInformation) participantsEMPI
+				final PatientInformation empiPatientInformation = participantsEMPI
 						.get(i);
 				lastName = empiPatientInformation.getLastName();
 				firstName = empiPatientInformation.getFirstName();
@@ -140,8 +162,7 @@ public class ParticipantLookUpLogicEMPI implements IParticipantManagerLookupLogi
 				final IParticipant participant = (IParticipant) participantParams.getObject();
 				final PatientInformation patientInfo = ParticipantManagerUtility
 						.populatePatientObject(participant,null);
-				cutoffPoints = Integer
-						.valueOf(XMLPropertyHandler.getValue(Constants.EMPITHRESHOLD));
+
 				maxPartipntsToReturn = Integer.valueOf(XMLPropertyHandler
 						.getValue(Constants.EMPIMAXNOOFPATIENS));
 				empiParticipantsList = searchMatchingParticipantFromEMPI(participant,
@@ -156,7 +177,7 @@ public class ParticipantLookUpLogicEMPI implements IParticipantManagerLookupLogi
 		}
 		return empiParticipantsList;
 	}
-
+	
 	public boolean isCallToLookupLogicNeeded(IParticipant participant)
 	{
 		boolean flag = true;

@@ -56,7 +56,7 @@ public class ParticipantEMPIGenerationAction extends CommonAddEditAction
 	{
 		ActionForward forward = null;
 		final IParticipantForm participantForm = (IParticipantForm) form;
-		final String isGenerateHL7 = (String) request.getParameter("isGenerateHL7");
+		final String isGenerateHL7 = request.getParameter("isGenerateHL7");
 		final String isGenerateEMPID = request.getParameter("isGenerateEMPIID");
 		String mrn = null;
 		final String key = ParticipantManagerUtility.getParticipantMedicalIdentifierKeyFor(1,
@@ -114,7 +114,11 @@ public class ParticipantEMPIGenerationAction extends CommonAddEditAction
 				}
 				else
 				{
-					generateEMPI(request, participantForm);
+					final SessionDataBean sessionDataBean = (SessionDataBean) request.getSession()
+					.getAttribute(Constants.SESSION_DATA);
+					Long userId = sessionDataBean.getUserId();
+					Long participantId = participantForm.getId();
+					generateEMPI(userId, participantId);
 					forward = mapping.findForward(edu.wustl.common.util.global.Constants.SUCCESS);
 				}
 			}
@@ -228,24 +232,22 @@ public class ParticipantEMPIGenerationAction extends CommonAddEditAction
 	/**
 	 * Generate empi.
 	 *
-	 * @param request the request
-	 * @param participantForm the participant form
+	 * @param userId which requested for generating EMPI
+	 * @param participantId the participant id for which to generate EMPI
 	 * @throws ApplicationException
 	 */
-	private void generateEMPI(final HttpServletRequest request,
-			final IParticipantForm participantForm) throws ApplicationException
+	private void generateEMPI(Long userId,
+			Long participantId) throws ApplicationException
 	{
-		final SessionDataBean sessionDataBean = (SessionDataBean) request.getSession()
-				.getAttribute(Constants.SESSION_DATA);
 		try
 		{
 			LinkedHashSet<Long> userIdSet = ParticipantManagerUtility
-					.getParticipantPICordinators(participantForm.getId());
-			userIdSet.add(sessionDataBean.getUserId());
+					.getParticipantPICordinators(participantId);
+			userIdSet.add(userId);
 			//getPIUserId(participantForm.getId());
 			// Process participant for CIDER participant matching.
 			ParticipantManagerUtility.addParticipantToProcessMessageQueue(userIdSet,
-					participantForm.getId());
+					participantId);
 			//setStatusMessage(request);
 		}
 		catch (DAOException e)

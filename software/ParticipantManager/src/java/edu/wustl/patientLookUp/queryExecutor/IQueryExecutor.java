@@ -47,6 +47,7 @@ public interface IQueryExecutor
 	 * @throws PatientLookupException : PatientLookupException
 	 */
 	void fetchRegDateFacilityAndMRNOfPatient(List<PatientInformation> patientMatchingList, List<Long> facilityIdList)
-			throws PatientLookupException;;
+			throws PatientLookupException;
+	List<PatientInformation> getPatientByUpi(String upi,PatientInformation patientInformation)throws PatientLookupException;
 
 }
