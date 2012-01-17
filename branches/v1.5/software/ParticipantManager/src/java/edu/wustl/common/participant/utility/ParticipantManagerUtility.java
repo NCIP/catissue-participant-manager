@@ -31,6 +31,7 @@ import edu.wustl.common.bizlogic.DefaultBizLogic;
 import edu.wustl.common.bizlogic.IBizLogic;
 import edu.wustl.common.exception.ApplicationException;
 import edu.wustl.common.exception.BizLogicException;
+import edu.wustl.common.exception.ErrorKey;
 import edu.wustl.common.factory.AbstractFactoryConfig;
 import edu.wustl.common.factory.IFactory;
 import edu.wustl.common.lookup.DefaultLookupParameters;
@@ -58,6 +59,9 @@ import edu.wustl.dao.exception.DAOException;
 import edu.wustl.dao.query.generator.ColumnValueBean;
 import edu.wustl.dao.query.generator.DBTypes;
 import edu.wustl.patientLookUp.domain.PatientInformation;
+import edu.wustl.patientLookUp.lookUpServiceBizLogic.PatientInfoLookUpService;
+import edu.wustl.patientLookUp.queryExecutor.IQueryExecutor;
+import edu.wustl.patientLookUp.util.PatientLookUpFactory;
 import edu.wustl.patientLookUp.util.PatientLookupException;
 
 // TODO: Auto-generated Javadoc
@@ -200,7 +204,7 @@ public class ParticipantManagerUtility
 		return partiMedId;
 	}
 	/**
-	 * 
+	 *
 	 * @param patientInformation
 	 * @return
 	 */
@@ -341,6 +345,12 @@ public class ParticipantManagerUtility
 		columnValueBeans.add(new ColumnValueBean(identifier));
 		List participantList = bizLogic.retrieve(sourceObjectName, null, queryWhereClause,
 				columnValueBeans);
+		if(participantList.isEmpty())
+		{
+			throw new BizLogicException(ErrorKey.getErrorKey("errors.item.invalid.values"), null,
+					"Participant Id");
+			//throw new BizLogicException();
+		}
 		return (IParticipant) participantList.get(0);
 
 	}
@@ -415,7 +425,7 @@ public class ParticipantManagerUtility
 		}
 		return mrn;
 	}
-			
+
 
 	/**
 	 * Gets the list of matching participants.
@@ -423,14 +433,14 @@ public class ParticipantManagerUtility
 	 * @param participant the participant
 	 * @param lookupAlgorithm the lookup algorithm
 	 * @param protocolId the protocol id
-	 *
+	 * @param threshHold cut off points for running matching algorithm
 	 * @return the list of matching participants
 	 *
 	 * @throws Exception the exception
 	 * @throws PatientLookupException the patient lookup exception
 	 */
 	public static List<DefaultLookupResult> getListOfMatchingParticipants(IParticipant participant,
-			String lookupAlgorithm, Long protocolId) throws PatientLookupException
+			String lookupAlgorithm, Long protocolId,Integer threshHold) throws PatientLookupException
 	{
 		List<DefaultLookupResult> matchParticipantList = null;
 		try
@@ -444,7 +454,7 @@ public class ParticipantManagerUtility
 
 			}
 			matchParticipantList = findMatchedParticipants(participant, lookupAlgorithm,
-					protocolIdList);
+					protocolIdList,threshHold);
 		}
 		catch (Exception exp)
 		{
@@ -459,14 +469,14 @@ public class ParticipantManagerUtility
 	 * @param participant the participant
 	 * @param lookupAlgorithm the lookup algorithm
 	 * @param protocolIdSet the protocol id set
-	 *
+	 * @param threshHold cut off points for running matching algorithm
 	 * @return the list of matching participants
 	 *
 	 * @throws Exception the exception
 	 * @throws PatientLookupException the patient lookup exception
 	 */
 	public static List<DefaultLookupResult> findMatchedParticipants(IParticipant participant,
-			String lookupAlgorithm, Set<Long> protocolIdSet) throws PatientLookupException
+			String lookupAlgorithm, Set<Long> protocolIdSet,Integer threshHold) throws PatientLookupException
 	{
 		List<DefaultLookupResult> matchParticipantList = null;
 		try
@@ -476,7 +486,7 @@ public class ParticipantManagerUtility
 			{
 				DefaultLookupParameters params = new DefaultLookupParameters();
 				params.setObject(participant);
-				matchParticipantList = partLookupLgic.lookup(params, protocolIdSet);
+				matchParticipantList = partLookupLgic.lookup(params, protocolIdSet,threshHold);
 			}
 
 		}
@@ -502,7 +512,7 @@ public class ParticipantManagerUtility
 			partLookupLgic = (IParticipantManagerLookupLogic) Utility.getObject(XMLPropertyHandler
 					.getValue(Constants.PARTICIPANT_LOOKUP_ALGO));
 		}
-		else 
+		else
 		{
 			partLookupLgic = (IParticipantManagerLookupLogic) Utility.getObject(XMLPropertyHandler
 					.getValue(lookupAlgorithm));
@@ -625,7 +635,7 @@ public class ParticipantManagerUtility
 				Iterator<Long> iterator = cpIdList.iterator();
 				while (iterator.hasNext())
 				{
-					Long id = (Long) iterator.next();
+					Long id = iterator.next();
 					LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
 					columnValueBeanList.add(new ColumnValueBean("CLINICAL_STUDY_ID", id,
 							DBTypes.LONG));
@@ -663,7 +673,7 @@ public class ParticipantManagerUtility
 	 */
 	public static Object getRaceInstance() throws BizLogicException, ParticipantManagerException
 	{
-		String raceclassName = (String) PropertyHandler.getValue(Constants.RACE_CLASS);
+		String raceclassName = PropertyHandler.getValue(Constants.RACE_CLASS);
 		return getObject(raceclassName);
 	}
 
@@ -677,7 +687,7 @@ public class ParticipantManagerUtility
 	 */
 	public static Object getSiteInstance() throws BizLogicException, ParticipantManagerException
 	{
-		String siteClassName = (String) PropertyHandler.getValue(Constants.SITE_CLASS);
+		String siteClassName = PropertyHandler.getValue(Constants.SITE_CLASS);
 		return getObject(siteClassName);
 	}
 
@@ -692,7 +702,7 @@ public class ParticipantManagerUtility
 	public static Object getParticipantInstance() throws BizLogicException,
 			ParticipantManagerException
 	{
-		String participantClassName = (String) PropertyHandler
+		String participantClassName = PropertyHandler
 				.getValue(Constants.PARTICIPANT_CLASS);
 		return getObject(participantClassName);
 	}
@@ -708,7 +718,7 @@ public class ParticipantManagerUtility
 	public static IParticipantMedicalIdentifier<IParticipant, ISite> getPMIInstance()
 			throws BizLogicException, ParticipantManagerException
 	{
-		String pmiClassName = (String) PropertyHandler.getValue(Constants.PMI_CLASS);
+		String pmiClassName = PropertyHandler.getValue(Constants.PMI_CLASS);
 		Object PMIInstance = getObject(pmiClassName);
 		return (IParticipantMedicalIdentifier<IParticipant, ISite>) PMIInstance;
 	}
@@ -843,7 +853,7 @@ public class ParticipantManagerUtility
 			BizLogicException
 	{
 
-		String PartiManagerImplClassName = (String) edu.wustl.common.participant.utility.PropertyHandler
+		String PartiManagerImplClassName = edu.wustl.common.participant.utility.PropertyHandler
 				.getValue(Constants.PARTICIPANT_MANAGER_IMPL_CLASS);
 
 		IParticipantManager participantManagerImplObj = (IParticipantManager) ParticipantManagerUtility
@@ -1719,13 +1729,13 @@ public class ParticipantManagerUtility
 			Iterator<IRace<IParticipant>> iterNew = raceColNew.iterator();
 			while (iterNew.hasNext())
 			{
-				IRace<IParticipant> raceNew = (IRace<IParticipant>) iterNew.next();
+				IRace<IParticipant> raceNew = iterNew.next();
 				raceNameNew = raceNew.getRaceName();
 				Iterator<IRace<IParticipant>> iterOld = raceColOld.iterator();
 				found = false;
 				while (iterOld.hasNext())
 				{
-					IRace<IParticipant> raceOld = (IRace<IParticipant>) iterOld.next();
+					IRace<IParticipant> raceOld = iterOld.next();
 					raceNameOld = raceOld.getRaceName();
 					if (raceNameNew.equals(raceNameOld))
 					{
@@ -1756,7 +1766,7 @@ public class ParticipantManagerUtility
 	private static Set<Long> getProtocolIdLstForMICSEnabledForMatching(Long protocolId)
 			throws ParticipantManagerException, ApplicationException
 	{
-		String PartiManagerImplClassName = (String) edu.wustl.common.participant.utility.PropertyHandler
+		String PartiManagerImplClassName = edu.wustl.common.participant.utility.PropertyHandler
 				.getValue(Constants.PARTICIPANT_MANAGER_IMPL_CLASS);
 		IParticipantManager participantManagerImplObj = (IParticipantManager) ParticipantManagerUtility
 				.getObject(PartiManagerImplClassName);
@@ -1780,7 +1790,7 @@ public class ParticipantManagerUtility
 			Iterator<Long> iterator = protocolIdSet.iterator();
 			while (iterator.hasNext())
 			{
-				Long protocolId = (Long) iterator.next();
+				Long protocolId = iterator.next();
 				protocolIdsStr = protocolIdsStr.concat(String
 						.valueOf((protocolIdsStr.length() == 0) ? protocolId : "," + protocolId));
 			}
@@ -1800,7 +1810,7 @@ public class ParticipantManagerUtility
 		IParticipantManager participantManagerImplObj = null;
 		try
 		{
-			String PartiManagerImplClassName = (String) edu.wustl.common.participant.utility.PropertyHandler
+			String PartiManagerImplClassName = edu.wustl.common.participant.utility.PropertyHandler
 					.getValue(edu.wustl.common.participant.utility.Constants.PARTICIPANT_MANAGER_IMPL_CLASS);
 			participantManagerImplObj = (IParticipantManager) ParticipantManagerUtility
 					.getObject(PartiManagerImplClassName);
@@ -1896,7 +1906,7 @@ public class ParticipantManagerUtility
 	}
 
 	/**
-	 * 
+	 *
 	 * @param protocolIdSet
 	 * @param participantObjName
 	 * @return
@@ -1907,9 +1917,9 @@ public class ParticipantManagerUtility
 	{
 		String fetchByNameQry = null;
 		IParticipantManager participantManagerImplObj = getParticipantMgrImplObj();
-		
+
 		fetchByNameQry = participantManagerImplObj.getParticipantCodeQuery(protocolIdSet);
-		
+
 		return fetchByNameQry;
 	}
 	/**
@@ -2035,4 +2045,97 @@ public class ParticipantManagerUtility
 		sessionData.setCsmUserId(validUser.getCsmUserId().toString());
 		return sessionData;
 	}
+
+	/**
+	 * this method will return the xquery executir instance configured from DB values
+	 * @return xquery executor configred from clinportal_properties file.
+	 * @throws Exception exception.
+	 */
+	public static  IQueryExecutor getXQueryExecutor() throws Exception
+	{
+
+		final String dbURL = XMLPropertyHandler.getValue(Constants.EMPIDBURL);
+		final String dbUser = XMLPropertyHandler.getValue(Constants.EMPIDBUSERNAME);
+		final String dbPassword = XMLPropertyHandler.getValue(Constants.EMPIDBUSERPASSWORD);
+		final String dbDriver = XMLPropertyHandler.getValue(Constants.EMPIDBDRIVERNAME);
+		final String dbSchema = XMLPropertyHandler.getValue(Constants.EMPIDBSCHEMA);
+
+			final PatientInfoLookUpService lookUpEMPI = new PatientInfoLookUpService();
+			final edu.wustl.patientLookUp.queryExecutor.IQueryExecutor xQueyExecutor = PatientLookUpFactory
+					.getQueryExecutorImpl(dbURL, dbUser, dbPassword, dbDriver, dbSchema);
+			return xQueyExecutor;
+	}
+
+	/**
+	 * This method will return valid session data bean created for user specified in HL7 listener admin property
+	 * @return valid session data beam.
+	 * @throws Exception exception if user does not have right previlages.
+	 */
+	public static SessionDataBean getValidSessionBean() throws Exception
+	{
+		SessionDataBean sessionData=null;
+		String loginName = XMLPropertyHandler.getValue(Constants.HL7_LISTENER_ADMIN_USER);
+		//loginName = Constants.CLINPORTAL_EMPI_ADMIN_LOGIN_ID;
+		IUser validUser = getUser(loginName, Constants.ACTIVITY_STATUS_ACTIVE);
+
+		if (validUser != null)
+		{
+			sessionData = getSessionDataBean(validUser);
+		}
+		else
+		{
+			checkUserAccount(loginName);
+		}
+		return sessionData;
+	}
+
+		/**
+		 * Gets the user.
+		 *
+		 * @param loginName the login name
+		 * @param activityStatus the activity status
+		 *
+		 * @return the user
+		 *
+		 * @throws BizLogicException the biz logic exception
+		 * @throws ParticipantManagerException
+		 */
+		public static IUser getUser(final String loginName, final String activityStatus)
+				throws BizLogicException, ParticipantManagerException
+		{
+			IUser validUser = null;
+			String userClassName=edu.wustl.common.participant.utility.PropertyHandler.getValue(Constants.USER_CLASS);
+			final String getActiveUser = "from "+userClassName+" user where user.activityStatus= '"
+					+ activityStatus + "' and user.loginName =" + "'" + loginName + "'";
+			final DefaultBizLogic bizlogic = new DefaultBizLogic();
+			final List users = bizlogic.executeQuery(getActiveUser);
+			if (users != null && !users.isEmpty())
+			{
+				validUser = (IUser) users.get(0);
+			}
+			return validUser;
+		}
+
+		/**
+		 * Check user account.
+		 *
+		 * @param loginName the login name
+		 * @throws Exception
+		 * @throws BizLogicException
+		 *
+		 * @throws BizLogicException the biz logic exception
+		 * @throws Exception the exception
+		 */
+		private static void checkUserAccount(final String loginName) throws BizLogicException, Exception
+		{
+			if (getUser(loginName, Constants.ACTIVITY_STATUS_CLOSED) != null)
+			{
+				throw new ParticipantManagerException(loginName + " Closed user. Sending back to the login Page",null);
+			}
+			else
+			{
+				throw new ParticipantManagerException(loginName + "Invalid user. Sending back to the login Page",null);
+			}
+		}
+
 }
