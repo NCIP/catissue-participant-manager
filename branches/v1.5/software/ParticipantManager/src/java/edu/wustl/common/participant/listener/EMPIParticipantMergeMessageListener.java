@@ -78,18 +78,14 @@ public class EMPIParticipantMergeMessageListener implements MessageListener
 		catch (JMSException exp)
 		{
 			LOGGER.error(Constants.PROCESS_ERROR + mergeMessage);
-			LOGGER.error(exp.getMessage());
+			LOGGER.error(exp.getMessage(),exp);
 		}
-		catch (BizLogicException be)
+		catch (Exception be)
 		{
 			LOGGER.error(Constants.PARTICIPANT_ERROR + messageValueMap.get(Constants.OLD_EMPIID));
-			LOGGER.error(be.getMessage());
+			LOGGER.error(be.getMessage(),be);
 		}
-		catch (DAOException e)
-		{
-			LOGGER.error(Constants.PARTICIPANT_ERROR + messageValueMap.get(Constants.OLD_EMPIID));
-			LOGGER.error(e.getMessage());
-		}
+
 	}
 
 	/**
@@ -105,6 +101,8 @@ public class EMPIParticipantMergeMessageListener implements MessageListener
 		while (strTokenizer.hasMoreTokens())
 		{
 			final String token = strTokenizer.nextToken().trim();
+			if(!"".equals(token))
+			{
 			final StringTokenizer strTokenizer1 = new StringTokenizer(token, "|");
 			final String token1 = strTokenizer1.nextToken().trim();
 			if (token1.equalsIgnoreCase("EVN"))
@@ -128,6 +126,7 @@ public class EMPIParticipantMergeMessageListener implements MessageListener
 				strTokenizer1.nextToken();
 				final String oldId = getEMPIId(strTokenizer1.nextToken());
 				valueMap.put(Constants.OLD_EMPIID, oldId);
+			}
 			}
 		}
 	}
@@ -340,7 +339,7 @@ public class EMPIParticipantMergeMessageListener implements MessageListener
 			while (itr.hasNext())
 			{
 				IParticipantMedicalIdentifier<IParticipant, ISite> pmi = itr.next();
-				String site = ((ISite) pmi.getSite()).getName();
+				String site = (pmi.getSite()).getName();
 				String mrn = pmi.getMedicalRecordNumber();
 				if (site.equals(mergeMessageMap.get(Constants.NEW_SITE)))
 				{
@@ -363,7 +362,7 @@ public class EMPIParticipantMergeMessageListener implements MessageListener
 				{
 					ISite site = new CommonParticipantBizlogic().getSite(mergeMessageMap
 							.get(Constants.NEW_SITE));
-					String pmiClassName = (String) PropertyHandler.getValue(Constants.PMI_CLASS);
+					String pmiClassName = PropertyHandler.getValue(Constants.PMI_CLASS);
 					pmiToBeUpdated = (IParticipantMedicalIdentifier<IParticipant, ISite>) ParticipantManagerUtility
 							.getObject(pmiClassName);
 					pmiToBeUpdated.setMedicalRecordNumber(mergeMessageMap.get(Constants.NEW_MRN));

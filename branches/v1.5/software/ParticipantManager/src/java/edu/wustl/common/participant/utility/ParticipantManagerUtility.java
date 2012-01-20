@@ -78,7 +78,11 @@ public class ParticipantManagerUtility
 	private QueueConnection connectionToQueue = null;
 
 	/** class level instance for Queue session*/
-	private QueueSession queueSession = null;
+	private QueueSession inBoundQueueSession = null;
+
+
+	/** class level instance for Queue session*/
+	private QueueSession mergeQueueSession = null;
 
 	/**
 	 * Register wmq listener.
@@ -121,14 +125,14 @@ public class ParticipantManagerUtility
 
 			connectionToQueue.start();
 
-			queueSession = connectionToQueue.createQueueSession(false,
+			inBoundQueueSession = connectionToQueue.createQueueSession(false,
 					javax.jms.Session.AUTO_ACKNOWLEDGE);
 			inBoundQueueName = XMLPropertyHandler.getValue(Constants.IN_BOUND_QUEUE_NAME);
-			final Queue inBoundQueue = queueSession.createQueue("queue:///" + inBoundQueueName);
+			final Queue inBoundQueue = inBoundQueueSession.createQueue("queue:///" + inBoundQueueName);
 
 			LOGGER.info("IN_BOUND_QUEUE_NAME ----------- : " + inBoundQueueName);
 
-			QueueReceiver queueReceiver = queueSession.createReceiver(inBoundQueue);
+			QueueReceiver queueReceiver = inBoundQueueSession.createReceiver(inBoundQueue);
 
 			final EMPIParticipantListener listener = new EMPIParticipantListener();
 
@@ -136,8 +140,10 @@ public class ParticipantManagerUtility
 
 			// Set the merge message queue listener.
 			mergeMessageQueueName = XMLPropertyHandler.getValue(Constants.MERGE_MESSAGE_QUEUE);
-			final Queue mrgMessageQueue = queueSession.createQueue("queue:///" + mergeMessageQueueName);
-			queueReceiver = queueSession.createReceiver(mrgMessageQueue);
+			mergeQueueSession = connectionToQueue.createQueueSession(false,
+					javax.jms.Session.AUTO_ACKNOWLEDGE);
+			final Queue mrgMessageQueue = mergeQueueSession.createQueue("queue:///" + mergeMessageQueueName);
+			queueReceiver = mergeQueueSession.createReceiver(mrgMessageQueue);
 			final EMPIParticipantMergeMessageListener mrgMesListener = new EMPIParticipantMergeMessageListener();
 			queueReceiver.setMessageListener(mrgMesListener);
 		}
@@ -1952,9 +1958,14 @@ public class ParticipantManagerUtility
 		try
 		{
 			// closing session for queue
-			if (null != queueSession)
+			if (null != inBoundQueueSession)
 			{
-				queueSession.close();
+				inBoundQueueSession.close();
+			}
+			// closing session for queue
+			if (null != mergeQueueSession)
+			{
+				mergeQueueSession.close();
 			}
 			//closing queue connection
 			if (null != connectionToQueue)
