@@ -14,6 +14,7 @@ import java.util.Locale;
 import edu.wustl.common.beans.SessionDataBean;
 import edu.wustl.common.exception.ApplicationException;
 import edu.wustl.common.exception.BizLogicException;
+import edu.wustl.common.exception.ErrorKey;
 import edu.wustl.common.participant.client.IParticipantManager;
 import edu.wustl.common.participant.domain.IParticipant;
 import edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
@@ -940,17 +941,21 @@ public class EMPIParticipantRegistrationBizLogic {
 	 * @param participantId participant with which to assign empi
 	 * @param upi empi id to be associated.
 	 * @return Updated participant having empi set.
+	 * @throws BizLogicException
+	 * @throws PatientLookupException
 	 * @throws PatientLookupException exception.
 	 */
-	public IParticipant associatePatientWithEmpi(Long participantId,String upi) throws PatientLookupException
+	public IParticipant associatePatientWithEmpi(Long participantId,String upi) throws BizLogicException, PatientLookupException
 	{
 		IParticipant participant = null;
-		try
-		{
-			IQueryExecutor queryExecutor = ParticipantManagerUtility.getXQueryExecutor();
+
+
 			participant = ParticipantManagerUtility.getParticipantById(participantId);
 			final PatientInformation cpPatientInfo = ParticipantManagerUtility
 					.populatePatientObject(participant, null);
+			try
+			{
+			IQueryExecutor queryExecutor = ParticipantManagerUtility.getXQueryExecutor();
 			final List<PatientInformation> empiPatient = queryExecutor.getPatientByUpi(upi,
 					cpPatientInfo);
 			if (!empiPatient.isEmpty())
@@ -982,16 +987,18 @@ public class EMPIParticipantRegistrationBizLogic {
 				registerPatientToeMPI(participant);
 
 			}
+			else
+			{
+				throw new BizLogicException(ErrorKey.getErrorKey("errors.item.invalid.values"), null,
+				"EMPI ID");
+			}
+			}
+			catch(Exception e)
+			{
+				throw new PatientLookupException(e.getMessage(), e);
+			}
 
-		}
-		catch (Exception exc)
-		{
-			throw new PatientLookupException("Error occured while retrieving matched Patient", exc);
-		}
-		if(participant==null)
-		{
-			throw new PatientLookupException("Participant with given EMPI Id does not exists",null);
-		}
+
 		return participant;
 		//CommonParticipantBizlogic.update(dao, participant, oldParticipant)
 
