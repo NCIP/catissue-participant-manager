@@ -214,7 +214,7 @@ public class QueryGenerator
 	}
 
 	/**
-	 * @return return the query for fetchign demographics data based on UPI.
+	 * @return return the query for fetching demographics data based on UPI.
 	 */
 	public static String getUPIQuery()
 	{
