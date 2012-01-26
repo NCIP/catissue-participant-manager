@@ -548,10 +548,11 @@ public class EMPIParticipantListener implements MessageListener
 	 * @param docEle the doc ele
 	 * @throws BizLogicException
 	 * @throws ParticipantManagerException
+	 * @throws PatientLookupException
 	 *
 	 * @throws Exception the exception
 	 */
-	private void parseDomographicXML(final Element docEle) throws BizLogicException, ParticipantManagerException
+	private void parseDomographicXML(final Element docEle) throws BizLogicException, ParticipantManagerException, PatientLookupException
 	{
 		IParticipantMedicalIdentifier<IParticipant, ISite> participantMedicalIdentifier = null;
 		partiMedIdColl = new LinkedHashSet<IParticipantMedicalIdentifier<IParticipant, ISite>>();
@@ -580,8 +581,13 @@ public class EMPIParticipantListener implements MessageListener
 					mrn = value;
 				}
 			}
+//			changes by amol
+			//			will get the value of facilityId from participantManager.properties file
 
-			if (Constants.CLINPORTAL_FACILITY_ID.equals(facilityId))
+			String facilityIdValue = PropertyHandler.getValue(Constants.Facility_ID);
+
+			//			if (Constants.CLINPORTAL_FACILITY_ID.equals(facilityId))
+			if (facilityIdValue.equals(facilityId))
 			{
 				clinPortalId = mrn;
 			}

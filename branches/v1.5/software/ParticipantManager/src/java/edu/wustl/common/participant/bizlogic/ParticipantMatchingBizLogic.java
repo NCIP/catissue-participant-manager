@@ -10,10 +10,13 @@ import java.util.LinkedList;
 import java.util.List;
 
 import edu.wustl.common.exception.ApplicationException;
+import edu.wustl.common.exception.BizLogicException;
+import edu.wustl.common.participant.client.IParticipantManager;
 import edu.wustl.common.participant.domain.IParticipant;
 import edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
 import edu.wustl.common.participant.domain.ISite;
 import edu.wustl.common.participant.utility.Constants;
+import edu.wustl.common.participant.utility.ParticipantManagerException;
 import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.util.Utility;
 import edu.wustl.common.util.logger.Logger;
@@ -325,8 +328,10 @@ public class ParticipantMatchingBizLogic
 	 *
 	 * @param list the list
 	 * @throws DAOException the dAO exception
+	 * @throws ParticipantManagerException
+	 * @throws BizLogicException
 	 */
-	public void populateListWithCSName(List list) throws DAOException
+	public void populateListWithCSName(List list) throws DAOException, BizLogicException, ParticipantManagerException
 	{
 		JDBCDAO dao = null;
 		try
@@ -347,9 +352,11 @@ public class ParticipantMatchingBizLogic
 	 * @param dao the dao
 	 *
 	 * @throws DAOException the DAO exception
+	 * @throws ParticipantManagerException
+	 * @throws BizLogicException
 	 */
 	@SuppressWarnings("unchecked")
-	private void populateListWithCSName(List list, JDBCDAO dao) throws DAOException
+	private void populateListWithCSName(List list, JDBCDAO dao) throws DAOException, BizLogicException, ParticipantManagerException
 	{
 		if (list != null && !list.isEmpty())
 		{
@@ -399,10 +406,20 @@ public class ParticipantMatchingBizLogic
 	 * @return the clinical study names
 	 *
 	 * @throws DAOException the DAO exception
+	 * @throws ParticipantManagerException
+	 * @throws BizLogicException
 	 */
-	private String getClinicalStudyNames(Long participantId, JDBCDAO dao) throws DAOException
+	private String getClinicalStudyNames(Long participantId, JDBCDAO dao) throws DAOException, ParticipantManagerException, BizLogicException
 	{
-		String query = "SELECT SHORT_TITLE FROM CATISSUE_CLINICAL_STUDY_REG CSR JOIN CATISSUE_SPECIMEN_PROTOCOL CSP ON CSR.CLINICAL_STUDY_ID=CSP.IDENTIFIER WHERE PARTICIPANT_ID=?";
+
+		String PartiManagerImplClassName = edu.wustl.common.participant.utility.PropertyHandler
+		.getValue(Constants.PARTICIPANT_MANAGER_IMPL_CLASS);
+
+			IParticipantManager participantManagerImplObj = (IParticipantManager) ParticipantManagerUtility
+		.getObject(PartiManagerImplClassName);
+			String query= participantManagerImplObj.getClinicalStudyNamesQuery();
+
+
 		LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
 		columnValueBeanList.add(new ColumnValueBean("PARTICIPANT_ID", participantId, DBTypes.LONG));
 		List list = dao.executeQuery(query, null, columnValueBeanList);

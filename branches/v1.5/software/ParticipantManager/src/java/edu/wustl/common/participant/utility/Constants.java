@@ -69,7 +69,7 @@ public class Constants
 
 	/** The Constant PARTICIPANT_LOOKUP_ALGO. */
 	public static final String PARTICIPANT_LOOKUP_ALGO = "ParticipantLookupAlgo";
-	
+
 	public static final String PARTICIPANT_HASHCODE_LOOKUP_ALGO = "ParticipantHashcodeLookupAlgo";
 
 	/** The Constant PARTICIPANT_LOOKUP_SUCCESS. */
@@ -341,5 +341,13 @@ public class Constants
 	public static final String ERROR_PARTICIPANT_UPDATE = "Unresolved : Could not update participant.";
 
 	public static final String MRN_EXIST = "Unresolved:This MRN already exist for this participant.";
+
+	public static final String Event_Type_Code = "EventTypeCode";
+
+	public static final String Facility_ID = "FacilityID";
+
+	public static final String Sending_Application = "SendingApplication";
+
+	public static final String Sending_Facility = "SendingFacility";
 
 }

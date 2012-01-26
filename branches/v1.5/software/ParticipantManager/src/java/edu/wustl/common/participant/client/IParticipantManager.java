@@ -91,6 +91,8 @@ public interface IParticipantManager
 	 * @return
 	 */
 	public String getIsEmpiEnabledQuery();
-	
+
 	public String getParticipantCodeQuery(Set<Long> protocolIdSet);
+
+	public String getClinicalStudyNamesQuery();
 }
