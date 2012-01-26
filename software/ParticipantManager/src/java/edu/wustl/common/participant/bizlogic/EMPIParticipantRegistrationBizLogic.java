@@ -24,6 +24,7 @@ import edu.wustl.common.participant.utility.Constants;
 import edu.wustl.common.participant.utility.MQMessageWriter;
 import edu.wustl.common.participant.utility.ParticipantManagerException;
 import edu.wustl.common.participant.utility.ParticipantManagerUtility;
+import edu.wustl.common.participant.utility.PropertyHandler;
 import edu.wustl.common.participant.utility.RaceGenderCodesProperyHandler;
 import edu.wustl.common.util.Utility;
 import edu.wustl.common.util.XMLPropertyHandler;
@@ -225,9 +226,14 @@ public class EMPIParticipantRegistrationBizLogic {
 	 *             the exception
 	 */
 	public String getRegHL7Message(final IParticipant participant)
-			throws ApplicationException {
+			throws ApplicationException,ParticipantManagerException {
 		String hl7Message = "";
-		final String eventTypeCode = Constants.HL7_REG_EVENT_TYPE_A04;
+		//Changes By Amol
+
+			String eventTypeCode = PropertyHandler.getValue(Constants.Event_Type_Code);
+
+		// -- ends --
+		//
 		LOGGER.info("\n\nHL7 Message \n \n \n\n\n");
 
 		final String commonHL7Segments = getMSHEVNPIDSengment(participant,
@@ -252,13 +258,14 @@ public class EMPIParticipantRegistrationBizLogic {
 	 *            the old participant id
 	 * @param oldEMPIID
 	 *            the old empiid
+	 * @throws ParticipantManagerException
 	 *
 	 * @throws Exception
 	 *             the exception
 	 */
 	public void sendMergeMessage(final IParticipant participant,
 			final String oldParticipantId, final String oldEMPIID)
-			throws ApplicationException {
+			throws ApplicationException, ParticipantManagerException {
 		if (!participant.getEmpiId().equals(oldEMPIID)) {
 			sendEMPIMIdMergeMgs(participant, oldEMPIID);
 		}
@@ -289,12 +296,13 @@ public class EMPIParticipantRegistrationBizLogic {
 	 *            the participant
 	 * @param oldParticipantId
 	 *            the old participant id
+	 * @throws ParticipantManagerException
 	 *
 	 * @throws Exception
 	 *             the exception
 	 */
 	private void sendMRNMergeMgs(final IParticipant participant,
-			final String oldParticipantId) throws ApplicationException {
+			final String oldParticipantId) throws ApplicationException, ParticipantManagerException {
 		String hl7Message = "";
 		hl7Message = getMRNMergeMgs(participant, oldParticipantId);
 		sendHLMessage(hl7Message);
@@ -309,12 +317,13 @@ public class EMPIParticipantRegistrationBizLogic {
 	 *            the old participant id
 	 *
 	 * @return the mRN merge mgs
+	 * @throws ParticipantManagerException
 	 *
 	 * @throws Exception
 	 *             the exception
 	 */
 	public String getMRNMergeMgs(final IParticipant participant,
-			final String oldParticipantId) throws ApplicationException {
+			final String oldParticipantId) throws ApplicationException, ParticipantManagerException {
 		LOGGER.info("\n\n  MRN Merge HL7 Message \n \n \n\n\n");
 		String hl7Message = "";
 		final String eventTypeCode = Constants.HL7_MERGE_EVENT_TYPE_A34;
@@ -334,12 +343,13 @@ public class EMPIParticipantRegistrationBizLogic {
 	 *            the participant
 	 * @param oldEMPIID
 	 *            the old empiid
+	 * @throws ParticipantManagerException
 	 *
 	 * @throws Exception
 	 *             the exception
 	 */
 	private void sendEMPIMIdMergeMgs(final IParticipant participant,
-			final String oldEMPIID) throws ApplicationException {
+			final String oldEMPIID) throws ApplicationException, ParticipantManagerException {
 		String hl7Message = "";
 		hl7Message = getEMPIMIdMergeMgs(participant, oldEMPIID);
 		sendHLMessage(hl7Message);
@@ -354,12 +364,13 @@ public class EMPIParticipantRegistrationBizLogic {
 	 *            the old empiid
 	 *
 	 * @return the eMPIM id merge mgs
+	 * @throws ParticipantManagerException
 	 *
 	 * @throws Exception
 	 *             the exception
 	 */
 	public String getEMPIMIdMergeMgs(final IParticipant participant,
-			final String oldEMPIID) throws ApplicationException {
+			final String oldEMPIID) throws ApplicationException, ParticipantManagerException {
 		String hl7Message = "";
 		LOGGER.info("\n\n  EMPI Merge HL7 Message \n \n \n\n\n");
 		final String eventTypeCode = Constants.HL7_MERGE_EVENT_TYPE_A34;
@@ -383,12 +394,13 @@ public class EMPIParticipantRegistrationBizLogic {
 	 *            the event type code
 	 *
 	 * @return the mSHEVNPID sengment
+	 * @throws ParticipantManagerException
 	 *
 	 * @throws Exception
 	 *             the exception
 	 */
 	private String getMSHEVNPIDSengment(final IParticipant participant,
-			final String eventTypeCode) throws ApplicationException {
+			final String eventTypeCode) throws ApplicationException, ParticipantManagerException {
 		String hl7Segment = "";
 		setCurrentDateTime();
 		final String msgControlId = getMsgControlId();
@@ -413,13 +425,16 @@ public class EMPIParticipantRegistrationBizLogic {
 	 *            the particiapnt id
 	 *
 	 * @return the h l7 mgr segment
+	 * @throws ParticipantManagerException
 	 */
 	private String getHL7MgrSegment(final String eMPI,
-			final String particiapntId) {
+			final String particiapntId) throws ParticipantManagerException {
 		final String empiIdZeroAppnd = getZeroAppendedEMPIId(eMPI);
 		final String eMPIID = empiIdZeroAppnd + "^^^64";
-		final String mrn = particiapntId + "^^^"
-				+ Constants.CLINPORTAL_FACILITY_ID + "^U";
+
+
+		String	mrn = particiapntId + "^^^" + PropertyHandler.getValue(Constants.Facility_ID) + "^U";
+
 		final String mgrSegment = "MRG|" + mrn + "|||" + eMPIID + "||||^^^&&";
 		return mgrSegment;
 	}
@@ -461,19 +476,24 @@ public class EMPIParticipantRegistrationBizLogic {
 	 *            the event type code
 	 *
 	 * @return the h l7 msh segment
+	 * @throws ParticipantManagerException
 	 */
 	private String getHL7MSHSegment(final String msgControlId,
-			final String dateTime, final String eventTypeCode) {
+			final String dateTime, final String eventTypeCode) throws ParticipantManagerException {
 		String msgSegment = null;
-		if (Constants.HL7_REG_EVENT_TYPE_A04.equals(eventTypeCode)) {
-			msgSegment = "MSH|^~\\&|CLINPORTAL|CLINPORTAL|ADMISSION|ADT1|"
-					+ dateTime + "||ADT^" + eventTypeCode + "|" + msgControlId
-					+ "|P|2.1";
-		} else if (Constants.HL7_MERGE_EVENT_TYPE_A34.equals(eventTypeCode)) {
-			msgSegment = "MSH|^~\\&|CLINPORTAL|CLINPORTAL|CDR__S|BJC_SYSTEM|"
-					+ dateTime + "||ADT^" + eventTypeCode + "|" + msgControlId
-					+ "|P|2.1";
+
+		if(Constants.HL7_MERGE_EVENT_TYPE_A34.equals(eventTypeCode)){
+				msgSegment = "MSH|^~\\&|" + PropertyHandler.getValue(Constants.Sending_Application)
+				+ "|" + PropertyHandler.getValue(Constants.Sending_Facility) + "|CDR__S|BJC_SYSTEM|" + dateTime
+				+ "||ADT^" + eventTypeCode + "|" + msgControlId + "|P|2.1";
+			}
+		else
+		{
+			msgSegment = "MSH|^~\\&|" + PropertyHandler.getValue(Constants.Sending_Application)
+			+ "|" + PropertyHandler.getValue(Constants.Sending_Facility) + "|ADMISSION|ADT1|" + dateTime
+			+ "||ADT^" + eventTypeCode + "|" + msgControlId + "|P|2.1";
 		}
+
 		return msgSegment;
 	}
 
@@ -508,7 +528,15 @@ public class EMPIParticipantRegistrationBizLogic {
 			final String eventTypeCode) throws ApplicationException {
 		String pid = null;
 		try {
-			final String facilityId = Constants.CLINPORTAL_FACILITY_ID;
+
+			//			Changes By Amol
+			//			if no property set for facility id then set it to Constants.CLINPORTAL_FACILITY_ID
+
+			String	facilityId = PropertyHandler.getValue(Constants.Facility_ID);
+
+			//			--- ends
+
+			//final String facilityId = Constants.CLINPORTAL_FACILITY_ID;
 			final String lastName = participant.getLastName();
 			final String firstName = participant.getFirstName();
 			final String middleName = getMiddleName(participant.getMiddleName());
@@ -531,7 +559,8 @@ public class EMPIParticipantRegistrationBizLogic {
 				// for merge messages PID.1 field should have value :1
 				pidFirstField = "1";
 			}
-			if (Constants.HL7_REG_EVENT_TYPE_A04.equals(eventTypeCode)) {
+			else
+			{
 				pidFirstField = mrn;
 			}
 			pid = "PID|" + pidFirstField + "|" + empiIdInPID2 + "|" + mrn
