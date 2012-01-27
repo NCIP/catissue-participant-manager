@@ -17,7 +17,7 @@ import edu.wustl.dao.query.generator.ColumnValueBean;
 public class ParticipantHashcodeLookupLogic implements IParticipantManagerLookupLogic
 {
 
-	public List lookup(LookupParameters params, Set<Long> protocolIdList,Integer threshHold) throws Exception
+	public List lookup(LookupParameters params, Set<Long> protocolIdList) throws Exception
 	{
 		List<DefaultLookupResult> matchParticipantList = null;
 		DefaultLookupParameters defLookupParam = (DefaultLookupParameters)params;
@@ -48,7 +48,7 @@ public class ParticipantHashcodeLookupLogic implements IParticipantManagerLookup
 
 	public List lookup(LookupParameters params) throws Exception
 	{
-		return lookup(params, null,null);
+		return lookup(params, null);
 	}
 
 	public boolean isCallToLookupLogicNeeded(IParticipant participant)

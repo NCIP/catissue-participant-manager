@@ -660,12 +660,9 @@ public class EMPIParticipantRegistrationBizLogic {
 	private String getQueryForPICordinators() throws DAOException,
 			ParticipantManagerException, BizLogicException {
 
-		String PartiManagerImplClassName = edu.wustl.common.participant.utility.PropertyHandler
-				.getValue(Constants.PARTICIPANT_MANAGER_IMPL_CLASS);
 
-		IParticipantManager participantManagerImplObj = (IParticipantManager) ParticipantManagerUtility
-				.getObject(PartiManagerImplClassName);
 
+		IParticipantManager participantManagerImplObj = ParticipantManagerUtility.getParticipantMgrImplObj();
 		return participantManagerImplObj.getPICordinatorsofProtocol();
 
 		/*

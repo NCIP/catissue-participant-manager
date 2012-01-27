@@ -492,7 +492,8 @@ public class ParticipantManagerUtility
 			{
 				DefaultLookupParameters params = new DefaultLookupParameters();
 				params.setObject(participant);
-				matchParticipantList = partLookupLgic.lookup(params, protocolIdSet,threshHold);
+				params.setThreshold(threshHold);
+				matchParticipantList = partLookupLgic.lookup(params, protocolIdSet);
 			}
 
 		}
@@ -859,11 +860,8 @@ public class ParticipantManagerUtility
 			BizLogicException
 	{
 
-		String PartiManagerImplClassName = edu.wustl.common.participant.utility.PropertyHandler
-				.getValue(Constants.PARTICIPANT_MANAGER_IMPL_CLASS);
 
-		IParticipantManager participantManagerImplObj = (IParticipantManager) ParticipantManagerUtility
-				.getObject(PartiManagerImplClassName);
+		IParticipantManager participantManagerImplObj = getParticipantMgrImplObj();
 
 		return participantManagerImplObj.getIsEmpiEnabledQuery();
 	}
@@ -1772,10 +1770,8 @@ public class ParticipantManagerUtility
 	private static Set<Long> getProtocolIdLstForMICSEnabledForMatching(Long protocolId)
 			throws ParticipantManagerException, ApplicationException
 	{
-		String PartiManagerImplClassName = edu.wustl.common.participant.utility.PropertyHandler
-				.getValue(Constants.PARTICIPANT_MANAGER_IMPL_CLASS);
-		IParticipantManager participantManagerImplObj = (IParticipantManager) ParticipantManagerUtility
-				.getObject(PartiManagerImplClassName);
+
+		IParticipantManager participantManagerImplObj = getParticipantMgrImplObj();
 		Set<Long> protocolIdList = participantManagerImplObj
 				.getProtocolIdLstForMICSEnabledForMatching(protocolId);
 		return protocolIdList;
