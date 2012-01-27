@@ -21,7 +21,9 @@ import edu.wustl.common.action.SecureAction;
 import edu.wustl.common.beans.SessionDataBean;
 import edu.wustl.common.exception.ApplicationException;
 import edu.wustl.common.participant.bizlogic.ParticipantMatchingBizLogic;
+import edu.wustl.common.participant.client.IParticipantManager;
 import edu.wustl.common.participant.utility.Constants;
+import edu.wustl.common.participant.utility.ParticipantManagerException;
 import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.util.XMLPropertyHandler;
 import edu.wustl.common.util.global.QuerySessionData;
@@ -159,15 +161,17 @@ public class ProcessMatchedParticipantsAction extends SecureAction
 	 * @param list the list
 	 * @param recordsPerPage the records per page
 	 * @throws DAOException
+	 * @throws ParticipantManagerException
 	 */
 	private void storeList(final HttpServletRequest request, final HttpSession session, final List<String> columnNames,
-			final List list, final int recordsPerPage) throws DAOException
+			final List list, final int recordsPerPage) throws DAOException, ParticipantManagerException
 	{
 		final Long userId = getUserId(request);
 		final ParticipantMatchingBizLogic bizLogic = new ParticipantMatchingBizLogic();
 		final QuerySessionData querySessionData = new QuerySessionData();
 
-		String sql = bizLogic.getQuery(userId);
+		final IParticipantManager participantMgrImplObj = ParticipantManagerUtility.getParticipantMgrImplObj();
+		String sql= participantMgrImplObj.getProcessedMatchedParticipantQuery(userId);
 
 		querySessionData.setRecordsPerPage(recordsPerPage);
 		querySessionData.setTotalNumberOfRecords(bizLogic.getTotalCount(userId));

@@ -95,4 +95,6 @@ public interface IParticipantManager
 	public String getParticipantCodeQuery(Set<Long> protocolIdSet);
 
 	public String getClinicalStudyNamesQuery();
+
+	public String getProcessedMatchedParticipantQuery(Long userId);
 }

@@ -412,12 +412,8 @@ public class ParticipantMatchingBizLogic
 	private String getClinicalStudyNames(Long participantId, JDBCDAO dao) throws DAOException, ParticipantManagerException, BizLogicException
 	{
 
-		String PartiManagerImplClassName = edu.wustl.common.participant.utility.PropertyHandler
-		.getValue(Constants.PARTICIPANT_MANAGER_IMPL_CLASS);
-
-			IParticipantManager participantManagerImplObj = (IParticipantManager) ParticipantManagerUtility
-		.getObject(PartiManagerImplClassName);
-			String query= participantManagerImplObj.getClinicalStudyNamesQuery();
+		IParticipantManager participantManagerImplObj = ParticipantManagerUtility.getParticipantMgrImplObj();
+		String query= participantManagerImplObj.getClinicalStudyNamesQuery();
 
 
 		LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
@@ -456,8 +452,9 @@ public class ParticipantMatchingBizLogic
 	 * @return the processed matched participants
 	 *
 	 * @throws DAOException the DAO exception
+	 * @throws ParticipantManagerException 
 	 */
-	public List getProcessedMatchedParticipants(Long userId, int recordsPerPage) throws DAOException
+	public List getProcessedMatchedParticipants(Long userId, int recordsPerPage) throws DAOException, ParticipantManagerException
 	{
 		JDBCDAO dao = null;
 		List list = null;
@@ -479,7 +476,8 @@ public class ParticipantMatchingBizLogic
 					+ " JOIN EMPI_PARTICIPANT_USER_MAPPING ON PARTIMAPPING.SEARCHED_PARTICIPANT_ID=EMPI_PARTICIPANT_USER_MAPPING.PARTICIPANT_ID"
 					+ " WHERE EMPI_PARTICIPANT_USER_MAPPING.USER_ID=? AND PARTIMAPPING.NO_OF_MATCHED_PARTICIPANTS!=? ORDER BY CREATION_DATE";
 			*/
-			query = getQuery(userId);
+			final IParticipantManager participantMgrImplObj = ParticipantManagerUtility.getParticipantMgrImplObj();
+			query = participantMgrImplObj.getProcessedMatchedParticipantQuery(userId);
 			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
 			columnValueBeanList.add(new ColumnValueBean("USER_ID", userId, DBTypes.LONG));
 			columnValueBeanList.add(new ColumnValueBean("NO_OF_MATCHED_PARTICIPANTS", "-1", DBTypes.INTEGER));
@@ -493,31 +491,7 @@ public class ParticipantMatchingBizLogic
 		return list;
 	}
 
-	public String getQuery(Long userId)
-	{
-		String query = " select temp, SEARCHED_PARTICIPANT_ID, INITCAP(LAST_NAME),INITCAP(FIRST_NAME), CREATION_DATE, NO_OF_MATCHED_PARTICIPANTS," +
-				" substr(SYS_CONNECT_BY_PATH(SHORT_TITLE, ';'),2) as SHORT_TITLE from "
-				+ " (SELECT CSNAME.SHORT_TITLE,0 as temp,"
-				+ " PARTIMAPPING.SEARCHED_PARTICIPANT_ID,PARTI.LAST_NAME,PARTI.FIRST_NAME,"
-				+ " to_char(CREATION_DATE,'" + Constants.DATE_FORMAT + "') as CREATION_DATE,"
-				+ " PARTIMAPPING.NO_OF_MATCHED_PARTICIPANTS,"
-				+ " count(*) OVER (partition by PARTIMAPPING.SEARCHED_PARTICIPANT_ID) CNT1,"
-				+ " ROW_NUMBER() OVER(partition by PARTIMAPPING.SEARCHED_PARTICIPANT_ID ORDER BY CSNAME.SHORT_TITLE) SEQ1"
-				+ " FROM  MATCHED_PARTICIPANT_MAPPING PARTIMAPPING JOIN CATISSUE_PARTICIPANT PARTI "
-				+ " ON PARTI.IDENTIFIER=PARTIMAPPING.SEARCHED_PARTICIPANT_ID  JOIN EMPI_PARTICIPANT_USER_MAPPING "
-				+ " ON PARTIMAPPING.SEARCHED_PARTICIPANT_ID=EMPI_PARTICIPANT_USER_MAPPING.PARTICIPANT_ID ,"
-				+ " ( SELECT SHORT_TITLE,PARTICIPANT_ID FROM CATISSUE_CLINICAL_STUDY_REG CSR JOIN CATISSUE_SPECIMEN_PROTOCOL CSP "
-				+ " ON CSR.CLINICAL_STUDY_ID=CSP.IDENTIFIER) CSNAME "
-				+ " WHERE EMPI_PARTICIPANT_USER_MAPPING.USER_ID="
-				+ userId
-				+ "  AND PARTIMAPPING.NO_OF_MATCHED_PARTICIPANTS!= -1"
-				+ "  and CSNAME.PARTICIPANT_ID=PARTIMAPPING.SEARCHED_PARTICIPANT_ID ) where SEQ1=CNT1 start with SEQ1=1 connect by prior SEQ1+1=SEQ1 " +
-						" and prior SEARCHED_PARTICIPANT_ID=SEARCHED_PARTICIPANT_ID "
-				+ " ORDER BY CREATION_DATE ";
 
-		return query;
-
-	}
 
 	public int getTotalCount(Long userId) throws DAOException
 	{

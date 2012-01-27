@@ -41,9 +41,9 @@ public class ParticipantLookUpLogicEMPI implements IParticipantManagerLookupLogi
 	/* (non-Javadoc)
 	 * @see edu.wustl.common.lookup.LookupLogic#lookup(edu.wustl.common.lookup.LookupParameters)
 	 */
-	public List lookup(final LookupParameters params,Set<Long> csSet,Integer threshHold) throws PatientLookupException
+	public List lookup(final LookupParameters params,Set<Long> csSet) throws PatientLookupException
 	{
-		cutoffPoints = getCutOffPoints(threshHold);
+		cutoffPoints = getCutOffPoints(params);
 		return  lookup(params);
 	}
 
@@ -53,12 +53,14 @@ public class ParticipantLookUpLogicEMPI implements IParticipantManagerLookupLogi
 	 * @param threshHold threshhold passed by caller
 	 * @return threshhold if valida value is present else will return default value.
 	 */
-	private int getCutOffPoints(Integer threshHold)
+	private int getCutOffPoints(LookupParameters params)
 	{
+		final DefaultLookupParameters participantParams = (DefaultLookupParameters) params;
 		int cutoff;
-		if(threshHold!=null && threshHold>0)
+		final Integer threshold = participantParams.getThreshold();
+		if(threshold!=null && threshold>0)
 		{
-			cutoff=threshHold;
+			cutoff=threshold;
 
 		}
 		else
@@ -177,7 +179,7 @@ public class ParticipantLookUpLogicEMPI implements IParticipantManagerLookupLogi
 		}
 		return empiParticipantsList;
 	}
-	
+
 	public boolean isCallToLookupLogicNeeded(IParticipant participant)
 	{
 		boolean flag = true;
