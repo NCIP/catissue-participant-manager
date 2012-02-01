@@ -350,4 +350,9 @@ public class Constants
 
 	public static final String Sending_Facility = "SendingFacility";
 
+	public static final int PARTICIPANT_FORM_ID = 2;
+
+	public static final String GRID_CS_COLUMN_HEADER = "grid.cs.columnname";
+
+
 }

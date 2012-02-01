@@ -12,9 +12,12 @@ import java.util.List;
 import java.util.Locale;
 
 import edu.wustl.common.beans.SessionDataBean;
+import edu.wustl.common.bizlogic.IBizLogic;
 import edu.wustl.common.exception.ApplicationException;
 import edu.wustl.common.exception.BizLogicException;
 import edu.wustl.common.exception.ErrorKey;
+import edu.wustl.common.factory.AbstractFactoryConfig;
+import edu.wustl.common.factory.IFactory;
 import edu.wustl.common.participant.client.IParticipantManager;
 import edu.wustl.common.participant.domain.IParticipant;
 import edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
@@ -1007,8 +1010,11 @@ public class EMPIParticipantRegistrationBizLogic {
 				participant
 						.setEmpiIdStatus(edu.wustl.common.participant.utility.Constants.EMPI_ID_CREATED);
 
+				IFactory factory = AbstractFactoryConfig.getInstance().getBizLogicFactory();
+				IBizLogic participantBizLogic = factory.getBizLogic(Constants.PARTICIPANT_FORM_ID);
+
 				SessionDataBean sessionData = ParticipantManagerUtility.getValidSessionBean();
-				bizLogic.update(participant, participant, sessionData);
+				participantBizLogic.update(participant, participant, sessionData);
 
 				registerPatientToeMPI(participant);
 

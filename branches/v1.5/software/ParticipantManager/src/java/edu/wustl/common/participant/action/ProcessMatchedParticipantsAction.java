@@ -25,6 +25,7 @@ import edu.wustl.common.participant.client.IParticipantManager;
 import edu.wustl.common.participant.utility.Constants;
 import edu.wustl.common.participant.utility.ParticipantManagerException;
 import edu.wustl.common.participant.utility.ParticipantManagerUtility;
+import edu.wustl.common.participant.utility.PropertyHandler;
 import edu.wustl.common.util.XMLPropertyHandler;
 import edu.wustl.common.util.global.QuerySessionData;
 import edu.wustl.common.util.logger.Logger;
@@ -99,8 +100,9 @@ public class ProcessMatchedParticipantsAction extends SecureAction
 	 * Gets the column list.
 	 *
 	 * @return the column list
+	 * @throws ParticipantManagerException
 	 */
-	private List<String> getColumnList()
+	private List<String> getColumnList() throws ParticipantManagerException
 	{
 		final List<String> columnNames = new ArrayList<String>();
 		columnNames.add("ID");
@@ -108,7 +110,7 @@ public class ProcessMatchedParticipantsAction extends SecureAction
 		columnNames.add("First Name");
 		columnNames.add("Creation Date");
 		columnNames.add("Matched Participants Count");
-		columnNames.add("Clinical Study Name");
+		columnNames.add(PropertyHandler.getValue(Constants.GRID_CS_COLUMN_HEADER));
 		return columnNames;
 	}
 
