@@ -41,13 +41,14 @@ import edu.wustl.common.participant.domain.IUser;
 import edu.wustl.common.participant.utility.Constants;
 import edu.wustl.common.participant.utility.ParticipantManagerException;
 import edu.wustl.common.participant.utility.ParticipantManagerUtility;
+import edu.wustl.common.participant.utility.PropertyHandler;
 import edu.wustl.common.util.XMLPropertyHandler;
 import edu.wustl.common.util.logger.Logger;
 import edu.wustl.dao.JDBCDAO;
 import edu.wustl.dao.exception.DAOException;
 import edu.wustl.dao.query.generator.ColumnValueBean;
 import edu.wustl.patientLookUp.util.PatientLookupException;
-import edu.wustl.patientLookUp.util.PropertyHandler;
+
 
 
 /**
@@ -196,7 +197,7 @@ public class EMPIParticipantListener implements MessageListener
 		SessionDataBean sessionData = null;
 		boolean isGenerateMgrMessage = false;
 
-		sourceObjectName = edu.wustl.common.participant.utility.PropertyHandler.getValue(Constants.PARTICIPANT_CLASS);
+		sourceObjectName = PropertyHandler.getValue(Constants.PARTICIPANT_CLASS);
 
 		try
 		{
@@ -586,7 +587,6 @@ public class EMPIParticipantListener implements MessageListener
 
 			String facilityIdValue = PropertyHandler.getValue(Constants.Facility_ID);
 
-			//			if (Constants.CLINPORTAL_FACILITY_ID.equals(facilityId))
 			if (facilityIdValue.equals(facilityId))
 			{
 				clinPortalId = mrn;
