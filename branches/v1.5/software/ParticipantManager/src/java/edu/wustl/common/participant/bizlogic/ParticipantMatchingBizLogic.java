@@ -11,6 +11,7 @@ import java.util.List;
 
 import edu.wustl.common.exception.ApplicationException;
 import edu.wustl.common.exception.BizLogicException;
+import edu.wustl.common.exception.ErrorKey;
 import edu.wustl.common.participant.client.IParticipantManager;
 import edu.wustl.common.participant.domain.IParticipant;
 import edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
@@ -105,7 +106,20 @@ public class ParticipantMatchingBizLogic
 		List matchPartpantLst = new ArrayList();
 		logger.info("Fetching matches for participant : " + ParticipantId);
 		IParticipant participant = ParticipantManagerUtility.getParticipantById(ParticipantId);
+
 		boolean isCallToLkupLgic = ParticipantManagerUtility.isCallToLookupLogicNeeded(participant);
+		String mrn = ParticipantManagerUtility.getMrnValue(participant
+				.getParticipantMedicalIdentifierCollection());
+		boolean isValidParticipant = ParticipantManagerUtility
+				.isParticipantValidForEMPI(participant.getLastName(),
+						participant.getFirstName(), participant
+								.getBirthDate(), participant
+								.getSocialSecurityNumber(), mrn);
+		if(!isValidParticipant)
+		{
+			throw new BizLogicException(ErrorKey.getErrorKey("errors.empi.participant.notEnoughInfo"), null,null);
+
+		}
 		if (isCallToLkupLgic)
 		{
 			matchPartpantLst.addAll(ParticipantManagerUtility.getListOfMatchingParticipants(
@@ -452,7 +466,7 @@ public class ParticipantMatchingBizLogic
 	 * @return the processed matched participants
 	 *
 	 * @throws DAOException the DAO exception
-	 * @throws ParticipantManagerException 
+	 * @throws ParticipantManagerException
 	 */
 	public List getProcessedMatchedParticipants(Long userId, int recordsPerPage) throws DAOException, ParticipantManagerException
 	{
