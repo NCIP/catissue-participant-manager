@@ -504,18 +504,18 @@ public class ParticipantManagerUtility
 		String ssnB = "";
 		String ssnC = "";
 		boolean result = false;
-		Pattern pattern = Pattern.compile("[0-9]{3}-[0-9]{2}-[0-9]{4}", 2);
+		Pattern pattern = Pattern.compile("[0-9]{3}-[0-9]{3}-[0-9]{4}", 2);
 		Matcher mat = pattern.matcher(ssn);
 		result = mat.matches();
 		if (result)
 		{
 			return ssn;
 		}
-		if (ssn.length() >= 9)
+		if (ssn.length() >= 10)
 		{
 			ssnA = ssn.substring(0, 3);
-			ssnB = ssn.substring(3, 5);
-			ssnC = ssn.substring(5, 9);
+			ssnB = ssn.substring(3, 6);
+			ssnC = ssn.substring(6, 10);
 		}
 		else if (ssn.length() >= 4)
 		{
@@ -1183,3 +1183,4 @@ public class ParticipantManagerUtility
 		return patientInfoList;
 	}
 }
+
