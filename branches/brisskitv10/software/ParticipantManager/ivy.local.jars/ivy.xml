@@ -1,0 +1,21 @@
+<ivy-module version="2.0">
+  <info organisation="local" module="ParticipantManager" revision="1.0"/>
+  <publications>
+      <artifact name="ant-contrib" ext="jar" type="jar"/>
+      <artifact name="catissuecore" ext="jar" type="jar"/>
+      <artifact name="com.ibm.mqbind" ext="jar" type="jar"/>
+      <artifact name="com.ibm.mq" ext="jar" type="jar"/>
+      <artifact name="com.ibm.mqjms" ext="jar" type="jar"/>
+      <artifact name="commons-codec-1.3" ext="jar" type="jar"/>
+      <artifact name="csmapi-4.2" ext="jar" type="jar"/>
+      <artifact name="dom4j-1.6" ext="jar" type="jar"/>
+      <artifact name="domain-authentication-manager" ext="jar" type="jar"/>
+      <artifact name="hibernate3" ext="jar" type="jar"/>
+      <artifact name="j2ee" ext="jar" type="jar"/>
+      <artifact name="log4j-1.2.9" ext="jar" type="jar"/>
+      <artifact name="query" ext="jar" type="jar"/>
+      <artifact name="servlet" ext="jar" type="jar"/>
+      <artifact name="struts" ext="jar" type="jar"/>
+  </publications>
+</ivy-module>
+
