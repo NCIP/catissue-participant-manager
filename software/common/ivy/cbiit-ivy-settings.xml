@@ -16,7 +16,7 @@ This file is the is the settings file used by IVY.  It is a good starting point 
 	<resolvers>
 		<!-- this is where you read from -->
 		<chain name="ncicb-chain">
-<!--
+
 			<filesystem name="local-project-repo" local="true">
 
 				<artifact pattern="${ivy.project.repo}/[organisation]/[module]/[revision]/[artifact]-[revision].[ext]" />
@@ -33,7 +33,7 @@ This file is the is the settings file used by IVY.  It is a good starting point 
 				<ivy pattern="${local.cbiit-ivy-repo.dir}/[organisation]/[module]/[revision]/ivy.xml" />
 			</filesystem>
 
--->
+
 		<url name="cbiit-ivy-repo">
 				<!-- remote enterprise repository -->
 				<artifact pattern="https://ncisvn.nci.nih.gov/svn/deprecated-cbiit-ivy-repo/trunk/[organisation]/[module]/[revision]/[artifact]-[revision].[ext]" />
