@@ -29,6 +29,7 @@ public class ParticipantHashcodeLookupLogic implements IParticipantManagerLookup
 		ColumnValueBean activityStatusValue = new ColumnValueBean("Disabled");
 		valueList.add(participantCodeValue);
 		valueList.add(activityStatusValue);
+//		List patientInfoList =  new CommonParticipantDAO(CommonServiceLocator.getInstance().getAppName(),null).executeParticipantCodeQry(protocolIdList, participant.getParticipantCode());
 		List patientInfoList =  dao.executeQuery(fetchByNameQry, valueList);
 		if(!patientInfoList.isEmpty())
 		{
@@ -42,7 +43,7 @@ public class ParticipantHashcodeLookupLogic implements IParticipantManagerLookup
 			result.setWeight(new Double(100));
 			matchParticipantList.add(result);
 		}
-		dao.closeSession();
+//		dao.closeSession();
 		return matchParticipantList;
 	}
 

@@ -295,7 +295,7 @@ public class EMPIParticipantMergeMessageListener implements MessageListener
 				/*
 				 *Updating participant in database using common  participantbizlogic.
 				 */
-					new CommonParticipantBizlogic().updateParticipant(participant, oldParticipant);
+					bizLogic.updateParticipant(participant, oldParticipant);
 					status = Constants.RESOLVED;
 			}
 			//Status for failure reason while updating participant.

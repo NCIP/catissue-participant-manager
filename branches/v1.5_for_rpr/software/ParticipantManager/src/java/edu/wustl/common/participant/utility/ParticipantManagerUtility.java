@@ -38,6 +38,7 @@ import edu.wustl.common.lookup.DefaultLookupParameters;
 import edu.wustl.common.lookup.DefaultLookupResult;
 import edu.wustl.common.participant.client.IParticipantManager;
 import edu.wustl.common.participant.client.IParticipantManagerLookupLogic;
+import edu.wustl.common.participant.dao.CommonParticipantDAO;
 import edu.wustl.common.participant.domain.IParticipant;
 import edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
 import edu.wustl.common.participant.domain.IRace;
@@ -84,6 +85,11 @@ public class ParticipantManagerUtility
 	/** class level instance for Queue session*/
 	private QueueSession mergeQueueSession = null;
 
+	private static String getAppName()
+	{
+		return CommonServiceLocator.getInstance().getAppName();
+	}
+	
 	/**
 	 * Register wmq listener.
 	 *
@@ -249,6 +255,25 @@ public class ParticipantManagerUtility
 	public static ISite getSiteObject(final String facilityId) throws BizLogicException,
 			ParticipantManagerException
 	{
+//		ISite site = null;
+//		try
+//		{
+//			List siteObject = new CommonParticipantDAO(getAppName(),null).getSiteObject(facilityId);
+//			if (siteObject != null && siteObject.size() > 0)
+//			{
+//				Object siteList[] = (Object[]) siteObject.get(0);
+//				Long siteId = (Long) siteList[0];
+//				String siteName = (String) siteList[1];
+//				site = (ISite) ParticipantManagerUtility.getSiteInstance();
+//				site.setId(siteId);
+//				site.setName(siteName);
+//			}
+//			return site;
+//		}
+//		catch (DAOException e)
+//		{
+//			throw new BizLogicException(e);
+//		}
 		String sourceObjectName = ISite.class.getName();
 		String selectColumnNames[] = {"id", "name"};
 		DefaultBizLogic bizLogic = new DefaultBizLogic();
@@ -586,6 +611,17 @@ public class ParticipantManagerUtility
 	 */
 	public static boolean isParticipantMatchWithinCSCPEnable(Long id) throws DAOException
 	{
+//		boolean status = false;
+//		List list = new CommonParticipantDAO(getAppName(),null).isParticipantMatchWithinCSCPEnable(id);
+//		if (!list.isEmpty() && !"".equals(list.get(0)))
+//		{
+//			List statusList = (List) list.get(0);
+//			if (!statusList.isEmpty() && ((String) statusList.get(0)).equals("1"))
+//			{
+//				status = true;
+//			}
+//		}
+//		return status;
 		boolean status = false;
 		JDBCDAO dao = null;
 		String query = null;
@@ -628,7 +664,9 @@ public class ParticipantManagerUtility
 	 */
 	public static List getPartcipantIdsList(Set cpIdList) throws DAOException
 	{
-		List idListArray = null;
+//		List idListArray = new CommonParticipantDAO(getAppName(),null).getPartcipantIdsList(cpIdList);
+//		return idListArray;
+		List idListArray =null;
 		List<String> idList = new ArrayList<String>();
 		JDBCDAO dao = null;
 		String query = null;
@@ -807,8 +845,24 @@ public class ParticipantManagerUtility
 	 */
 	public static List<String> getColumnList(List<String> columnList) throws DAOException
 	{
+//		List<String> displayList = new ArrayList<String>();
+//		List list = new CommonParticipantDAO(getAppName(),null).getColumnList();
+//		for (Iterator iterator1 = columnList.iterator(); iterator1.hasNext();)
+//		{
+//			String colName1 = (String) iterator1.next();
+//			Iterator iterator2 = list.iterator();
+//			while (iterator2.hasNext())
+//			{
+//				List rowList = (List) iterator2.next();
+//				String colName2 = (String) rowList.get(0);
+//				if (colName1.equals(colName2))
+//				{
+//					displayList.add((String) rowList.get(1));
+//				}
+//			}
+//		}
+//		return displayList;
 		List<String> displayList = new ArrayList<String>();
-
 		JDBCDAO jdbcDao = null;
 		try
 		{
@@ -875,9 +929,37 @@ public class ParticipantManagerUtility
 	 *
 	 * @throws ApplicationException 	 * @throws BizLogicException the biz logic exception
 	 */
-	public static boolean isEMPIEnable(long cpId) throws BizLogicException
+	public static boolean isEMPIEnable(Long participantId) throws BizLogicException
 	{
-		boolean status;
+		boolean status = false;
+//		try
+//		{
+//			List statusList = new CommonParticipantDAO(getAppName(),null).isEMPIEnable(getQueryForEmpiEnabled(), participantId);
+//			if (statusList != null&&!statusList.isEmpty())
+//			{
+//				for (int i = 0; i < statusList.size(); i++)
+//				{
+//					List idList = (List) statusList.get(i);
+//					if (!idList.isEmpty() && !"".equals((idList.get(0))))
+//					{
+//						if (((String) idList.get(0)).equals("1"))
+//						{
+//							status = true;
+//							break;
+//						}
+//					}
+//				}
+//			}
+//		}
+//		catch (DAOException exp)
+//		{
+//			throw new BizLogicException(exp);
+//		}
+//		catch (ParticipantManagerException e)
+//		{
+//			throw new BizLogicException(null,e,e.getMessage());
+//		}
+//		return status;
 		JDBCDAO dao = null;
 		status = false;
 		String query = null;
@@ -886,7 +968,7 @@ public class ParticipantManagerUtility
 			dao = getJDBCDAO();
 			query = ParticipantManagerUtility.getQueryForEmpiEnabled();
 			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
-			columnValueBeanList.add(new ColumnValueBean("IDENTIFIER", cpId, DBTypes.LONG));
+			columnValueBeanList.add(new ColumnValueBean("IDENTIFIER", participantId, DBTypes.LONG));
 			List statusList = dao.executeQuery(query, null, columnValueBeanList);
 			if (!statusList.isEmpty() && statusList != null)
 			{
@@ -941,7 +1023,7 @@ public class ParticipantManagerUtility
 	 */
 	public static String getPartiEMPIStatus(long participantId) throws DAOException
 	{
-
+//		return new CommonParticipantDAO(getAppName(),null).getPartiEMPIStatus(participantId);
 		JDBCDAO dao = null;
 		String eMPIStatus = "";
 		try
@@ -1143,6 +1225,7 @@ public class ParticipantManagerUtility
 	public static void addParticipantToProcessMessageQueue(LinkedHashSet<Long> userIdSet,
 			Long participantId) throws DAOException
 	{
+//		new CommonParticipantDAO(getAppName(),null).addParticipantToProcessMessageQueue(userIdSet, participantId);
 		JDBCDAO jdbcdao = null;
 		String query = null;
 		try
@@ -1213,7 +1296,7 @@ public class ParticipantManagerUtility
 		}
 
 	}
-
+		
 	/**
 	 * Populate patient object.
 	 *
@@ -1309,6 +1392,7 @@ public class ParticipantManagerUtility
 	 */
 	public static void deleteProcessedParticipant(Long id) throws DAOException
 	{
+//		new CommonParticipantDAO(getAppName(),null).deleteProcessedParticipant(id);
 		JDBCDAO jdbcdao = null;
 		try
 		{
@@ -1335,7 +1419,7 @@ public class ParticipantManagerUtility
 		columnValueBeans.add(columnValueBeanList);
 		String query = "DELETE FROM MATCHED_PARTICIPANT_MAPPING WHERE SEARCHED_PARTICIPANT_ID=?";
 		jdbcdao.executeUpdate(query, columnValueBeans);
-	}
+	}	
 
 	/**
 	 * Updates the count of matched participants as 0 in case no matching was found.
@@ -1346,6 +1430,7 @@ public class ParticipantManagerUtility
 	 */
 	public static void updateProcessedParticipant(Long id) throws DAOException
 	{
+//		new CommonParticipantDAO(getAppName(),null).updateProcessedParticipant(id);
 		JDBCDAO jdbcdao = null;
 		try
 		{
@@ -1380,9 +1465,10 @@ public class ParticipantManagerUtility
 	 *
 	 * @throws BizLogicException the biz logic exception
 	 */
-	public static IParticipant getOldParticipant(DAO dao, Long identifier) throws BizLogicException
+	public static IParticipant getOldParticipant(Long identifier,DAO dao) throws BizLogicException
 	{
 		IParticipant oldParticipant;
+//		oldParticipant = new CommonParticipantDAO(CommonServiceLocator.getInstance().getAppName(),null).findById(identifier);
 		try
 		{
 			oldParticipant = (IParticipant) dao.retrieveById(
@@ -1407,7 +1493,7 @@ public class ParticipantManagerUtility
 	 */
 	public static boolean isParticipantIsProcessing(Long id) throws DAOException
 	{
-
+//		return new CommonParticipantDAO(getAppName(),null).isParticipantIsProcessing(id);
 		boolean status = false;
 		JDBCDAO dao = null;
 		String query = null;
@@ -1450,6 +1536,8 @@ public class ParticipantManagerUtility
 	 */
 	public static List<Long> getProcessedMatchedParticipantIds(Long userId) throws DAOException
 	{
+		
+//		return new CommonParticipantDAO(getAppName(),null).getProcessedMatchedParticipantIds(userId);
 		JDBCDAO dao = null;
 		List<Long> particpantIdColl = new ArrayList<Long>();
 		try
@@ -1996,9 +2084,10 @@ public class ParticipantManagerUtility
 	 * @param jdbcdao
 	 * @throws DAOException
 	 */
-	public void updateOldEMPIDetails(Long participantId, String empiId, JDBCDAO jdbcdao)
+	public void updateOldEMPIDetails(Long participantId, String empiId,JDBCDAO jdbcdao)
 			throws DAOException
 	{
+//		new CommonParticipantDAO(getAppName(),null).updateOldEMPIDetails(participantId, empiId);
 		final LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
 		final LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
 
@@ -2023,9 +2112,10 @@ public class ParticipantManagerUtility
 	 * @param jdbcDao
 	 * @throws DAOException
 	 */
-	public static void setEMPIIdStatus(Long participantId, String status, JDBCDAO jdbcDao)
+	public static void setEMPIIdStatus(Long participantId, String status,JDBCDAO jdbcDao)
 			throws DAOException
 	{
+//		new CommonParticipantDAO(getAppName(),null).setEMPIIdStatus(participantId, status);
 		LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
 		LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
 		columnValueBeanList.add(new ColumnValueBean(status));
