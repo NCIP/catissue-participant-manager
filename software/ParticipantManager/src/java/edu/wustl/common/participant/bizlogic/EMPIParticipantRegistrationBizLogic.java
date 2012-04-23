@@ -1004,7 +1004,7 @@ public class EMPIParticipantRegistrationBizLogic {
 					}
 				patientInfo.setPmiCollection(newPmiCollection);
 
-				CommonParticipantBizlogic bizLogic = new CommonParticipantBizlogic();
+				CommonParticipantBizlogic bizLogic = new CommonParticipantBizlogic(null);
 				final IParticipant participantEmpi = bizLogic.getParticipantObj(patientInfo);
 				bizLogic.updateParticipantFromEmpi(participant, participantEmpi);
 				participant

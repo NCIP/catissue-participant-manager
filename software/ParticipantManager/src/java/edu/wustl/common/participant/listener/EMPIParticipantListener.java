@@ -336,8 +336,8 @@ public class EMPIParticipantListener implements MessageListener
 			partcipantObj.setEmpiId(personUpi);
 			partcipantObj.setEmpiIdStatus(Constants.EMPI_ID_CREATED);
 			partcipantObj.setParticipantMedicalIdentifierCollection(partiMedIdColl);
-			final CommonParticipantBizlogic bizlogic = new CommonParticipantBizlogic();
-			bizlogic.update(partcipantObj, participant, sessionData);
+			final CommonParticipantBizlogic bizlogic = new CommonParticipantBizlogic(sessionData);
+			bizlogic.update(partcipantObj, participant);
 
 			LOGGER.info("\n\n\n\n\nPARTIICPANT SUCCESSFULLY UPDATED WITH  EMPI \n\n\n\n\n");
 		}

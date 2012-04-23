@@ -12,12 +12,11 @@ import java.util.List;
 import org.apache.commons.codec.language.Metaphone;
 
 import edu.wustl.common.beans.SessionDataBean;
-import edu.wustl.common.cde.CDEManager;
 import edu.wustl.common.exception.ApplicationException;
 import edu.wustl.common.exception.BizLogicException;
 import edu.wustl.common.exception.ErrorKey;
 import edu.wustl.common.lookup.DefaultLookupResult;
-import edu.wustl.common.participant.domain.IEthnicity;
+import edu.wustl.common.participant.dao.CommonParticipantDAO;
 import edu.wustl.common.participant.domain.IParticipant;
 import edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
 import edu.wustl.common.participant.domain.IRace;
@@ -28,19 +27,14 @@ import edu.wustl.common.participant.utility.ParticipantManagerException;
 import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.util.Utility;
 import edu.wustl.common.util.XMLPropertyHandler;
-import edu.wustl.common.util.global.ApplicationProperties;
 import edu.wustl.common.util.global.CommonServiceLocator;
-import edu.wustl.common.util.global.Status;
-import edu.wustl.common.util.global.Validator;
 import edu.wustl.common.util.logger.Logger;
 import edu.wustl.dao.DAO;
-import edu.wustl.dao.HibernateDAO;
 import edu.wustl.dao.JDBCDAO;
 import edu.wustl.dao.QueryWhereClause;
 import edu.wustl.dao.condition.EqualClause;
 import edu.wustl.dao.daofactory.DAOConfigFactory;
 import edu.wustl.dao.daofactory.IDAOFactory;
-import edu.wustl.dao.exception.AuditException;
 import edu.wustl.dao.exception.DAOException;
 import edu.wustl.dao.query.generator.ColumnValueBean;
 import edu.wustl.dao.query.generator.DBTypes;
@@ -55,6 +49,18 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 	private static final Logger logger = Logger
 			.getCommonLogger(CommonParticipantBizlogic.class);
 
+	private CommonParticipantDAO participantDao = new CommonParticipantDAO(CommonServiceLocator.getInstance().getAppName(),null);;
+	
+	public CommonParticipantBizlogic()
+	{
+	}
+	
+	public CommonParticipantBizlogic(SessionDataBean sessionDataBean)
+	{
+		participantDao.setSessionDataBean(sessionDataBean);
+	}
+	
+	
 	/**
 	 * Insert.
 	 *
@@ -72,30 +78,37 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 	 * @throws DAOException
 	 *             the DAO exception
 	 */
-	public static IParticipant insert(final Object obj, final DAO dao,
-			final IParticipantMedicalIdentifier pmi) throws BizLogicException,
-			DAOException {
-		final IParticipant participant = (IParticipant) obj;
-		setMetaPhoneCode(participant);
-		Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> pmiCollection = participant
-				.getParticipantMedicalIdentifierCollection();
-		if (pmiCollection == null) {
-			pmiCollection = new LinkedHashSet<IParticipantMedicalIdentifier<IParticipant, ISite>>();
+	public IParticipant insert(final IParticipant participant,final IParticipantMedicalIdentifier pmi) throws BizLogicException
+	{
+		//final IParticipant participant = (IParticipant) obj;
+		try
+		{
+			setMetaPhoneCode(participant);
+			Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> pmiCollection = participant
+					.getParticipantMedicalIdentifierCollection();
+			if (pmiCollection == null) {
+				pmiCollection = new LinkedHashSet<IParticipantMedicalIdentifier<IParticipant, ISite>>();
+			}
+			if (pmiCollection.isEmpty()) {
+				pmi.setMedicalRecordNumber(null);
+				pmi.setSite(null);
+				pmiCollection.add(pmi);
+			}
+			checkForSiteIdentifierInPMI(pmiCollection);
+			final Iterator<IParticipantMedicalIdentifier<IParticipant, ISite>> iterator = pmiCollection
+					.iterator();
+			while (iterator.hasNext()) {
+				final IParticipantMedicalIdentifier<IParticipant, ISite> pmIdentifier = iterator
+						.next();
+				pmIdentifier.setParticipant(participant);
+			}
+			participantDao.insert(participant);
 		}
-		if (pmiCollection.isEmpty()) {
-			pmi.setMedicalRecordNumber(null);
-			pmi.setSite(null);
-			pmiCollection.add(pmi);
+		catch (DAOException daoExp) 
+		{
+			logger.error(daoExp.getMessage(), daoExp);
+			throw new BizLogicException(daoExp);
 		}
-		checkForSiteIdentifierInPMI(dao, pmiCollection);
-		final Iterator<IParticipantMedicalIdentifier<IParticipant, ISite>> iterator = pmiCollection
-				.iterator();
-		while (iterator.hasNext()) {
-			final IParticipantMedicalIdentifier<IParticipant, ISite> pmIdentifier = iterator
-					.next();
-			pmIdentifier.setParticipant(participant);
-		}
-		dao.insert(participant);
 		return participant;
 	}
 
@@ -112,8 +125,7 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 	 * @throws BizLogicException
 	 *             BizLogicException
 	 */
-	private static void checkForSiteIdentifierInPMI(
-			final DAO dao,
+	private void checkForSiteIdentifierInPMI(
 			final Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> pmiCollection)
 			throws DAOException, BizLogicException {
 		final Iterator<IParticipantMedicalIdentifier<IParticipant, ISite>> pmiIterator = pmiCollection
@@ -125,27 +137,14 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 					&& pmIdentifier.getSite().getId() == null
 					&& pmIdentifier.getSite().getName() != null) {
 				final ISite site = pmIdentifier.getSite();
-				final String sourceObjectName = ISite.class.getName();
-				final String[] selectColumnName = { "id" };
-				final QueryWhereClause queryWhereClause = new QueryWhereClause(
-						sourceObjectName);
-				// queryWhereClause.addCondition(new EqualClause("name",
-				// site.getName()));
-				queryWhereClause.addCondition(new EqualClause("name", '?'));
-				List<ColumnValueBean> columnValueBeans = new ArrayList<ColumnValueBean>();
-				columnValueBeans.add(new ColumnValueBean(site.getName()));
-				/*
-				 * final List list = dao .retrieve(sourceObjectName,
-				 * selectColumnName, queryWhereClause);
-				 */
-				final List list = ((HibernateDAO) dao).retrieve(
-						sourceObjectName, selectColumnName, queryWhereClause,
-						columnValueBeans);
+				Long siteId = participantDao.getSiteIdByName(site.getName());
 
-				if (!list.isEmpty()) {
-					site.setId((Long) list.get(0));
-					pmIdentifier.setSite(site);
-				} else {
+				if (siteId!=null)
+				{
+					site.setId(siteId);
+				} 
+				else 
+				{
 					throw new BizLogicException(ErrorKey
 							.getErrorKey("invalid.site.name"), null, site
 							.getName());
@@ -169,12 +168,18 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 	 * @throws DAOException
 	 *             the DAO exception
 	 */
-	public static void update(final DAO dao, final IParticipant participant,
-			final IParticipant oldParticipant) throws BizLogicException,
-			DAOException {
-
+	public void update(final IParticipant participant,final IParticipant oldParticipant) throws BizLogicException
+	{
 		setMetaPhoneCode(participant);
-		dao.update(participant, oldParticipant);
+		try
+		{
+			participantDao.update(participant,oldParticipant);
+		}
+		catch (DAOException daoExp) 
+		{
+			logger.error(daoExp.getMessage(), daoExp);
+			throw new BizLogicException(daoExp);
+		}
 	}
 
 	/**
@@ -190,309 +195,87 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 		participant.setMetaPhoneCode(lNameMetaPhone);
 	}
 
-	/**
-	 * Update ParticipantMedicalIdentifier.
-	 *
-	 * @param dao
-	 *            DAo Object
-	 * @param pmIdentifier
-	 *            ParticipantMedicalIdentifier Identifier
-	 * @throws DAOException
-	 *             the DAO exception
-	 */
-	public static void updatePMI(
-			final DAO dao,
-			final IParticipantMedicalIdentifier<IParticipant, ISite> pmIdentifier)
-			throws DAOException {
-		if (pmIdentifier.getId() != null) {
-			dao.update(pmIdentifier);
-		} else if (pmIdentifier.getId() == null
-				|| pmIdentifier.getId().equals("")) {
-			dao.insert(pmIdentifier);
-		}
-	}
+//	/**
+//	 * Update ParticipantMedicalIdentifier.
+//	 *
+//	 * @param dao
+//	 *            DAo Object
+//	 * @param pmIdentifier
+//	 *            ParticipantMedicalIdentifier Identifier
+//	 * @throws DAOException
+//	 *             the DAO exception
+//	 */
+//	public static void updatePMI(
+//			final DAO dao,
+//			final IParticipantMedicalIdentifier<IParticipant, ISite> pmIdentifier)
+//			throws DAOException {
+//		if (pmIdentifier.getId() != null) {
+//			dao.update(pmIdentifier);
+//		} else if (pmIdentifier.getId() == null
+//				|| pmIdentifier.getId().equals("")) {
+//			dao.insert(pmIdentifier);
+//		}
+//	}
 
-	/**
-	 * Validate.
-	 *
-	 * @param dao
-	 *            : DAO object. Overriding the parent class's method to validate
-	 *            the enumerated attribute values.
-	 * @param participant
-	 *            the participant
-	 * @param operation
-	 *            the operation
-	 * @param validator
-	 *            the validator
-	 *
-	 * @return true, if validate
-	 *
-	 * @throws BizLogicException
-	 *             the biz logic exception
-	 */
-	public static boolean validate(final IParticipant participant,
-			final DAO dao, final String operation, final Validator validator)
-			throws BizLogicException {
-		String message = "";
-		if (participant == null) {
+//	/**
+//	 * Modify participant object.
+//	 *
+//	 * @param dao
+//	 *            the dao
+//	 * @param sessionDataBean
+//	 *            the session data bean
+//	 * @param participant
+//	 *            the participant
+//	 *
+//	 * @throws BizLogicException
+//	 *             the biz logic exception
+//	 */
+//	public void modifyParticipantObject(final DAO dao,
+//			final SessionDataBean sessionDataBean,
+//			final IParticipant participant, final IParticipant oldParticipant)
+//			throws BizLogicException {
+//		try {
+//			updateParticipant(dao, sessionDataBean, participant, oldParticipant);
+//		} catch (DAOException e) {
+//			throw new BizLogicException(e);
+//		} catch (BizLogicException biz) {
+//			logger.debug(biz.getMessage(), biz);
+//			throw getBizLogicException(biz, biz.getErrorKeyName(), biz
+//					.getMsgValues());
+//
+//		} catch (Exception exception) {
+//			throw getBizLogicException(exception,
+//					"Error while updating object", "");
+//		}
+//	}
 
-			throw new BizLogicException(null, null,
-					"domain.object.null.err.msg", "Participant");
-		}
-
-		String errorKeyForBirthDate = "";
-		String errorKeyForDeathDate = "";
-
-		final String birthDate = Utility.parseDateToString(participant
-				.getBirthDate(), CommonServiceLocator.getInstance()
-				.getDatePattern());
-		if (!validator.isEmpty(birthDate)) {
-			errorKeyForBirthDate = validator.validateDate(birthDate, true);
-			if (errorKeyForBirthDate.trim().length() > 0) {
-				message = ApplicationProperties
-						.getValue("participant.birthDate");
-				throw new BizLogicException(null, null, errorKeyForBirthDate,
-						message);
-			}
-		}
-
-		final String deathDate = Utility.parseDateToString(participant
-				.getDeathDate(), CommonServiceLocator.getInstance()
-				.getDatePattern());
-		if (!validator.isEmpty(deathDate)) {
-			errorKeyForDeathDate = validator.validateDate(deathDate, true);
-			if (errorKeyForDeathDate.trim().length() > 0) {
-				message = ApplicationProperties
-						.getValue("participant.deathDate");
-				throw new BizLogicException(null, null, errorKeyForDeathDate,
-						message);
-			}
-		}
-
-		if (participant.getVitalStatus() == null
-				|| !participant.getVitalStatus().equals("Dead")) {
-			if (!validator.isEmpty(deathDate)) {
-				throw new BizLogicException(null, null,
-						"participant.invalid.enddate", "");
-			}
-		}
-		if ((!validator.isEmpty(birthDate) && !validator.isEmpty(deathDate))
-				&& (errorKeyForDeathDate.trim().length() == 0 && errorKeyForBirthDate
-						.trim().length() == 0)) {
-			final boolean errorKey1 = validator.compareDates(
-					Utility
-							.parseDateToString(participant.getBirthDate(),
-									CommonServiceLocator.getInstance()
-											.getDatePattern()), Utility
-							.parseDateToString(participant.getDeathDate(),
-									CommonServiceLocator.getInstance()
-											.getDatePattern()));
-
-			if (!errorKey1) {
-
-				throw new BizLogicException(null, null,
-						"participant.invaliddate", "");
-			}
-		}
-
-		if (!validator.isEmpty(participant.getSocialSecurityNumber())) {
-			if (!validator.isValidSSN(participant.getSocialSecurityNumber())) {
-				message = ApplicationProperties
-						.getValue("participant.socialSecurityNumber");
-				throw new BizLogicException(null, null, "errors.invalid",
-						message);
-			}
-		}
-
-		if (!validator.isEmpty(participant.getVitalStatus())) {
-			final List vitalStatusList = CDEManager.getCDEManager()
-					.getPermissibleValueList(Constants.CDE_VITAL_STATUS, null);
-			if (!Validator.isEnumeratedOrNullValue(vitalStatusList, participant
-					.getVitalStatus())) {
-				throw new BizLogicException(null, null,
-						"participant.vitalstatus.errMsg", "");
-			}
-		}
-
-		if (!validator.isEmpty(participant.getGender())) {
-			final List genderList = CDEManager.getCDEManager()
-					.getPermissibleValueList(Constants.CDE_NAME_GENDER, null);
-
-			if (!Validator.isEnumeratedOrNullValue(genderList, participant
-					.getGender())) {
-				throw new BizLogicException(null, null,
-						"participant.gender.errMsg", "");
-			}
-		}
-
-		if (!validator.isEmpty(participant.getSexGenotype())) {
-			final List genotypeList = CDEManager.getCDEManager()
-					.getPermissibleValueList(Constants.CDE_NAME_GENOTYPE, null);
-			if (!Validator.isEnumeratedOrNullValue(genotypeList, participant
-					.getSexGenotype())) {
-				throw new BizLogicException(null, null,
-						"participant.genotype.errMsg", "");
-			}
-		}
-
-		final Collection paticipantMedCol = participant.getParticipantMedicalIdentifierCollection();
-		// Created a new PMI collection for bulk operation functionality.
-		final Collection newPMICollection = new LinkedHashSet();
-		if (paticipantMedCol != null && !paticipantMedCol.isEmpty())
-		{
-			final Iterator itr = paticipantMedCol.iterator();
-			java.util.HashSet<Long> siteIdset = new java.util.HashSet<Long>();
-			while (itr.hasNext())
-			{
-				final IParticipantMedicalIdentifier<IParticipant, ISite> partiMedobj = (IParticipantMedicalIdentifier<IParticipant, ISite>) itr
-						.next();
-				final ISite site = partiMedobj.getSite();
-				final String medicalRecordNo = partiMedobj.getMedicalRecordNumber();
-				if (validator.isEmpty(medicalRecordNo) || site == null || site.getId() == null)
-				{
-					if (partiMedobj.getId() == null)
-					{
-						throw new BizLogicException(null, null, "errors.participant.extiden.missing", "");
-					}
-				}
-				else
-				{
-					newPMICollection.add(partiMedobj);
-				}
-				if (site != null)
-				{
-					boolean checkDuplicate = siteIdset.add(site.getId());
-					if (!checkDuplicate)
-					{
-						throw new BizLogicException(null, null,
-								"errors.participant.mediden.duplicate", "");
-					}
-				}
-			}
-		}
-		participant.setParticipantMedicalIdentifierCollection(newPMICollection);
-
-		final Collection raceCollection = participant.getRaceCollection();
-		if (raceCollection != null && !raceCollection.isEmpty()) {
-			final List raceList = CDEManager.getCDEManager()
-					.getPermissibleValueList(Constants.CDE_NAME_RACE, null);
-			final Iterator itr = raceCollection.iterator();
-			while (itr.hasNext()) {
-				final IRace race = (IRace) itr.next();
-				if (race != null) {
-					final String raceName = race.getRaceName();
-					if (!validator.isEmpty(raceName)
-							&& !Validator.isEnumeratedOrNullValue(raceList,
-									raceName)) {
-						throw new BizLogicException(null, null,
-								"participant.race.errMsg", "");
-					}
-				}
-			}
-		}
-        validateEthnicity(participant);
-
-		if (operation.equals(Constants.ADD)) {
-			if (!Status.ACTIVITY_STATUS_ACTIVE.toString().equals(
-					participant.getActivityStatus())) {
-				throw new BizLogicException(null, null,
-						"activityStatus.active.errMsg", "");
-			}
-		} else {
-			if (!Validator.isEnumeratedValue(Constants.ACTIVITY_STATUS_VALUES,
-					participant.getActivityStatus())) {
-				throw new BizLogicException(null, null,
-						"activityStatus.errMsg", "");
-			}
-		}
-		return true;
-	}
-
-    /**
-     * @param participant
-     * @throws BizLogicException
-     */
-    private static void validateEthnicity(IParticipant participant) throws BizLogicException
-    {
-        final Collection ethnicityColl = participant.getEthnicityCollection();
-        if (ethnicityColl != null && !ethnicityColl.isEmpty()) {
-            final List ethnicityList = CDEManager.getCDEManager()
-                    .getPermissibleValueList(Constants.CDE_NAME_ETHNICITY, null);
-            final Iterator itr = ethnicityColl.iterator();
-            while (itr.hasNext()) {
-                final IEthnicity etnicity = (IEthnicity) itr.next();
-                if (etnicity != null) {
-                    final String name = etnicity.getName();
-                    if (!Validator.isEmpty(name)
-                            && !Validator.isEnumeratedOrNullValue(ethnicityList,
-                                    name)) {
-                        throw new BizLogicException(null, null,
-                                "participant.ethnicity.errMsg", "");
-                    }
-                }
-            }
-        }
-    }
-
-	/**
-	 * Modify participant object.
-	 *
-	 * @param dao
-	 *            the dao
-	 * @param sessionDataBean
-	 *            the session data bean
-	 * @param participant
-	 *            the participant
-	 *
-	 * @throws BizLogicException
-	 *             the biz logic exception
-	 */
-	public void modifyParticipantObject(final DAO dao,
-			final SessionDataBean sessionDataBean,
-			final IParticipant participant, final IParticipant oldParticipant)
-			throws BizLogicException {
-		try {
-			updateParticipant(dao, sessionDataBean, participant, oldParticipant);
-		} catch (DAOException e) {
-			throw new BizLogicException(e);
-		} catch (BizLogicException biz) {
-			logger.debug(biz.getMessage(), biz);
-			throw getBizLogicException(biz, biz.getErrorKeyName(), biz
-					.getMsgValues());
-
-		} catch (Exception exception) {
-			throw getBizLogicException(exception,
-					"Error while updating object", "");
-		}
-	}
-
-	/**
-	 * This method will update Participant Object.
-	 *
-	 * @param participant
-	 *            Participant object
-	 * @param oldParticipant
-	 *            Persistent participant object
-	 * @param dao
-	 *            DAO Object
-	 * @param sessionDataBean
-	 *            SessionDataBean Object
-	 *
-	 * @return AuditManager
-	 *
-	 * @throws BizLogicException
-	 *             BizLogicException Exception
-	 * @throws DAOException
-	 *             DAOException Exception
-	 * @throws AuditException
-	 *             AuditException Exception
-	 */
-	private void updateParticipant(final DAO dao,
-			final SessionDataBean sessionDataBean,
-			final IParticipant participant, final IParticipant oldParticipant)
-			throws BizLogicException, DAOException {
-		update(dao, participant, oldParticipant);
-	}
+//	/**
+//	 * This method will update Participant Object.
+//	 *
+//	 * @param participant
+//	 *            Participant object
+//	 * @param oldParticipant
+//	 *            Persistent participant object
+//	 * @param dao
+//	 *            DAO Object
+//	 * @param sessionDataBean
+//	 *            SessionDataBean Object
+//	 *
+//	 * @return AuditManager
+//	 *
+//	 * @throws BizLogicException
+//	 *             BizLogicException Exception
+//	 * @throws DAOException
+//	 *             DAOException Exception
+//	 * @throws AuditException
+//	 *             AuditException Exception
+//	 */
+//	private void updateParticipant(final DAO dao,
+//			final SessionDataBean sessionDataBean,
+//			final IParticipant participant, final IParticipant oldParticipant)
+//			throws BizLogicException, DAOException {
+//		update(dao, participant, oldParticipant);
+//	}
 
 	/**
 	 * check not null.
@@ -594,8 +377,8 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 	 * @throws BizLogicException
 	 * @throws ApplicationException
 	 */
-	public static void preUpdate(Object oldObj, Object obj,
-			SessionDataBean sessionDataBean) throws BizLogicException {
+	public void preUpdate(Object oldObj, Object obj) throws BizLogicException 
+	{
 		/*final IParticipant participant = (IParticipant) obj;
 		final IParticipant oldParticipant = (IParticipant) oldObj;
 		final String oldEMPIStatus = oldParticipant.getEmpiIdStatus();*/
@@ -623,9 +406,8 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 	 *             the biz logic exception
 	 * @throws DAOException
 	 */
-	public static void postUpdate(Object oldObj, Object currentObj,
-			SessionDataBean sessionDataBean, LinkedHashSet<Long> userIdSet)
-			throws BizLogicException, DAOException
+	public void postUpdate(Object oldObj, Object currentObj,LinkedHashSet<Long> userIdSet)
+			throws BizLogicException
 	{
 		JDBCDAO jdbcdao = null;
 		final IParticipant oldParticipant = (IParticipant) oldObj;
@@ -670,8 +452,16 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 		}
 		catch (DAOException e)
 		{
-			jdbcdao.rollback();
-			throw new DAOException(e.getErrorKey(), e, e.getMessage());
+			try
+			{
+				jdbcdao.rollback();
+			}
+			catch (DAOException e1)
+			{
+				logger.error(e1.getMessage(),e1);
+			}
+			logger.error(e.getMessage(),e);
+			throw new BizLogicException(e);
 		}
 		catch (Exception e)
 		{
@@ -680,7 +470,15 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 		}
 		finally
 		{
-			jdbcdao.closeSession();
+			try
+			{
+				jdbcdao.closeSession();
+			}
+			catch (DAOException e1)
+			{
+				logger.error(e1.getMessage(),e1);
+			}
+			
 		}
 	}
 
