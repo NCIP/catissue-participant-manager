@@ -1,3 +1,4 @@
+
 package edu.wustl.common.participant.bizlogic;
 
 import java.text.ParseException;
@@ -6,7 +7,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.codec.language.Metaphone;
@@ -29,38 +29,30 @@ import edu.wustl.common.util.Utility;
 import edu.wustl.common.util.XMLPropertyHandler;
 import edu.wustl.common.util.global.CommonServiceLocator;
 import edu.wustl.common.util.logger.Logger;
-import edu.wustl.dao.DAO;
-import edu.wustl.dao.JDBCDAO;
-import edu.wustl.dao.QueryWhereClause;
-import edu.wustl.dao.condition.EqualClause;
-import edu.wustl.dao.daofactory.DAOConfigFactory;
-import edu.wustl.dao.daofactory.IDAOFactory;
 import edu.wustl.dao.exception.DAOException;
-import edu.wustl.dao.query.generator.ColumnValueBean;
-import edu.wustl.dao.query.generator.DBTypes;
 import edu.wustl.patientLookUp.domain.PatientInformation;
 
 /**
  * The Class CommonParticipantBizlogic.
  */
-public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
+public class CommonParticipantBizlogic extends CommonDefaultBizLogic
+{
 
 	/** The Constant logger. */
-	private static final Logger logger = Logger
-			.getCommonLogger(CommonParticipantBizlogic.class);
+	private static final Logger logger = Logger.getCommonLogger(CommonParticipantBizlogic.class);
 
-	private CommonParticipantDAO participantDao = new CommonParticipantDAO(CommonServiceLocator.getInstance().getAppName(),null);;
-	
+	private CommonParticipantDAO participantDao = new CommonParticipantDAO(CommonServiceLocator
+			.getInstance().getAppName(), null);;
+
 	public CommonParticipantBizlogic()
 	{
 	}
-	
+
 	public CommonParticipantBizlogic(SessionDataBean sessionDataBean)
 	{
 		participantDao.setSessionDataBean(sessionDataBean);
 	}
-	
-	
+
 	/**
 	 * Insert.
 	 *
@@ -78,7 +70,8 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 	 * @throws DAOException
 	 *             the DAO exception
 	 */
-	public IParticipant insert(final IParticipant participant,final IParticipantMedicalIdentifier pmi) throws BizLogicException
+	public IParticipant insert(final IParticipant participant,
+			final IParticipantMedicalIdentifier pmi) throws BizLogicException
 	{
 		//final IParticipant participant = (IParticipant) obj;
 		try
@@ -86,10 +79,12 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 			setMetaPhoneCode(participant);
 			Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> pmiCollection = participant
 					.getParticipantMedicalIdentifierCollection();
-			if (pmiCollection == null) {
+			if (pmiCollection == null)
+			{
 				pmiCollection = new LinkedHashSet<IParticipantMedicalIdentifier<IParticipant, ISite>>();
 			}
-			if (pmiCollection.isEmpty()) {
+			if (pmiCollection.isEmpty())
+			{
 				pmi.setMedicalRecordNumber(null);
 				pmi.setSite(null);
 				pmiCollection.add(pmi);
@@ -97,14 +92,15 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 			checkForSiteIdentifierInPMI(pmiCollection);
 			final Iterator<IParticipantMedicalIdentifier<IParticipant, ISite>> iterator = pmiCollection
 					.iterator();
-			while (iterator.hasNext()) {
+			while (iterator.hasNext())
+			{
 				final IParticipantMedicalIdentifier<IParticipant, ISite> pmIdentifier = iterator
 						.next();
 				pmIdentifier.setParticipant(participant);
 			}
 			participantDao.insert(participant);
 		}
-		catch (DAOException daoExp) 
+		catch (DAOException daoExp)
 		{
 			logger.error(daoExp.getMessage(), daoExp);
 			throw new BizLogicException(daoExp);
@@ -127,27 +123,28 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 	 */
 	private void checkForSiteIdentifierInPMI(
 			final Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> pmiCollection)
-			throws DAOException, BizLogicException {
+			throws DAOException, BizLogicException
+	{
 		final Iterator<IParticipantMedicalIdentifier<IParticipant, ISite>> pmiIterator = pmiCollection
 				.iterator();
-		while (pmiIterator.hasNext()) {
+		while (pmiIterator.hasNext())
+		{
 			final IParticipantMedicalIdentifier<IParticipant, ISite> pmIdentifier = pmiIterator
 					.next();
-			if (pmIdentifier.getSite() != null
-					&& pmIdentifier.getSite().getId() == null
-					&& pmIdentifier.getSite().getName() != null) {
+			if (pmIdentifier.getSite() != null && pmIdentifier.getSite().getId() == null
+					&& pmIdentifier.getSite().getName() != null)
+			{
 				final ISite site = pmIdentifier.getSite();
 				Long siteId = participantDao.getSiteIdByName(site.getName());
 
-				if (siteId!=null)
+				if (siteId != null)
 				{
 					site.setId(siteId);
-				} 
-				else 
+				}
+				else
 				{
-					throw new BizLogicException(ErrorKey
-							.getErrorKey("invalid.site.name"), null, site
-							.getName());
+					throw new BizLogicException(ErrorKey.getErrorKey("invalid.site.name"), null,
+							site.getName());
 				}
 			}
 		}
@@ -168,14 +165,15 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 	 * @throws DAOException
 	 *             the DAO exception
 	 */
-	public void update(final IParticipant participant,final IParticipant oldParticipant) throws BizLogicException
+	public void update(final IParticipant participant, final IParticipant oldParticipant)
+			throws BizLogicException
 	{
 		setMetaPhoneCode(participant);
 		try
 		{
-			participantDao.update(participant,oldParticipant);
+			participantDao.update(participant, oldParticipant);
 		}
-		catch (DAOException daoExp) 
+		catch (DAOException daoExp)
 		{
 			logger.error(daoExp.getMessage(), daoExp);
 			throw new BizLogicException(daoExp);
@@ -188,94 +186,94 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 	 * @param participant
 	 *            the new meta phone code
 	 */
-	private static void setMetaPhoneCode(final IParticipant participant) {
+	private void setMetaPhoneCode(final IParticipant participant)
+	{
 		final Metaphone metaPhoneObj = new Metaphone();
-		final String lNameMetaPhone = metaPhoneObj.metaphone(participant
-				.getLastName());
+		final String lNameMetaPhone = metaPhoneObj.metaphone(participant.getLastName());
 		participant.setMetaPhoneCode(lNameMetaPhone);
 	}
 
-//	/**
-//	 * Update ParticipantMedicalIdentifier.
-//	 *
-//	 * @param dao
-//	 *            DAo Object
-//	 * @param pmIdentifier
-//	 *            ParticipantMedicalIdentifier Identifier
-//	 * @throws DAOException
-//	 *             the DAO exception
-//	 */
-//	public static void updatePMI(
-//			final DAO dao,
-//			final IParticipantMedicalIdentifier<IParticipant, ISite> pmIdentifier)
-//			throws DAOException {
-//		if (pmIdentifier.getId() != null) {
-//			dao.update(pmIdentifier);
-//		} else if (pmIdentifier.getId() == null
-//				|| pmIdentifier.getId().equals("")) {
-//			dao.insert(pmIdentifier);
-//		}
-//	}
+	//	/**
+	//	 * Update ParticipantMedicalIdentifier.
+	//	 *
+	//	 * @param dao
+	//	 *            DAo Object
+	//	 * @param pmIdentifier
+	//	 *            ParticipantMedicalIdentifier Identifier
+	//	 * @throws DAOException
+	//	 *             the DAO exception
+	//	 */
+	//	public static void updatePMI(
+	//			final DAO dao,
+	//			final IParticipantMedicalIdentifier<IParticipant, ISite> pmIdentifier)
+	//			throws DAOException {
+	//		if (pmIdentifier.getId() != null) {
+	//			dao.update(pmIdentifier);
+	//		} else if (pmIdentifier.getId() == null
+	//				|| pmIdentifier.getId().equals("")) {
+	//			dao.insert(pmIdentifier);
+	//		}
+	//	}
 
-//	/**
-//	 * Modify participant object.
-//	 *
-//	 * @param dao
-//	 *            the dao
-//	 * @param sessionDataBean
-//	 *            the session data bean
-//	 * @param participant
-//	 *            the participant
-//	 *
-//	 * @throws BizLogicException
-//	 *             the biz logic exception
-//	 */
-//	public void modifyParticipantObject(final DAO dao,
-//			final SessionDataBean sessionDataBean,
-//			final IParticipant participant, final IParticipant oldParticipant)
-//			throws BizLogicException {
-//		try {
-//			updateParticipant(dao, sessionDataBean, participant, oldParticipant);
-//		} catch (DAOException e) {
-//			throw new BizLogicException(e);
-//		} catch (BizLogicException biz) {
-//			logger.debug(biz.getMessage(), biz);
-//			throw getBizLogicException(biz, biz.getErrorKeyName(), biz
-//					.getMsgValues());
-//
-//		} catch (Exception exception) {
-//			throw getBizLogicException(exception,
-//					"Error while updating object", "");
-//		}
-//	}
+	//	/**
+	//	 * Modify participant object.
+	//	 *
+	//	 * @param dao
+	//	 *            the dao
+	//	 * @param sessionDataBean
+	//	 *            the session data bean
+	//	 * @param participant
+	//	 *            the participant
+	//	 *
+	//	 * @throws BizLogicException
+	//	 *             the biz logic exception
+	//	 */
+	//	public void modifyParticipantObject(final DAO dao,
+	//			final SessionDataBean sessionDataBean,
+	//			final IParticipant participant, final IParticipant oldParticipant)
+	//			throws BizLogicException {
+	//		try {
+	//			updateParticipant(dao, sessionDataBean, participant, oldParticipant);
+	//		} catch (DAOException e) {
+	//			throw new BizLogicException(e);
+	//		} catch (BizLogicException biz) {
+	//			logger.debug(biz.getMessage(), biz);
+	//			throw getBizLogicException(biz, biz.getErrorKeyName(), biz
+	//					.getMsgValues());
+	//
+	//		} catch (Exception exception) {
+	//			throw getBizLogicException(exception,
+	//					"Error while updating object", "");
+	//		}
+	//	}
 
-//	/**
-//	 * This method will update Participant Object.
-//	 *
-//	 * @param participant
-//	 *            Participant object
-//	 * @param oldParticipant
-//	 *            Persistent participant object
-//	 * @param dao
-//	 *            DAO Object
-//	 * @param sessionDataBean
-//	 *            SessionDataBean Object
-//	 *
-//	 * @return AuditManager
-//	 *
-//	 * @throws BizLogicException
-//	 *             BizLogicException Exception
-//	 * @throws DAOException
-//	 *             DAOException Exception
-//	 * @throws AuditException
-//	 *             AuditException Exception
-//	 */
-//	private void updateParticipant(final DAO dao,
-//			final SessionDataBean sessionDataBean,
-//			final IParticipant participant, final IParticipant oldParticipant)
-//			throws BizLogicException, DAOException {
-//		update(dao, participant, oldParticipant);
-//	}
+	//	/**
+	//	 * This method will update Participant Object.
+	//	 *
+	//	 * @param participant
+	//	 *            Participant object
+	//	 * @param oldParticipant
+	//	 *            Persistent participant object
+	//	 * @param dao
+	//	 *            DAO Object
+	//	 * @param sessionDataBean
+	//	 *            SessionDataBean Object
+	//	 *
+	//	 * @return AuditManager
+	//	 *
+	//	 * @throws BizLogicException
+	//	 *             BizLogicException Exception
+	//	 * @throws DAOException
+	//	 *             DAOException Exception
+	//	 * @throws AuditException
+	//	 *             AuditException Exception
+	//	 */
+	//	private void updateParticipant(final DAO dao,
+	//			final SessionDataBean sessionDataBean,
+	//			final IParticipant participant, final IParticipant oldParticipant)
+	//			throws BizLogicException, DAOException {
+	//		update(dao, participant, oldParticipant);
+	//	}
 
 	/**
 	 * check not null.
@@ -286,9 +284,11 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 	 * @return boolean
 	 */
 
-	public static boolean isNullobject(Object object) {
+	public boolean isNullobject(Object object)
+	{
 		boolean result = true;
-		if (object != null) {
+		if (object != null)
+		{
 			result = false;
 		}
 		return result;
@@ -304,12 +304,13 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 	 *             the biz logic exception
 	 * @throws ParticipantManagerException
 	 */
-	public static void setParticipantMedicalIdentifierDefault(
+	public void setParticipantMedicalIdentifierDefault(
 			IParticipantMedicalIdentifier<IParticipant, ISite> partMedIdentifier)
-			throws BizLogicException, ParticipantManagerException {
-		if (isNullobject(partMedIdentifier.getSite())) {
-			final ISite site = (ISite) ParticipantManagerUtility
-					.getSiteInstance();
+			throws BizLogicException, ParticipantManagerException
+	{
+		if (isNullobject(partMedIdentifier.getSite()))
+		{
+			final ISite site = (ISite) ParticipantManagerUtility.getSiteInstance();
 			partMedIdentifier.setSite(site);
 		}
 	}
@@ -323,12 +324,14 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 	 *            the session data bean
 	 * @throws ApplicationException
 	 */
-	public static void postInsert(final Object obj,
-			LinkedHashSet<Long> userIdSet) throws BizLogicException {
+	public void postInsert(final Object obj, LinkedHashSet<Long> userIdSet)
+			throws BizLogicException
+	{
 		final IParticipant participant = (IParticipant) obj;
 		// if for CS eMPI is enable then set the eMPI status as pending if its
 		// eligible
-		if (ParticipantManagerUtility.isEMPIEnable(participant.getId())) {
+		if (ParticipantManagerUtility.isEMPIEnable(participant.getId()))
+		{
 			insertParticipantToProcessingQue(participant, userIdSet);
 		}
 
@@ -346,23 +349,25 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 	 * @throws DAOException
 	 *             the DAO exception
 	 */
-	private static void insertParticipantToProcessingQue(
-			final IParticipant participant, LinkedHashSet<Long> userIdSet)
-			throws BizLogicException {
+	private void insertParticipantToProcessingQue(final IParticipant participant,
+			LinkedHashSet<Long> userIdSet) throws BizLogicException
+	{
 		String mrn = null;
 		mrn = ParticipantManagerUtility.getMrnValue(participant
 				.getParticipantMedicalIdentifierCollection());
-		try {
-			if (ParticipantManagerUtility
-					.isParticipantValidForEMPI(participant.getLastName(),
-							participant.getFirstName(), participant
-									.getBirthDate(), participant
-									.getSocialSecurityNumber(), mrn)) {
+		try
+		{
+			if (ParticipantManagerUtility.isParticipantValidForEMPI(participant.getLastName(),
+					participant.getFirstName(), participant.getBirthDate(), participant
+							.getSocialSecurityNumber(), mrn))
+			{
 				// Process participant for CIDER participant matching.
-				ParticipantManagerUtility.addParticipantToProcessMessageQueue(
-						userIdSet, participant.getId());
+				ParticipantManagerUtility.addParticipantToProcessMessageQueue(userIdSet,
+						participant.getId());
 			}
-		} catch (DAOException daoException) {
+		}
+		catch (DAOException daoException)
+		{
 			throw new BizLogicException(daoException);
 		}
 	}
@@ -377,7 +382,7 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 	 * @throws BizLogicException
 	 * @throws ApplicationException
 	 */
-	public void preUpdate(Object oldObj, Object obj) throws BizLogicException 
+	public void preUpdate(Object oldObj, Object obj) throws BizLogicException
 	{
 		/*final IParticipant participant = (IParticipant) obj;
 		final IParticipant oldParticipant = (IParticipant) oldObj;
@@ -406,16 +411,14 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 	 *             the biz logic exception
 	 * @throws DAOException
 	 */
-	public void postUpdate(Object oldObj, Object currentObj,LinkedHashSet<Long> userIdSet)
+	public void postUpdate(Object oldObj, Object currentObj, LinkedHashSet<Long> userIdSet)
 			throws BizLogicException
 	{
-		JDBCDAO jdbcdao = null;
 		final IParticipant oldParticipant = (IParticipant) oldObj;
 		final IParticipant participant = (IParticipant) currentObj;
 
 		try
 		{
-			jdbcdao = getJDBCDAO();
 			if (ParticipantManagerUtility.isEMPIEnable(participant.getId())
 					&& ParticipantManagerUtility.isParticipantEdited(oldParticipant, participant))
 			{
@@ -428,11 +431,9 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 				{
 					// Update PARTICIPANT_EMPI_ID_MAPPING table with tempMRN
 					ParticipantManagerUtility utility = new ParticipantManagerUtility();
-					utility.updateOldEMPIDetails(participant.getId(), oldParticipant.getEmpiId(),
-							jdbcdao);
+					utility.updateOldEMPIDetails(participant.getId(), oldParticipant.getEmpiId());
 
-					utility.setEMPIIdStatus(participant.getId(), Constants.EMPI_ID_PENDING, jdbcdao);
-					jdbcdao.commit();
+					utility.setEMPIIdStatus(participant.getId(), Constants.EMPI_ID_PENDING);
 				}
 
 				// to send for participant matching when status is CREATED -- this check if
@@ -450,35 +451,10 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 				//}
 			}
 		}
-		catch (DAOException e)
-		{
-			try
-			{
-				jdbcdao.rollback();
-			}
-			catch (DAOException e1)
-			{
-				logger.error(e1.getMessage(),e1);
-			}
-			logger.error(e.getMessage(),e);
-			throw new BizLogicException(e);
-		}
 		catch (Exception e)
 		{
 			logger.info("ERROR WHILE REGISTERING NEW PATIENT TO EMPI  ##############  \n");
 			throw new BizLogicException(null, e, e.getMessage());
-		}
-		finally
-		{
-			try
-			{
-				jdbcdao.closeSession();
-			}
-			catch (DAOException e1)
-			{
-				logger.error(e1.getMessage(),e1);
-			}
-			
 		}
 	}
 
@@ -493,10 +469,10 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 	 * @throws Exception
 	 *             the exception
 	 */
-	private static void regNewPatientToEMPI(IParticipant participant, LinkedHashSet<Long> userIdSet)
-			throws BizLogicException, Exception
+	private void regNewPatientToEMPI(IParticipant participant, LinkedHashSet<Long> userIdSet)
+			throws BizLogicException
 	{
-		JDBCDAO jdbcdao = null;
+		//JDBCDAO jdbcdao = null;
 
 		try
 		{
@@ -506,37 +482,42 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 					participant.getFirstName(), participant.getBirthDate(), participant
 							.getSocialSecurityNumber(), mrn))
 			{
-				String empIdStatus = "";
-				jdbcdao = getJDBCDAO();
-				//get current empi Id status of the participant
-				String query = "SELECT EMPI_ID_STATUS FROM CATISSUE_PARTICIPANT WHERE IDENTIFIER=?";
-				LinkedList<ColumnValueBean> colValueBeanList = new LinkedList<ColumnValueBean>();
-				colValueBeanList.add(new ColumnValueBean("IDENTIFIER", participant.getId(),
-						DBTypes.LONG));
-				List<Object> idList = jdbcdao.executeQuery(query, null, colValueBeanList);
-				if (null != idList && !idList.isEmpty())
+				String empIdStatus = participantDao.getEMPIIDStatus(participant.getId());
+				if (empIdStatus == null)
 				{
-					if (null != idList.get(0))
-					{
-						Object obj = idList.get(0);
-						empIdStatus = ((ArrayList) obj).get(0).toString();
-					}
+					empIdStatus = "";
 				}
+				//				jdbcdao = getJDBCDAO();
+				//				//get current empi Id status of the participant
+				//				String query = "SELECT EMPI_ID_STATUS FROM CATISSUE_PARTICIPANT WHERE IDENTIFIER=?";
+				//				LinkedList<ColumnValueBean> colValueBeanList = new LinkedList<ColumnValueBean>();
+				//				colValueBeanList.add(new ColumnValueBean("IDENTIFIER", participant.getId(),
+				//						DBTypes.LONG));
+				//				List<Object> idList = jdbcdao.executeQuery(query, null, colValueBeanList);
+				//				if (null != idList && !idList.isEmpty())
+				//				{
+				//					if (null != idList.get(0))
+				//					{
+				//						Object obj = idList.get(0);
+				//						empIdStatus = ((ArrayList) obj).get(0).toString();
+				//					}
+				//				}
 
 				// Check if participant matches from CIDER are already received before
 				// for old participant before the edit happened -- Bug fixed 18824
-				LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
-				columnValueBeanList.add(new ColumnValueBean(participant.getId()));
-				query = "SELECT SEARCHED_PARTICIPANT_ID FROM MATCHED_PARTICIPANT_MAPPING "
-						+ "WHERE SEARCHED_PARTICIPANT_ID=?";
-				List<Object> partIdList = jdbcdao.executeQuery(query, null, columnValueBeanList);
-				boolean isOldMatchesPresent = false;
-				if (partIdList != null && !partIdList.isEmpty() && partIdList.get(0) != null
-						&& !((List) partIdList.get(0)).isEmpty())
-				{
-					isOldMatchesPresent = true;
-				}
-
+				//				LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
+				//				columnValueBeanList.add(new ColumnValueBean(participant.getId()));
+				//				query = "SELECT SEARCHED_PARTICIPANT_ID FROM MATCHED_PARTICIPANT_MAPPING "
+				//						+ "WHERE SEARCHED_PARTICIPANT_ID=?";
+				//				List<Object> partIdList = jdbcdao.executeQuery(query, null, columnValueBeanList);
+				//				boolean isOldMatchesPresent = false;
+				//				if (partIdList != null && !partIdList.isEmpty() && partIdList.get(0) != null
+				//						&& !((List) partIdList.get(0)).isEmpty())
+				//				{
+				//					isOldMatchesPresent = true;
+				//				}
+				boolean isOldMatchesPresent = participantDao.isOldMatchesPresent(participant
+						.getId());
 				// go for participant matching only when status is 'CREATED'
 				if (empIdStatus.equals(Constants.EMPI_ID_CREATED) || isOldMatchesPresent)
 				{
@@ -551,32 +532,31 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 		}
 		catch (DAOException e)
 		{
-			jdbcdao.rollback();
-			throw new DAOException(e.getErrorKey(), e, e.getMessage());
+			//jdbcdao.rollback();
+			throw new BizLogicException(e);
 		}
-		finally
-		{
-			jdbcdao.closeSession();
-		}
+		//		finally
+		//		{
+		//			jdbcdao.closeSession();
+		//		}
 	}
 
-
-	/**
-	 * Gets the jDBCDAO.
-	 *
-	 * @return the jDBCDAO
-	 *
-	 * @throws DAOException the DAO exception
-	 */
-	public static JDBCDAO getJDBCDAO() throws DAOException
-	{
-		String appName = CommonServiceLocator.getInstance().getAppName();
-		IDAOFactory daoFactory = DAOConfigFactory.getInstance().getDAOFactory(appName);
-		JDBCDAO jdbcdao = null;
-		jdbcdao = daoFactory.getJDBCDAO();
-		jdbcdao.openSession(null);
-		return jdbcdao;
-	}
+//	/**
+//	 * Gets the jDBCDAO.
+//	 *
+//	 * @return the jDBCDAO
+//	 *
+//	 * @throws DAOException the DAO exception
+//	 */
+//	public static JDBCDAO getJDBCDAO() throws DAOException
+//	{
+//		String appName = CommonServiceLocator.getInstance().getAppName();
+//		IDAOFactory daoFactory = DAOConfigFactory.getInstance().getDAOFactory(appName);
+//		JDBCDAO jdbcdao = null;
+//		jdbcdao = daoFactory.getJDBCDAO();
+//		jdbcdao.openSession(null);
+//		return jdbcdao;
+//	}
 
 	/**
 	 * Gets the participant.
@@ -590,25 +570,24 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 	 */
 	public IParticipant getParticipant(String empiId) throws BizLogicException, DAOException
 	{
-		IParticipant participant = null;
-		final String sourceObjectName = IParticipant.class.getName();
-		final String[] selectColumnName = { "id" };
-		final QueryWhereClause queryWhereClause = new QueryWhereClause(
-				sourceObjectName);
-		queryWhereClause.addCondition(new EqualClause(Constants.PARTICIPANT_EMPIID, '?'));
-		List<ColumnValueBean> columnValueBeans = new ArrayList<ColumnValueBean>();
-		columnValueBeans.add(new ColumnValueBean(empiId));
-		/*
-		 * final List list = dao .retrieve(sourceObjectName,
-		 * selectColumnName, queryWhereClause);
-		 */
-		final List list = this.retrieve(sourceObjectName, null, queryWhereClause, columnValueBeans);
-		if(!list.isEmpty()){
-			participant = (IParticipant) list.get(0);
-		}
+		IParticipant participant = participantDao.getParticpantByEmpiId(empiId);
+//		final String sourceObjectName = IParticipant.class.getName();
+//		final String[] selectColumnName = {"id"};
+//		final QueryWhereClause queryWhereClause = new QueryWhereClause(sourceObjectName);
+//		queryWhereClause.addCondition(new EqualClause(Constants.PARTICIPANT_EMPIID, '?'));
+//		List<ColumnValueBean> columnValueBeans = new ArrayList<ColumnValueBean>();
+//		columnValueBeans.add(new ColumnValueBean(empiId));
+//		/*
+//		 * final List list = dao .retrieve(sourceObjectName,
+//		 * selectColumnName, queryWhereClause);
+//		 */
+//		final List list = this.retrieve(sourceObjectName, null, queryWhereClause, columnValueBeans);
+//		if (!list.isEmpty())
+//		{
+//			participant = (IParticipant) list.get(0);
+//		}
 		return participant;
 	}
-
 
 	/**
 	 * Update participant in database.
@@ -618,11 +597,13 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 	 *
 	 * @return the status
 	 */
-	public void updateParticipant(final IParticipant newpartcipantObj,final IParticipant oldPartcipantObj)
-			throws BizLogicException, ParticipantManagerException
+	public void updateParticipant(final IParticipant newpartcipantObj,
+			final IParticipant oldPartcipantObj) throws BizLogicException,
+			ParticipantManagerException
 	{
 		final String loginName = XMLPropertyHandler.getValue(Constants.HL7_LISTENER_ADMIN_USER);
-		final IUser validUser = ParticipantManagerUtility.getUser(loginName, Constants.ACTIVITY_STATUS_ACTIVE);
+		final IUser validUser = ParticipantManagerUtility.getUser(loginName,
+				Constants.ACTIVITY_STATUS_ACTIVE);
 		if (validUser != null)
 		{
 			SessionDataBean sessionData = ParticipantManagerUtility.getSessionDataBean(validUser);
@@ -636,13 +617,14 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 	 * @throws ParticipantManagerException
 	 * @throws BizLogicException
 	 */
-	public ISite getSite(final String siteName) throws ParticipantManagerException, BizLogicException
+	public ISite getSite(final String siteName) throws ParticipantManagerException,
+			BizLogicException
 	{
 		ISite site = null;
 		String siteClassName = edu.wustl.common.participant.utility.PropertyHandler
 				.getValue(Constants.SITE_CLASS);
-		final String getSite = "from " + siteClassName + " site where site.name= '"
-				+ siteName + "'";
+		final String getSite = "from " + siteClassName + " site where site.name= '" + siteName
+				+ "'";
 		final List sites = this.executeQuery(getSite);
 		if (sites != null && !sites.isEmpty())
 		{
@@ -667,18 +649,18 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 	public List<DefaultLookupResult> retrieveMatchedParticipantList(final long participantId)
 			throws DAOException, BizLogicException, ParseException, ParticipantManagerException
 	{
-		JDBCDAO dao = null;
+		//JDBCDAO dao = null;
 		List<DefaultLookupResult> matchPartpantLst = null;
 		try
 		{
-			dao = ParticipantManagerUtility.getJDBCDAO();
-
-			final String query = "SELECT * FROM CATISSUE_MATCHED_PARTICIPANT WHERE SEARCHED_PARTICIPANT_ID=? order by ORDER_NO";
-
-			final LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
-			columnValueBeanList.add(new ColumnValueBean("SEARCHED_PARTICIPANT_ID", participantId,
-					DBTypes.LONG));
-			final List matchPartpantLstTemp = dao.executeQuery(query, null, columnValueBeanList);
+//			dao = ParticipantManagerUtility.getJDBCDAO();
+//
+//			final String query = "SELECT * FROM CATISSUE_MATCHED_PARTICIPANT WHERE SEARCHED_PARTICIPANT_ID=? order by ORDER_NO";
+//
+//			final LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
+//			columnValueBeanList.add(new ColumnValueBean("SEARCHED_PARTICIPANT_ID", participantId,
+//					DBTypes.LONG));
+			final List matchPartpantLstTemp =  participantDao.retrieveMatchedParticipantList(participantId);//dao.executeQuery(query, null, columnValueBeanList);
 			matchPartpantLst = populateParticipantList(matchPartpantLstTemp);
 		}
 		catch (DAOException e)
@@ -686,56 +668,56 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 			//LOGGER.info(e.getMessage());
 			throw new DAOException(e.getErrorKey(), e, e.getMsgValues());
 		}
-		finally
-		{
-			dao.closeSession();
-		}
-		return matchPartpantLst;
-	}
-
-//	/**
-//	 * This method will search for the
-//	 * @param participantId
-//	 * @param upi
-//	 * @return
-//	 * @throws DAOException
-//	 * @throws BizLogicException
-//	 * @throws ParseException
-//	 * @throws ParticipantManagerException
-//	 */
-//	public List<DefaultLookupResult> getMatchedParticipantByEmpi(final long participantId,String upi)
-//			throws DAOException, BizLogicException, ParseException, ParticipantManagerException
-//	{
-//		JDBCDAO dao = null;
-//		List<DefaultLookupResult> matchPartpantLst = null;
-//		try
-//		{
-//			dao = ParticipantManagerUtility.getJDBCDAO();
-//
-//			final String query = "SELECT * FROM CATISSUE_MATCHED_PARTICIPANT WHERE SEARCHED_PARTICIPANT_ID=? and EMPI_ID = ? order by ORDER_NO";
-//
-//			final LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
-//			columnValueBeanList.add(new ColumnValueBean("SEARCHED_PARTICIPANT_ID", participantId,
-//					DBTypes.LONG));
-//			columnValueBeanList.add(new ColumnValueBean("EMPI_ID", upi));
-//			final List matchPartpantLstTemp = dao.executeQuery(query, null, columnValueBeanList);
-//			if(matchPartpantLstTemp.isEmpty())
-//			{
-//				throw new BizLogicException(ErrorKey.getErrorKey(""), null, "No participant found");
-//			}
-//			matchPartpantLst = populateParticipantList(matchPartpantLstTemp);
-//		}
-//		catch (DAOException e)
-//		{
-//			//LOGGER.info(e.getMessage());
-//			throw new DAOException(e.getErrorKey(), e, e.getMsgValues());
-//		}
 //		finally
 //		{
 //			dao.closeSession();
 //		}
-//		return matchPartpantLst;
-//	}
+		return matchPartpantLst;
+	}
+
+	//	/**
+	//	 * This method will search for the
+	//	 * @param participantId
+	//	 * @param upi
+	//	 * @return
+	//	 * @throws DAOException
+	//	 * @throws BizLogicException
+	//	 * @throws ParseException
+	//	 * @throws ParticipantManagerException
+	//	 */
+	//	public List<DefaultLookupResult> getMatchedParticipantByEmpi(final long participantId,String upi)
+	//			throws DAOException, BizLogicException, ParseException, ParticipantManagerException
+	//	{
+	//		JDBCDAO dao = null;
+	//		List<DefaultLookupResult> matchPartpantLst = null;
+	//		try
+	//		{
+	//			dao = ParticipantManagerUtility.getJDBCDAO();
+	//
+	//			final String query = "SELECT * FROM CATISSUE_MATCHED_PARTICIPANT WHERE SEARCHED_PARTICIPANT_ID=? and EMPI_ID = ? order by ORDER_NO";
+	//
+	//			final LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
+	//			columnValueBeanList.add(new ColumnValueBean("SEARCHED_PARTICIPANT_ID", participantId,
+	//					DBTypes.LONG));
+	//			columnValueBeanList.add(new ColumnValueBean("EMPI_ID", upi));
+	//			final List matchPartpantLstTemp = dao.executeQuery(query, null, columnValueBeanList);
+	//			if(matchPartpantLstTemp.isEmpty())
+	//			{
+	//				throw new BizLogicException(ErrorKey.getErrorKey(""), null, "No participant found");
+	//			}
+	//			matchPartpantLst = populateParticipantList(matchPartpantLstTemp);
+	//		}
+	//		catch (DAOException e)
+	//		{
+	//			//LOGGER.info(e.getMessage());
+	//			throw new DAOException(e.getErrorKey(), e, e.getMsgValues());
+	//		}
+	//		finally
+	//		{
+	//			dao.closeSession();
+	//		}
+	//		return matchPartpantLst;
+	//	}
 
 	/**
 	 * Populate participant list.
@@ -756,15 +738,23 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 		final List<DefaultLookupResult> matchPartpantLst = new ArrayList<DefaultLookupResult>();
 		for (int i = 0; i < matchPartpantLstTmp.size(); i++)
 		{
-			final List participantValueList = (List) matchPartpantLstTmp.get(i);
-			if (!participantValueList.isEmpty() && participantValueList.get(0) != null
-					&& !"".equals(participantValueList.get(0)))
+			final Object[] participantValueList = (Object[]) matchPartpantLstTmp.get(i);
+			if (participantValueList[0] != null)
 			{
 				final IParticipant participant = getParticipantObj(participantValueList);
 				final DefaultLookupResult result = new DefaultLookupResult();
 				result.setObject(participant);
 				matchPartpantLst.add(result);
 			}
+//			final List participantValueList = (List) matchPartpantLstTmp.get(i);
+//			if (!participantValueList.isEmpty() && participantValueList.get(0) != null
+//					&& !"".equals(participantValueList.get(0)))
+//			{
+//				final IParticipant participant = getParticipantObj(participantValueList);
+//				final DefaultLookupResult result = new DefaultLookupResult();
+//				result.setObject(participant);
+//				matchPartpantLst.add(result);
+//			}
 		}
 		return matchPartpantLst;
 	}
@@ -781,45 +771,45 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 	 * @throws ParticipantManagerException
 	 * @throws Exception the exception
 	 */
-	private IParticipant getParticipantObj(final List participantValueList)
+	private IParticipant getParticipantObj(final Object[] participantValueList)
 			throws BizLogicException, ParseException, ParticipantManagerException
 	{
 		final IParticipant participant = (IParticipant) ParticipantManagerUtility
 				.getParticipantInstance();
 
-		participant.setId(Long.valueOf((String) participantValueList.get(0)));
-		participant.setEmpiId((String) participantValueList.get(1));
+		participant.setId((Long)participantValueList[0]);
+		participant.setEmpiId((String) participantValueList[1]);
 
-		final String lastName = (String) participantValueList.get(2);
-		final String firstName = (String) participantValueList.get(3);
-		final String middleName = (String) participantValueList.get(4);
+		final String lastName = (String) participantValueList[2];
+		final String firstName = (String) participantValueList[3];
+		final String middleName = (String) participantValueList[4];
 
 		participant.setLastName(ParticipantManagerUtility.modifyNameWithProperCase(lastName));
 		participant.setFirstName(ParticipantManagerUtility.modifyNameWithProperCase(firstName));
 		participant.setMiddleName(ParticipantManagerUtility.modifyNameWithProperCase(middleName));
-		if (participantValueList.get(5) != null && !"".equals(participantValueList.get(5)))
+		if (participantValueList[5] != null)
 		{
-			final String dateStr = (String) participantValueList.get(5);
-			final Date date = Utility.parseDate(dateStr, Constants.DATE_FORMAT);
-			participant.setBirthDate(date);
+//			final String dateStr = (String) participantValueList[5];
+//			final Date date = Utility.parseDate(dateStr, Constants.DATE_FORMAT);
+			participant.setBirthDate((Date)participantValueList[5]);
 		}
-		participant.setGender((String) participantValueList.get(6));
-		participant.setSocialSecurityNumber((String) participantValueList.get(7));
-		participant.setActivityStatus((String) participantValueList.get(8));
-		if (participantValueList.get(9) != null && !("".equals(participantValueList.get(9))))
+		participant.setGender((String) participantValueList[6]);
+		participant.setSocialSecurityNumber((String) participantValueList[7]);
+		participant.setActivityStatus((String) participantValueList[8]);
+		if (participantValueList[9] != null)
 		{
-			final String dateStr = (String) participantValueList.get(9);
-			final Date date = Utility.parseDate(dateStr, Constants.DATE_FORMAT);
-			participant.setDeathDate(date);
+//			final String dateStr = (String) participantValueList[9];
+//			final Date date = Utility.parseDate(dateStr, Constants.DATE_FORMAT);
+			participant.setDeathDate((Date)participantValueList[9]);
 		}
-		participant.setVitalStatus((String) participantValueList.get(10));
-		final String mrnString = (String) participantValueList.get(11);
+		participant.setVitalStatus((String) participantValueList[10]);
+		final String mrnString = (String) participantValueList[11];
 		if (mrnString != null && !"".equals(mrnString))
 		{
 			final Collection partiMediIdColn = getPartiMediIdColnCollection(mrnString);
 			participant.setParticipantMedicalIdentifierCollection(partiMediIdColn);
 		}
-		final String raceString = (String) participantValueList.get(12);
+		final String raceString = (String) participantValueList[12];
 		if (raceString != null && !"".equals(raceString))
 		{
 			final Collection raceCollection = getRaceCollection(raceString);
@@ -840,8 +830,8 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 	 * @throws ParticipantManagerException
 	 * @throws Exception the exception
 	 */
-	public static  IParticipant getParticipantObj(PatientInformation patientInfo)
-			throws BizLogicException, ParseException, ParticipantManagerException
+	public IParticipant getParticipantObj(PatientInformation patientInfo) throws BizLogicException,
+			ParseException, ParticipantManagerException
 	{
 		final IParticipant participant = (IParticipant) ParticipantManagerUtility
 				.getParticipantInstance();
@@ -961,18 +951,22 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 	 * @param participant : participant .
 	 * @param participantEMPI : participantEMPI
 	 */
-	public void updateParticipantFromEmpi(final IParticipant participant, final IParticipant participantEMPI)
+	public void updateParticipantFromEmpi(final IParticipant participant,
+			final IParticipant participantEMPI)
 	{
-		final Collection<IParticipantMedicalIdentifier<IParticipant, ISite>>  medIdColTemp = new LinkedHashSet<IParticipantMedicalIdentifier<IParticipant, ISite>>();
-		final Collection<IParticipantMedicalIdentifier<IParticipant, ISite>>  medIdColLocal = participant.getParticipantMedicalIdentifierCollection();
+		final Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> medIdColTemp = new LinkedHashSet<IParticipantMedicalIdentifier<IParticipant, ISite>>();
+		final Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> medIdColLocal = participant
+				.getParticipantMedicalIdentifierCollection();
 		if (medIdColLocal != null && !medIdColLocal.isEmpty())
 		{
-			 final Iterator<IParticipantMedicalIdentifier<IParticipant, ISite>> iterator = medIdColLocal.iterator();
+			final Iterator<IParticipantMedicalIdentifier<IParticipant, ISite>> iterator = medIdColLocal
+					.iterator();
 			while (iterator.hasNext())
 			{
 				Long localSiteID = null;
 
-				 final IParticipantMedicalIdentifier<IParticipant, ISite> partMedIdLocal = iterator.next();
+				final IParticipantMedicalIdentifier<IParticipant, ISite> partMedIdLocal = iterator
+						.next();
 				final String localMRN = partMedIdLocal.getMedicalRecordNumber();
 				if (partMedIdLocal.getSite() != null)
 				{
@@ -981,7 +975,7 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 				if ((localMRN != null && !"".equals(localMRN))
 						&& (localSiteID != null && localSiteID != -1))
 				{
-					final Collection<IParticipantMedicalIdentifier<IParticipant, ISite>>  medIdColEMPI = participantEMPI
+					final Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> medIdColEMPI = participantEMPI
 							.getParticipantMedicalIdentifierCollection();
 
 					if (medIdColEMPI == null)
@@ -1009,7 +1003,8 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 				participantEMPI.getParticipantMedicalIdentifierCollection().addAll(medIdColTemp);
 			}
 		}
-		participant.setParticipantMedicalIdentifierCollection(participantEMPI.getParticipantMedicalIdentifierCollection());
+		participant.setParticipantMedicalIdentifierCollection(participantEMPI
+				.getParticipantMedicalIdentifierCollection());
 		participant.setEmpiId(participantEMPI.getEmpiId());
 		participant.setEmpiIdStatus(participantEMPI.getEmpiIdStatus());
 
@@ -1024,17 +1019,21 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 	 * @param localSiteID the local site id
 	 * @param medIdColTemp the med id col temp
 	 */
-	private void removeDuplicatesMRN(final Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> medIdColEMPI,
+	private void removeDuplicatesMRN(
+			final Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> medIdColEMPI,
 			final IParticipantMedicalIdentifier partMedIdLocal, final String localMRN,
-			final Long localSiteID, final Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> medIdColTemp)
+			final Long localSiteID,
+			final Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> medIdColTemp)
 	{
 		boolean MRNNotFound = false;
-		final Iterator<IParticipantMedicalIdentifier<IParticipant, ISite>> itrEMPI = medIdColEMPI.iterator();
+		final Iterator<IParticipantMedicalIdentifier<IParticipant, ISite>> itrEMPI = medIdColEMPI
+				.iterator();
 		while (itrEMPI.hasNext())
 		{
 			MRNNotFound = false;
 			Long empiSite = null;
-			final IParticipantMedicalIdentifier<IParticipant, ISite> partiMedIdEMPI = itrEMPI.next();
+			final IParticipantMedicalIdentifier<IParticipant, ISite> partiMedIdEMPI = itrEMPI
+					.next();
 			final String empiMRN = partiMedIdEMPI.getMedicalRecordNumber();
 			if (partiMedIdEMPI.getSite() != null)
 			{

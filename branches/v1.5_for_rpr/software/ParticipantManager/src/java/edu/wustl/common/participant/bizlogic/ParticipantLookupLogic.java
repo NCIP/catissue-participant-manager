@@ -21,8 +21,6 @@ import edu.wustl.common.participant.utility.Constants;
 import edu.wustl.common.participant.utility.ParticipantManagerException;
 import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.util.XMLPropertyHandler;
-import edu.wustl.dao.JDBCDAO;
-import edu.wustl.dao.exception.DAOException;
 import edu.wustl.patientLookUp.domain.PatientInformation;
 import edu.wustl.patientLookUp.lookUpServiceBizLogic.PatientInfoLookUpService;
 import edu.wustl.patientLookUp.queryExecutor.SQLQueryExecutorImpl;
@@ -145,12 +143,11 @@ public class ParticipantLookupLogic implements IParticipantManagerLookupLogic
 		final List<DefaultLookupResult> matchingPartisList = new ArrayList<DefaultLookupResult>();
 		final PatientInfoLookUpService patientLookupObj = new PatientInfoLookUpService();
 		PatientInformation patientInfo = null;
-		JDBCDAO jdbcDAO = null;
+	//	JDBCDAO jdbcDAO = null;
 		try
 		{
-			jdbcDAO = ParticipantManagerUtility.getJDBCDAO();
-			final edu.wustl.patientLookUp.queryExecutor.IQueryExecutor queryExecutor = new SQLQueryExecutorImpl(
-					jdbcDAO);
+			//jdbcDAO = ParticipantManagerUtility.getJDBCDAO();
+			final edu.wustl.patientLookUp.queryExecutor.IQueryExecutor queryExecutor = new SQLQueryExecutorImpl();
 			final List patientInfoList = patientLookupObj.patientLookupService(patientInfoInput,
 					queryExecutor, cutoffPoints, maxNoOfParticipantsToReturn);
 			if (patientInfoList != null && !patientInfoList.isEmpty())
@@ -209,10 +206,10 @@ public class ParticipantLookupLogic implements IParticipantManagerLookupLogic
 		{
 			throw new PatientLookupException(e.getMessage(), e);
 		}
-		catch (DAOException daoExp)
-		{
-			throw new PatientLookupException(daoExp.getMsgValues(), daoExp);
-		}
+//		catch (DAOException daoExp)
+//		{
+//			throw new PatientLookupException(daoExp.getMsgValues(), daoExp);
+//		}
 		catch (ParticipantManagerException e)
 		{
 			// TODO Auto-generated catch block
@@ -220,15 +217,15 @@ public class ParticipantLookupLogic implements IParticipantManagerLookupLogic
 		}
 		finally
 		{
-			try
-			{
-				jdbcDAO.closeSession();
-			}
-			catch (DAOException daoExp)
-			{
-				// TODO Auto-generated catch block
-				throw new PatientLookupException(daoExp.getMsgValues(), daoExp);
-			}
+//			try
+//			{
+//				jdbcDAO.closeSession();
+//			}
+//			catch (DAOException daoExp)
+//			{
+//				// TODO Auto-generated catch block
+//				throw new PatientLookupException(daoExp.getMsgValues(), daoExp);
+//			}
 		}
 		return matchingPartisList;
 	}

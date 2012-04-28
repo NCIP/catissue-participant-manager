@@ -9,7 +9,11 @@ import java.util.List;
 import org.apache.commons.codec.language.Metaphone;
 
 import edu.wustl.common.exception.ApplicationException;
+import edu.wustl.common.participant.dao.CommonParticipantDAO;
+import edu.wustl.common.util.global.CommonServiceLocator;
 import edu.wustl.dao.JDBCDAO;
+import edu.wustl.dao.daofactory.DAOConfigFactory;
+import edu.wustl.dao.daofactory.IDAOFactory;
 import edu.wustl.dao.exception.DAOException;
 import edu.wustl.dao.query.generator.ColumnValueBean;
 
@@ -62,6 +66,7 @@ public final class UpdateParticipantMetaPhoneInfo
 	public static void insertMetaPhoneCodeForLastName() throws DAOException
 	{
 
+		CommonParticipantDAO participantDAO = new CommonParticipantDAO(CommonServiceLocator.getInstance().getAppName(),null);
 		String lNameMetaPhone = null;
 		String sql = null;
 		sql="select identifier,last_name from catissue_participant";
@@ -72,7 +77,7 @@ public final class UpdateParticipantMetaPhoneInfo
 		String lastName = null;
 		try
 		{
-			dao = ParticipantManagerUtility.getJDBCDAO();
+			dao = getJDBCDAO();
 
 			final List list = dao.executeQuery(sql,null,null);
 			if (list != null && !list.isEmpty())
@@ -97,6 +102,15 @@ public final class UpdateParticipantMetaPhoneInfo
 		{
 			dao.closeSession();
 		}
+	}
+	private static JDBCDAO getJDBCDAO() throws DAOException
+	{
+		String appName = CommonServiceLocator.getInstance().getAppName();
+		IDAOFactory daoFactory = DAOConfigFactory.getInstance().getDAOFactory(appName);
+		JDBCDAO jdbcdao = null;
+		jdbcdao = daoFactory.getJDBCDAO();
+		jdbcdao.openSession(null);
+		return jdbcdao;
 	}
 
 	/**

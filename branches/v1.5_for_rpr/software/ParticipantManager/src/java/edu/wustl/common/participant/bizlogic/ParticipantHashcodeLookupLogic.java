@@ -8,10 +8,9 @@ import edu.wustl.common.lookup.DefaultLookupParameters;
 import edu.wustl.common.lookup.DefaultLookupResult;
 import edu.wustl.common.lookup.LookupParameters;
 import edu.wustl.common.participant.client.IParticipantManagerLookupLogic;
+import edu.wustl.common.participant.dao.CommonParticipantDAO;
 import edu.wustl.common.participant.domain.IParticipant;
-import edu.wustl.common.participant.utility.ParticipantManagerUtility;
-import edu.wustl.dao.DAO;
-import edu.wustl.dao.query.generator.ColumnValueBean;
+import edu.wustl.common.util.global.CommonServiceLocator;
 
 
 public class ParticipantHashcodeLookupLogic implements IParticipantManagerLookupLogic
@@ -22,15 +21,15 @@ public class ParticipantHashcodeLookupLogic implements IParticipantManagerLookup
 		List<DefaultLookupResult> matchParticipantList = null;
 		DefaultLookupParameters defLookupParam = (DefaultLookupParameters)params;
 		IParticipant participant = (IParticipant) defLookupParam.getObject();
-		DAO dao = ParticipantManagerUtility.getDAO();
-		String fetchByNameQry = ParticipantManagerUtility.getParticipantCodeQry(protocolIdList);
-		List<ColumnValueBean> valueList = new ArrayList<ColumnValueBean>();
-		ColumnValueBean participantCodeValue = new ColumnValueBean(participant.getParticipantCode());
-		ColumnValueBean activityStatusValue = new ColumnValueBean("Disabled");
-		valueList.add(participantCodeValue);
-		valueList.add(activityStatusValue);
-//		List patientInfoList =  new CommonParticipantDAO(CommonServiceLocator.getInstance().getAppName(),null).executeParticipantCodeQry(protocolIdList, participant.getParticipantCode());
-		List patientInfoList =  dao.executeQuery(fetchByNameQry, valueList);
+//		DAO dao = ParticipantManagerUtility.getDAO();
+//		String fetchByNameQry = ParticipantManagerUtility.getParticipantCodeQry(protocolIdList);
+//		List<ColumnValueBean> valueList = new ArrayList<ColumnValueBean>();
+//		ColumnValueBean participantCodeValue = new ColumnValueBean(participant.getParticipantCode());
+//		ColumnValueBean activityStatusValue = new ColumnValueBean("Disabled");
+//		valueList.add(participantCodeValue);
+//		valueList.add(activityStatusValue);
+		List patientInfoList =  new CommonParticipantDAO(CommonServiceLocator.getInstance().getAppName(),null).executeParticipantCodeQry(protocolIdList, participant.getParticipantCode());
+//		List patientInfoList =  dao.executeQuery(fetchByNameQry, valueList);
 		if(!patientInfoList.isEmpty())
 		{
 			IParticipant patientInfo = (IParticipant) patientInfoList.get(0);

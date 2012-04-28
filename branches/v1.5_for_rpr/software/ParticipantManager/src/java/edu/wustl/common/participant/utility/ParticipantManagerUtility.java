@@ -1,10 +1,8 @@
 
 package edu.wustl.common.participant.utility;
 
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
@@ -28,12 +26,9 @@ import com.ibm.mq.jms.MQQueueConnectionFactory;
 
 import edu.wustl.common.beans.SessionDataBean;
 import edu.wustl.common.bizlogic.DefaultBizLogic;
-import edu.wustl.common.bizlogic.IBizLogic;
 import edu.wustl.common.exception.ApplicationException;
 import edu.wustl.common.exception.BizLogicException;
 import edu.wustl.common.exception.ErrorKey;
-import edu.wustl.common.factory.AbstractFactoryConfig;
-import edu.wustl.common.factory.IFactory;
 import edu.wustl.common.lookup.DefaultLookupParameters;
 import edu.wustl.common.lookup.DefaultLookupResult;
 import edu.wustl.common.participant.client.IParticipantManager;
@@ -50,15 +45,7 @@ import edu.wustl.common.util.Utility;
 import edu.wustl.common.util.XMLPropertyHandler;
 import edu.wustl.common.util.global.CommonServiceLocator;
 import edu.wustl.common.util.logger.Logger;
-import edu.wustl.dao.DAO;
-import edu.wustl.dao.JDBCDAO;
-import edu.wustl.dao.QueryWhereClause;
-import edu.wustl.dao.condition.EqualClause;
-import edu.wustl.dao.daofactory.DAOConfigFactory;
-import edu.wustl.dao.daofactory.IDAOFactory;
 import edu.wustl.dao.exception.DAOException;
-import edu.wustl.dao.query.generator.ColumnValueBean;
-import edu.wustl.dao.query.generator.DBTypes;
 import edu.wustl.patientLookUp.domain.PatientInformation;
 import edu.wustl.patientLookUp.lookUpServiceBizLogic.PatientInfoLookUpService;
 import edu.wustl.patientLookUp.queryExecutor.IQueryExecutor;
@@ -255,54 +242,54 @@ public class ParticipantManagerUtility
 	public static ISite getSiteObject(final String facilityId) throws BizLogicException,
 			ParticipantManagerException
 	{
-//		ISite site = null;
-//		try
-//		{
-//			List siteObject = new CommonParticipantDAO(getAppName(),null).getSiteObject(facilityId);
-//			if (siteObject != null && siteObject.size() > 0)
-//			{
-//				Object siteList[] = (Object[]) siteObject.get(0);
-//				Long siteId = (Long) siteList[0];
-//				String siteName = (String) siteList[1];
-//				site = (ISite) ParticipantManagerUtility.getSiteInstance();
-//				site.setId(siteId);
-//				site.setName(siteName);
-//			}
-//			return site;
-//		}
-//		catch (DAOException e)
-//		{
-//			throw new BizLogicException(e);
-//		}
-		String sourceObjectName = ISite.class.getName();
-		String selectColumnNames[] = {"id", "name"};
-		DefaultBizLogic bizLogic = new DefaultBizLogic();
 		ISite site = null;
-		QueryWhereClause queryWhereClause = new QueryWhereClause(sourceObjectName);
 		try
 		{
-			queryWhereClause.addCondition(new EqualClause("facilityId", '?'));
+			List siteObject = new CommonParticipantDAO(getAppName(),null).getSiteObject(facilityId);
+			if (siteObject != null && siteObject.size() > 0)
+			{
+				Object siteList[] = (Object[]) siteObject.get(0);
+				Long siteId = (Long) siteList[0];
+				String siteName = (String) siteList[1];
+				site = (ISite) ParticipantManagerUtility.getSiteInstance();
+				site.setId(siteId);
+				site.setName(siteName);
+			}
+			return site;
 		}
 		catch (DAOException e)
 		{
 			throw new BizLogicException(e);
 		}
-
-		List<ColumnValueBean> columnValueBeans = new ArrayList<ColumnValueBean>();
-		columnValueBeans.add(new ColumnValueBean(facilityId));
-		List siteObject = bizLogic.retrieve(sourceObjectName, selectColumnNames, queryWhereClause,
-				columnValueBeans);
-
-		if (siteObject != null && siteObject.size() > 0)
-		{
-			Object siteList[] = (Object[]) siteObject.get(0);
-			Long siteId = (Long) siteList[0];
-			String siteName = (String) siteList[1];
-			site = (ISite) ParticipantManagerUtility.getSiteInstance();
-			site.setId(siteId);
-			site.setName(siteName);
-		}
-		return site;
+//		String sourceObjectName = ISite.class.getName();
+//		String selectColumnNames[] = {"id", "name"};
+//		DefaultBizLogic bizLogic = new DefaultBizLogic();
+//		ISite site = null;
+//		QueryWhereClause queryWhereClause = new QueryWhereClause(sourceObjectName);
+//		try
+//		{
+//			queryWhereClause.addCondition(new EqualClause("facilityId", '?'));
+//		}
+//		catch (DAOException e)
+//		{
+//			throw new BizLogicException(e);
+//		}
+//
+//		List<ColumnValueBean> columnValueBeans = new ArrayList<ColumnValueBean>();
+//		columnValueBeans.add(new ColumnValueBean(facilityId));
+//		List siteObject = bizLogic.retrieve(sourceObjectName, selectColumnNames, queryWhereClause,
+//				columnValueBeans);
+//
+//		if (siteObject != null && siteObject.size() > 0)
+//		{
+//			Object siteList[] = (Object[]) siteObject.get(0);
+//			Long siteId = (Long) siteList[0];
+//			String siteName = (String) siteList[1];
+//			site = (ISite) ParticipantManagerUtility.getSiteInstance();
+//			site.setId(siteId);
+//			site.setName(siteName);
+//		}
+//		return site;
 	}
 
 	/**
@@ -355,34 +342,21 @@ public class ParticipantManagerUtility
 	 * @throws Exception 	 */
 	public static IParticipant getParticipantById(final Long identifier) throws BizLogicException
 	{
-		// Initializing instance of IBizLogic
-		IFactory factory = AbstractFactoryConfig.getInstance().getBizLogicFactory();
-
-		IBizLogic bizLogic = factory.getBizLogic(Constants.DEFAULT_BIZ_LOGIC);
-		String sourceObjectName = IParticipant.class.getName();
-		// getting all the participants from the database
-		//List participantList = bizLogic.retrieve(sourceObjectName, "id", identifier);
-		QueryWhereClause queryWhereClause = new QueryWhereClause(sourceObjectName);
+		IParticipant participant = null;
 		try
 		{
-			queryWhereClause.addCondition(new EqualClause("id", '?'));
+			participant = new CommonParticipantDAO(CommonServiceLocator.getInstance().getAppName(),null).getParticipantById(identifier);
 		}
 		catch (DAOException e)
 		{
 			throw new BizLogicException(e);
 		}
-
-		List<ColumnValueBean> columnValueBeans = new ArrayList<ColumnValueBean>();
-		columnValueBeans.add(new ColumnValueBean(identifier));
-		List participantList = bizLogic.retrieve(sourceObjectName, null, queryWhereClause,
-				columnValueBeans);
-		if(participantList.isEmpty())
+		if(participant==null)
 		{
 			throw new BizLogicException(ErrorKey.getErrorKey("errors.item.invalid.values"), null,
 					"Participant Id");
-			//throw new BizLogicException();
 		}
-		return (IParticipant) participantList.get(0);
+		return participant;
 
 	}
 
@@ -489,6 +463,7 @@ public class ParticipantManagerUtility
 		}
 		catch (Exception exp)
 		{
+			LOGGER.error(exp.getMessage(),exp);
 			throw new PatientLookupException(exp.getMessage(), exp);
 		}
 		return matchParticipantList;
@@ -565,7 +540,7 @@ public class ParticipantManagerUtility
 	public static List processListForMatchWithinCS(List<DefaultLookupResult> matchPartpantLst,
 			Set csIdList) throws DAOException
 	{
-		List idList = ParticipantManagerUtility.getPartcipantIdsList(csIdList);
+		List idList = getPartcipantIdsList(csIdList);
 		matchPartpantLst = filerMatchedList(matchPartpantLst, idList);
 		return matchPartpantLst;
 	}
@@ -611,46 +586,47 @@ public class ParticipantManagerUtility
 	 */
 	public static boolean isParticipantMatchWithinCSCPEnable(Long id) throws DAOException
 	{
-//		boolean status = false;
-//		List list = new CommonParticipantDAO(getAppName(),null).isParticipantMatchWithinCSCPEnable(id);
-//		if (!list.isEmpty() && !"".equals(list.get(0)))
-//		{
-//			List statusList = (List) list.get(0);
-//			if (!statusList.isEmpty() && ((String) statusList.get(0)).equals("1"))
-//			{
-//				status = true;
-//			}
-//		}
-//		return status;
 		boolean status = false;
-		JDBCDAO dao = null;
-		String query = null;
-		try
+		List list = new CommonParticipantDAO(getAppName(),null).isParticipantMatchWithinCSCPEnable(id);
+		if (!list.isEmpty() && !"".equals(list.get(0)))
 		{
-			query = "SELECT SP.PARTCIPNT_MATCH_WITHIN_CSCP FROM  CATISSUE_SPECIMEN_PROTOCOL SP WHERE SP.IDENTIFIER=?";
-			dao = getJDBCDAO();
-			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
-			columnValueBeanList.add(new ColumnValueBean("IDENTIFIER", id, DBTypes.LONG));
-			List list = dao.executeQuery(query, null, columnValueBeanList);
-			if (!list.isEmpty() && !"".equals(list.get(0)))
+			//List statusList = (List) list.get(0);
+			Object value = list.get(0);
+			if (value!=null && value.toString().equals("1"))
 			{
-				List statusList = (List) list.get(0);
-				if (!statusList.isEmpty() && ((String) statusList.get(0)).equals("1"))
-				{
-					status = true;
-				}
+				status = true;
 			}
 		}
-		catch (DAOException exp)
-		{
-			LOGGER.info("ERROR WHILE GETTING THE EMPI STATUS");
-			throw new DAOException(exp.getErrorKey(), exp, exp.getMsgValues());
-		}
-		finally
-		{
-			dao.closeSession();
-		}
 		return status;
+//		boolean status = false;
+//		JDBCDAO dao = null;
+//		String query = null;
+//		try
+//		{
+//			query = "SELECT SP.PARTCIPNT_MATCH_WITHIN_CSCP FROM  CATISSUE_SPECIMEN_PROTOCOL SP WHERE SP.IDENTIFIER=?";
+//			dao = getJDBCDAO();
+//			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
+//			columnValueBeanList.add(new ColumnValueBean("IDENTIFIER", id, DBTypes.LONG));
+//			List list = dao.executeQuery(query, null, columnValueBeanList);
+//			if (!list.isEmpty() && !"".equals(list.get(0)))
+//			{
+//				List statusList = (List) list.get(0);
+//				if (!statusList.isEmpty() && ((String) statusList.get(0)).equals("1"))
+//				{
+//					status = true;
+//				}
+//			}
+//		}
+//		catch (DAOException exp)
+//		{
+//			LOGGER.info("ERROR WHILE GETTING THE EMPI STATUS");
+//			throw new DAOException(exp.getErrorKey(), exp, exp.getMsgValues());
+//		}
+//		finally
+//		{
+//			dao.closeSession();
+//		}
+//		return status;
 	}
 
 	/**
@@ -662,50 +638,55 @@ public class ParticipantManagerUtility
 	 *
 	 * @throws DAOException the DAO exception
 	 */
-	public static List getPartcipantIdsList(Set cpIdList) throws DAOException
+	public static List<String> getPartcipantIdsList(Set cpIdList) throws DAOException
 	{
-//		List idListArray = new CommonParticipantDAO(getAppName(),null).getPartcipantIdsList(cpIdList);
-//		return idListArray;
-		List idListArray =null;
 		List<String> idList = new ArrayList<String>();
-		JDBCDAO dao = null;
-		String query = null;
-		try
+		List idListArray = new CommonParticipantDAO(getAppName(),null).getPartcipantIdsList(cpIdList);
+		for(Object obj : idListArray)
 		{
-			query = "SELECT PARTICIPANT_ID FROM CATISSUE_CLINICAL_STUDY_REG WHERE CLINICAL_STUDY_ID=?";
-			dao = getJDBCDAO();
-
-			if (cpIdList != null && !cpIdList.isEmpty())
-			{
-				Iterator<Long> iterator = cpIdList.iterator();
-				while (iterator.hasNext())
-				{
-					Long id = iterator.next();
-					LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
-					columnValueBeanList.add(new ColumnValueBean("CLINICAL_STUDY_ID", id,
-							DBTypes.LONG));
-
-					idListArray = dao.executeQuery(query, null, columnValueBeanList);
-					if (!idListArray.isEmpty() && !"".equals(idListArray.get(0)))
-					{
-						for (Iterator<List> itr = idListArray.iterator(); itr.hasNext();)
-						{
-							idList.add(String.valueOf(itr.next().get(0)));
-						}
-					}
-				}
-			}
-		}
-		catch (DAOException exp)
-		{
-
-			throw new DAOException(exp.getErrorKey(), exp, exp.getMsgValues());
-		}
-		finally
-		{
-			dao.closeSession();
+			idList.add(obj.toString());
 		}
 		return idList;
+//		List idListArray =null;
+//		List<String> idList = new ArrayList<String>();
+//		JDBCDAO dao = null;
+//		String query = null;
+//		try
+//		{
+//			query = "SELECT PARTICIPANT_ID FROM CATISSUE_CLINICAL_STUDY_REG WHERE CLINICAL_STUDY_ID=?";
+//			dao = getJDBCDAO();
+//
+//			if (cpIdList != null && !cpIdList.isEmpty())
+//			{
+//				Iterator<Long> iterator = cpIdList.iterator();
+//				while (iterator.hasNext())
+//				{
+//					Long id = iterator.next();
+//					LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
+//					columnValueBeanList.add(new ColumnValueBean("CLINICAL_STUDY_ID", id,
+//							DBTypes.LONG));
+//
+//					idListArray = dao.executeQuery(query, null, columnValueBeanList);
+//					if (!idListArray.isEmpty() && !"".equals(idListArray.get(0)))
+//					{
+//						for (Iterator<List> itr = idListArray.iterator(); itr.hasNext();)
+//						{
+//							idList.add(String.valueOf(itr.next().get(0)));
+//						}
+//					}
+//				}
+//			}
+//		}
+//		catch (DAOException exp)
+//		{
+//
+//			throw new DAOException(exp.getErrorKey(), exp, exp.getMsgValues());
+//		}
+//		finally
+//		{
+//			dao.closeSession();
+//		}
+//		return idList;
 	}
 
 	/**
@@ -768,33 +749,33 @@ public class ParticipantManagerUtility
 		return (IParticipantMedicalIdentifier<IParticipant, ISite>) PMIInstance;
 	}
 
-	/**
-	 * Sets the empi id status.
-	 *
-	 * @param participantId the participant id
-	 * @param status the status
-	 *
-	 * @throws DAOException the DAO exception
-	 */
-	public static void setEMPIIdStatus(Long participantId, String status) throws DAOException
-	{
-		JDBCDAO jdbcDao = null;
-		try
-		{
-			jdbcDao = getJDBCDAO();
-			setEMPIIdStatus(participantId, status, jdbcDao);
-			jdbcDao.commit();
-		}
-		catch (DAOException e)
-		{
-			LOGGER.info("ERROE WHILE UPDATING THE PARTICIPANT EMPI STATUS");
-			throw new DAOException(e.getErrorKey(), e, e.getMsgValues());
-		}
-		finally
-		{
-			jdbcDao.closeSession();
-		}
-	}
+//	/**
+//	 * Sets the empi id status.
+//	 *
+//	 * @param participantId the participant id
+//	 * @param status the status
+//	 *
+//	 * @throws DAOException the DAO exception
+//	 */
+//	public static void setEMPIIdStatus(Long participantId, String status) throws DAOException
+//	{
+//		JDBCDAO jdbcDao = null;
+//		try
+//		{
+//			jdbcDao = getJDBCDAO();
+//			setEMPIIdStatus(participantId, status, jdbcDao);
+//			jdbcDao.commit();
+//		}
+//		catch (DAOException e)
+//		{
+//			LOGGER.info("ERROE WHILE UPDATING THE PARTICIPANT EMPI STATUS");
+//			throw new DAOException(e.getErrorKey(), e, e.getMsgValues());
+//		}
+//		finally
+//		{
+//			jdbcDao.closeSession();
+//		}
+//	}
 
 	/**
 	 * Gets the sSN.
@@ -845,8 +826,21 @@ public class ParticipantManagerUtility
 	 */
 	public static List<String> getColumnList(List<String> columnList) throws DAOException
 	{
-//		List<String> displayList = new ArrayList<String>();
-//		List list = new CommonParticipantDAO(getAppName(),null).getColumnList();
+		List<String> displayList = new ArrayList<String>();
+		List<Object[]> list = new CommonParticipantDAO(getAppName(),null).getColumnList();
+		for (Iterator iterator1 = columnList.iterator(); iterator1.hasNext();)
+		{
+			String colName1 = (String) iterator1.next();
+			for(Object[] obj: list)
+			{
+				String colName2 = obj[0].toString();
+				if (colName1.equals(colName2))
+				{
+					displayList.add((String) obj[1]);
+				}
+			}
+		}
+		
 //		for (Iterator iterator1 = columnList.iterator(); iterator1.hasNext();)
 //		{
 //			String colName1 = (String) iterator1.next();
@@ -861,42 +855,42 @@ public class ParticipantManagerUtility
 //				}
 //			}
 //		}
-//		return displayList;
-		List<String> displayList = new ArrayList<String>();
-		JDBCDAO jdbcDao = null;
-		try
-		{
-			jdbcDao = getJDBCDAO();
-
-			String sql = "SELECT  columnData.COLUMN_NAME,displayData.DISPLAY_NAME FROM CATISSUE_INTERFACE_"
-					+ "COLUMN_DATA columnData,CATISSUE_TABLE_RELATION relationData,CATISSUE_QUERY_TABLE"
-					+ "_DATA tableData,CATISSUE_SEARCH_DISPLAY_DATA displayData where relationData.CHIL"
-					+ "D_TABLE_ID = columnData.TABLE_ID and relationData.PARENT_TABLE_ID = tableData.TA"
-					+ "BLE_ID and relationData.RELATIONSHIP_ID = displayData.RELATIONSHIP_ID and column"
-					+ "Data.IDENTIFIER = displayData.COL_ID and tableData.ALIAS_NAME = 'Participant'";
-			LOGGER.debug("DATA ELEMENT SQL : " + sql);
-			List list = jdbcDao.executeQuery(sql, null, null);
-			for (Iterator iterator1 = columnList.iterator(); iterator1.hasNext();)
-			{
-				String colName1 = (String) iterator1.next();
-				Iterator iterator2 = list.iterator();
-				while (iterator2.hasNext())
-				{
-					List rowList = (List) iterator2.next();
-					String colName2 = (String) rowList.get(0);
-					if (colName1.equals(colName2))
-					{
-						displayList.add((String) rowList.get(1));
-					}
-				}
-			}
-		}
-		finally
-		{
-			jdbcDao.closeSession();
-		}
-
 		return displayList;
+//		List<String> displayList = new ArrayList<String>();
+//		JDBCDAO jdbcDao = null;
+//		try
+//		{
+//			jdbcDao = getJDBCDAO();
+//
+//			String sql = "SELECT  columnData.COLUMN_NAME,displayData.DISPLAY_NAME FROM CATISSUE_INTERFACE_"
+//					+ "COLUMN_DATA columnData,CATISSUE_TABLE_RELATION relationData,CATISSUE_QUERY_TABLE"
+//					+ "_DATA tableData,CATISSUE_SEARCH_DISPLAY_DATA displayData where relationData.CHIL"
+//					+ "D_TABLE_ID = columnData.TABLE_ID and relationData.PARENT_TABLE_ID = tableData.TA"
+//					+ "BLE_ID and relationData.RELATIONSHIP_ID = displayData.RELATIONSHIP_ID and column"
+//					+ "Data.IDENTIFIER = displayData.COL_ID and tableData.ALIAS_NAME = 'Participant'";
+//			LOGGER.debug("DATA ELEMENT SQL : " + sql);
+//			List list = jdbcDao.executeQuery(sql, null, null);
+//			for (Iterator iterator1 = columnList.iterator(); iterator1.hasNext();)
+//			{
+//				String colName1 = (String) iterator1.next();
+//				Iterator iterator2 = list.iterator();
+//				while (iterator2.hasNext())
+//				{
+//					List rowList = (List) iterator2.next();
+//					String colName2 = (String) rowList.get(0);
+//					if (colName1.equals(colName2))
+//					{
+//						displayList.add((String) rowList.get(1));
+//					}
+//				}
+//			}
+//		}
+//		finally
+//		{
+//			jdbcDao.closeSession();
+//		}
+//
+//		return displayList;
 	}
 
 	/**
@@ -932,14 +926,20 @@ public class ParticipantManagerUtility
 	public static boolean isEMPIEnable(Long participantId) throws BizLogicException
 	{
 		boolean status = false;
-//		try
-//		{
-//			List statusList = new CommonParticipantDAO(getAppName(),null).isEMPIEnable(getQueryForEmpiEnabled(), participantId);
-//			if (statusList != null&&!statusList.isEmpty())
-//			{
-//				for (int i = 0; i < statusList.size(); i++)
-//				{
-//					List idList = (List) statusList.get(i);
+		try
+		{
+			List statusList = new CommonParticipantDAO(getAppName(),null).isEMPIEnable(getQueryForEmpiEnabled(), participantId);
+			if (statusList != null&&!statusList.isEmpty())
+			{
+				for (int i = 0; i < statusList.size(); i++)
+				{
+					Object value = statusList.get(i);
+					if(value!=null&&value.toString().equals("1"))
+					{
+						status = true;
+						break;
+
+					}
 //					if (!idList.isEmpty() && !"".equals((idList.get(0))))
 //					{
 //						if (((String) idList.get(0)).equals("1"))
@@ -948,8 +948,49 @@ public class ParticipantManagerUtility
 //							break;
 //						}
 //					}
+				}
+			}
+		}
+		catch (DAOException exp)
+		{
+			LOGGER.error(exp.getMessage(), exp);
+			throw new BizLogicException(exp);
+		}
+		catch (ParticipantManagerException e)
+		{
+			LOGGER.error(e.getMessage(), e);
+			throw new BizLogicException(null,e,e.getMessage());
+		}
+		return status;
+//		JDBCDAO dao = null;
+//		status = false;
+//		String query = null;
+//		try
+//		{
+//			dao = getJDBCDAO();
+//			query = ParticipantManagerUtility.getQueryForEmpiEnabled();
+//			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
+//			columnValueBeanList.add(new ColumnValueBean("IDENTIFIER", participantId, DBTypes.LONG));
+//			List statusList = dao.executeQuery(query, null, columnValueBeanList);
+//			if (!statusList.isEmpty() && statusList != null)
+//			{
+////				List idList = (List) statusList.get(0);
+////				if (!idList.isEmpty() && !"".equals((idList.get(0))))
+////				{
+//					for (int i = 0; i < statusList.size(); i++)
+//					{
+//						List idList = (List) statusList.get(i);
+//						if (!idList.isEmpty() && !"".equals((idList.get(0))))
+//						{
+//							if (((String) idList.get(0)).equals("1"))
+//							{
+//								status = true;
+//								break;
+//							}
+//						}
+//					}
 //				}
-//			}
+////			}
 //		}
 //		catch (DAOException exp)
 //		{
@@ -959,57 +1000,18 @@ public class ParticipantManagerUtility
 //		{
 //			throw new BizLogicException(null,e,e.getMessage());
 //		}
-//		return status;
-		JDBCDAO dao = null;
-		status = false;
-		String query = null;
-		try
-		{
-			dao = getJDBCDAO();
-			query = ParticipantManagerUtility.getQueryForEmpiEnabled();
-			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
-			columnValueBeanList.add(new ColumnValueBean("IDENTIFIER", participantId, DBTypes.LONG));
-			List statusList = dao.executeQuery(query, null, columnValueBeanList);
-			if (!statusList.isEmpty() && statusList != null)
-			{
-//				List idList = (List) statusList.get(0);
-//				if (!idList.isEmpty() && !"".equals((idList.get(0))))
-//				{
-					for (int i = 0; i < statusList.size(); i++)
-					{
-						List idList = (List) statusList.get(i);
-						if (!idList.isEmpty() && !"".equals((idList.get(0))))
-						{
-							if (((String) idList.get(0)).equals("1"))
-							{
-								status = true;
-								break;
-							}
-						}
-					}
-				}
+//		finally
+//		{
+//			try
+//			{
+//				dao.closeSession();
 //			}
-		}
-		catch (DAOException exp)
-		{
-			throw new BizLogicException(exp);
-		}
-		catch (ParticipantManagerException e)
-		{
-			throw new BizLogicException(null,e,e.getMessage());
-		}
-		finally
-		{
-			try
-			{
-				dao.closeSession();
-			}
-			catch (DAOException exp)
-			{
-				throw new BizLogicException(exp);
-			}
-		}
-		return status;
+//			catch (DAOException exp)
+//			{
+//				throw new BizLogicException(exp);
+//			}
+//		}
+//		return status;
 	}
 
 	/**
@@ -1023,35 +1025,35 @@ public class ParticipantManagerUtility
 	 */
 	public static String getPartiEMPIStatus(long participantId) throws DAOException
 	{
-//		return new CommonParticipantDAO(getAppName(),null).getPartiEMPIStatus(participantId);
-		JDBCDAO dao = null;
-		String eMPIStatus = "";
-		try
-		{
-			dao = getJDBCDAO();
-			String query = "SELECT EMPI_ID_STATUS FROM CATISSUE_PARTICIPANT  WHERE IDENTIFIER=?";
-			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
-			columnValueBeanList.add(new ColumnValueBean("IDENTIFIER", participantId, DBTypes.LONG));
-			List list = dao.executeQuery(query, null, columnValueBeanList);
-			if (!list.isEmpty() && !"".equals(list.get(0)))
-			{
-				List statusList = (List) list.get(0);
-				if (!statusList.isEmpty())
-				{
-					eMPIStatus = (String) statusList.get(0);
-				}
-			}
-		}
-		catch (DAOException exp)
-		{
-			LOGGER.info("ERROR WHILE GETTING THE EMPI STATUS");
-			throw new DAOException(exp.getErrorKey(), exp, exp.getMsgValues());
-		}
-		finally
-		{
-			dao.closeSession();
-		}
-		return eMPIStatus;
+		return new CommonParticipantDAO(getAppName(),null).getPartiEMPIStatus(participantId);
+//		JDBCDAO dao = null;
+//		String eMPIStatus = "";
+//		try
+//		{
+//			dao = getJDBCDAO();
+//			String query = "SELECT EMPI_ID_STATUS FROM CATISSUE_PARTICIPANT  WHERE IDENTIFIER=?";
+//			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
+//			columnValueBeanList.add(new ColumnValueBean("IDENTIFIER", participantId, DBTypes.LONG));
+//			List list = dao.executeQuery(query, null, columnValueBeanList);
+//			if (!list.isEmpty() && !"".equals(list.get(0)))
+//			{
+//				List statusList = (List) list.get(0);
+//				if (!statusList.isEmpty())
+//				{
+//					eMPIStatus = (String) statusList.get(0);
+//				}
+//			}
+//		}
+//		catch (DAOException exp)
+//		{
+//			LOGGER.info("ERROR WHILE GETTING THE EMPI STATUS");
+//			throw new DAOException(exp.getErrorKey(), exp, exp.getMsgValues());
+//		}
+//		finally
+//		{
+//			dao.closeSession();
+//		}
+//		return eMPIStatus;
 	}
 
 	/**
@@ -1179,40 +1181,40 @@ public class ParticipantManagerUtility
 		}
 		return mrn.toString();
 	}
-
-	/**
-	 * Gets the jDBCDAO.
-	 *
-	 * @return the jDBCDAO
-	 *
-	 * @throws DAOException the DAO exception
-	 */
-	public static JDBCDAO getJDBCDAO() throws DAOException
-	{
-		String appName = CommonServiceLocator.getInstance().getAppName();
-		IDAOFactory daoFactory = DAOConfigFactory.getInstance().getDAOFactory(appName);
-		JDBCDAO jdbcdao = null;
-		jdbcdao = daoFactory.getJDBCDAO();
-		jdbcdao.openSession(null);
-		return jdbcdao;
-	}
-
-	/**
-	 * Gets the dAO.
-	 *
-	 * @return the dAO
-	 *
-	 * @throws DAOException the DAO exception
-	 */
-	public static DAO getDAO() throws DAOException
-	{
-		DAO dao = null;
-		String appName = CommonServiceLocator.getInstance().getAppName();
-		IDAOFactory daoFactory = DAOConfigFactory.getInstance().getDAOFactory(appName);
-		dao = daoFactory.getDAO();
-		dao.openSession(null);
-		return dao;
-	}
+//
+//	/**
+//	 * Gets the jDBCDAO.
+//	 *
+//	 * @return the jDBCDAO
+//	 *
+//	 * @throws DAOException the DAO exception
+//	 */
+//	public static JDBCDAO getJDBCDAO() throws DAOException
+//	{
+//		String appName = CommonServiceLocator.getInstance().getAppName();
+//		IDAOFactory daoFactory = DAOConfigFactory.getInstance().getDAOFactory(appName);
+//		JDBCDAO jdbcdao = null;
+//		jdbcdao = daoFactory.getJDBCDAO();
+//		jdbcdao.openSession(null);
+//		return jdbcdao;
+//	}
+//
+//	/**
+//	 * Gets the dAO.
+//	 *
+//	 * @return the dAO
+//	 *
+//	 * @throws DAOException the DAO exception
+//	 */
+//	public static DAO getDAO() throws DAOException
+//	{
+//		DAO dao = null;
+//		String appName = CommonServiceLocator.getInstance().getAppName();
+//		IDAOFactory daoFactory = DAOConfigFactory.getInstance().getDAOFactory(appName);
+//		dao = daoFactory.getDAO();
+//		dao.openSession(null);
+//		return dao;
+//	}
 
 	/**
 	 * Adds the participant to process message queue.
@@ -1225,77 +1227,77 @@ public class ParticipantManagerUtility
 	public static void addParticipantToProcessMessageQueue(LinkedHashSet<Long> userIdSet,
 			Long participantId) throws DAOException
 	{
-//		new CommonParticipantDAO(getAppName(),null).addParticipantToProcessMessageQueue(userIdSet, participantId);
-		JDBCDAO jdbcdao = null;
-		String query = null;
-		try
-		{
-			jdbcdao = getJDBCDAO();
-			// delete old data from DB to start up clean with matching process
-			// Bug fix 18823
-			deleteProcessedParticipant(participantId, jdbcdao);
-
-			Calendar cal = Calendar.getInstance();
-			Date date = cal.getTime();
-			LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
-			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
-
-			query = "INSERT INTO MATCHED_PARTICIPANT_MAPPING(NO_OF_MATCHED_PARTICIPANTS,"
-					+ "CREATION_DATE,SEARCHED_PARTICIPANT_ID) VALUES(?,?,?)";
-
-			columnValueBeanList.add(new ColumnValueBean("NO_OF_MATCHED_PARTICIPANTS", Integer
-					.valueOf(-1), DBTypes.LONG));
-			columnValueBeanList.add(new ColumnValueBean("CREATION_DATE", date, DBTypes.DATE));
-			columnValueBeanList.add(new ColumnValueBean("SEARCHED_PARTICIPANT_ID", participantId,
-					DBTypes.LONG));
-			columnValueBeans.add(columnValueBeanList);
-			jdbcdao.executeUpdate(query, columnValueBeans);
-
-			jdbcdao.commit();
-
-			updateParticipantUserMapping(jdbcdao, userIdSet, participantId);
-		}
-		catch (DAOException e)
-		{
-			jdbcdao.rollback();
-			throw new DAOException(e.getErrorKey(), e, e.getMessage());
-		}
-		finally
-		{
-			jdbcdao.closeSession();
-		}
+		new CommonParticipantDAO(getAppName(),null).addParticipantToProcessMessageQueue(userIdSet, participantId);
+//		JDBCDAO jdbcdao = null;
+//		String query = null;
+//		try
+//		{
+//			jdbcdao = getJDBCDAO();
+//			// delete old data from DB to start up clean with matching process
+//			// Bug fix 18823
+//			deleteProcessedParticipant(participantId, jdbcdao);
+//
+//			Calendar cal = Calendar.getInstance();
+//			Date date = cal.getTime();
+//			LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
+//			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
+//
+//			query = "INSERT INTO MATCHED_PARTICIPANT_MAPPING(NO_OF_MATCHED_PARTICIPANTS,"
+//					+ "CREATION_DATE,SEARCHED_PARTICIPANT_ID) VALUES(?,?,?)";
+//
+//			columnValueBeanList.add(new ColumnValueBean("NO_OF_MATCHED_PARTICIPANTS", Integer
+//					.valueOf(-1), DBTypes.LONG));
+//			columnValueBeanList.add(new ColumnValueBean("CREATION_DATE", date, DBTypes.DATE));
+//			columnValueBeanList.add(new ColumnValueBean("SEARCHED_PARTICIPANT_ID", participantId,
+//					DBTypes.LONG));
+//			columnValueBeans.add(columnValueBeanList);
+//			jdbcdao.executeUpdate(query, columnValueBeans);
+//
+//			jdbcdao.commit();
+//
+//			updateParticipantUserMapping(jdbcdao, userIdSet, participantId);
+//		}
+//		catch (DAOException e)
+//		{
+//			jdbcdao.rollback();
+//			throw new DAOException(e.getErrorKey(), e, e.getMessage());
+//		}
+//		finally
+//		{
+//			jdbcdao.closeSession();
+//		}
 	}
 
-	/**
-	 * Update participant user mapping.
-	 *
-	 * @param jdbcdao the jdbcdao
-	 * @param userIdSet the user id set
-	 * @param participantId the participant id
-	 *
-	 * @throws DAOException the DAO exception
-	 */
-	private static void updateParticipantUserMapping(JDBCDAO jdbcdao,
-			LinkedHashSet<Long> userIdSet, Long participantId) throws DAOException
-	{
-
-		Iterator iterator = userIdSet.iterator();
-		while (iterator.hasNext())
-		{
-			String query = "INSERT INTO EMPI_PARTICIPANT_USER_MAPPING VALUES(?,?)";
-			Long userId = (Long) iterator.next();
-			LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
-			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
-
-			columnValueBeanList.add(new ColumnValueBean("PARTICIPANT_ID", participantId,
-					DBTypes.LONG));
-			columnValueBeanList.add(new ColumnValueBean("USER_ID", userId, DBTypes.LONG));
-			columnValueBeans.add(columnValueBeanList);
-			jdbcdao.executeUpdate(query, columnValueBeans);
-			jdbcdao.commit();
-		}
-
-	}
+//	/**
+//	 * Update participant user mapping.
+//	 *
+//	 * @param jdbcdao the jdbcdao
+//	 * @param userIdSet the user id set
+//	 * @param participantId the participant id
+//	 *
+//	 * @throws DAOException the DAO exception
+//	 */
+//	private static void updateParticipantUserMapping(JDBCDAO jdbcdao,
+//			LinkedHashSet<Long> userIdSet, Long participantId) throws DAOException
+//	{
+//
+//		Iterator iterator = userIdSet.iterator();
+//		while (iterator.hasNext())
+//		{
+//			String query = "INSERT INTO EMPI_PARTICIPANT_USER_MAPPING VALUES(?,?)";
+//			Long userId = (Long) iterator.next();
+//			LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
+//			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
+//
+//			columnValueBeanList.add(new ColumnValueBean("PARTICIPANT_ID", participantId,
+//					DBTypes.LONG));
+//			columnValueBeanList.add(new ColumnValueBean("USER_ID", userId, DBTypes.LONG));
+//			columnValueBeans.add(columnValueBeanList);
+//			jdbcdao.executeUpdate(query, columnValueBeans);
+//			jdbcdao.commit();
+//		}
+//
+//	}
 		
 	/**
 	 * Populate patient object.
@@ -1392,34 +1394,34 @@ public class ParticipantManagerUtility
 	 */
 	public static void deleteProcessedParticipant(Long id) throws DAOException
 	{
-//		new CommonParticipantDAO(getAppName(),null).deleteProcessedParticipant(id);
-		JDBCDAO jdbcdao = null;
-		try
-		{
-			jdbcdao = getJDBCDAO();
-			deleteProcessedParticipant(id, jdbcdao);
-			jdbcdao.commit();
-		}
-		catch (DAOException e)
-		{
-			jdbcdao.rollback();
-			throw new DAOException(e.getErrorKey(), e, e.getMessage());
-		}
-		finally
-		{
-			jdbcdao.closeSession();
-		}
+		new CommonParticipantDAO(getAppName(),null).deleteProcessedParticipant(id);
+//		JDBCDAO jdbcdao = null;
+//		try
+//		{
+//			jdbcdao = getJDBCDAO();
+//			deleteProcessedParticipant(id, jdbcdao);
+//			jdbcdao.commit();
+//		}
+//		catch (DAOException e)
+//		{
+//			jdbcdao.rollback();
+//			throw new DAOException(e.getErrorKey(), e, e.getMessage());
+//		}
+//		finally
+//		{
+//			jdbcdao.closeSession();
+//		}
 	}
 
-	public static void deleteProcessedParticipant(Long id, JDBCDAO jdbcdao) throws DAOException
-	{
-		LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
-		LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
-		columnValueBeanList.add(new ColumnValueBean(id));
-		columnValueBeans.add(columnValueBeanList);
-		String query = "DELETE FROM MATCHED_PARTICIPANT_MAPPING WHERE SEARCHED_PARTICIPANT_ID=?";
-		jdbcdao.executeUpdate(query, columnValueBeans);
-	}	
+//	public static void deleteProcessedParticipant(Long id, JDBCDAO jdbcdao) throws DAOException
+//	{
+//		LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
+//		LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
+//		columnValueBeanList.add(new ColumnValueBean(id));
+//		columnValueBeans.add(columnValueBeanList);
+//		String query = "DELETE FROM MATCHED_PARTICIPANT_MAPPING WHERE SEARCHED_PARTICIPANT_ID=?";
+//		jdbcdao.executeUpdate(query, columnValueBeans);
+//	}	
 
 	/**
 	 * Updates the count of matched participants as 0 in case no matching was found.
@@ -1430,29 +1432,29 @@ public class ParticipantManagerUtility
 	 */
 	public static void updateProcessedParticipant(Long id) throws DAOException
 	{
-//		new CommonParticipantDAO(getAppName(),null).updateProcessedParticipant(id);
-		JDBCDAO jdbcdao = null;
-		try
-		{
-			jdbcdao = getJDBCDAO();
-			LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
-			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
-			columnValueBeanList.add(new ColumnValueBean(id));
-			columnValueBeans.add(columnValueBeanList);
-			String query = "UPDATE MATCHED_PARTICIPANT_MAPPING SET NO_OF_MATCHED_PARTICIPANTS=0 "
-					+ "WHERE SEARCHED_PARTICIPANT_ID=?";
-			jdbcdao.executeUpdate(query, columnValueBeans);
-			jdbcdao.commit();
-		}
-		catch (DAOException e)
-		{
-			jdbcdao.rollback();
-			throw new DAOException(e.getErrorKey(), e, e.getMessage());
-		}
-		finally
-		{
-			jdbcdao.closeSession();
-		}
+		new CommonParticipantDAO(getAppName(),null).updateProcessedParticipant(id);
+//		JDBCDAO jdbcdao = null;
+//		try
+//		{
+//			jdbcdao = getJDBCDAO();
+//			LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
+//			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
+//			columnValueBeanList.add(new ColumnValueBean(id));
+//			columnValueBeans.add(columnValueBeanList);
+//			String query = "UPDATE MATCHED_PARTICIPANT_MAPPING SET NO_OF_MATCHED_PARTICIPANTS=0 "
+//					+ "WHERE SEARCHED_PARTICIPANT_ID=?";
+//			jdbcdao.executeUpdate(query, columnValueBeans);
+//			jdbcdao.commit();
+//		}
+//		catch (DAOException e)
+//		{
+//			jdbcdao.rollback();
+//			throw new DAOException(e.getErrorKey(), e, e.getMessage());
+//		}
+//		finally
+//		{
+//			jdbcdao.closeSession();
+//		}
 	}
 
 	/**
@@ -1465,20 +1467,20 @@ public class ParticipantManagerUtility
 	 *
 	 * @throws BizLogicException the biz logic exception
 	 */
-	public static IParticipant getOldParticipant(Long identifier,DAO dao) throws BizLogicException
+	public static IParticipant getOldParticipant(Long identifier) throws BizLogicException
 	{
 		IParticipant oldParticipant;
-//		oldParticipant = new CommonParticipantDAO(CommonServiceLocator.getInstance().getAppName(),null).findById(identifier);
-		try
-		{
-			oldParticipant = (IParticipant) dao.retrieveById(
-					"edu.wustl.clinportal.domain.Participant", identifier);
-		}
-		catch (DAOException e)
-		{
-			LOGGER.debug(e.getMessage(), e);
-			throw new BizLogicException(e.getErrorKey(), e, e.getMsgValues());
-		}
+		oldParticipant = new CommonParticipantDAO(CommonServiceLocator.getInstance().getAppName(),null).findById(identifier);
+//		try
+//		{
+//			oldParticipant = (IParticipant) dao.retrieveById(
+//					"edu.wustl.clinportal.domain.Participant", identifier);
+//		}
+//		catch (DAOException e)
+//		{
+//			LOGGER.debug(e.getMessage(), e);
+//			throw new BizLogicException(e.getErrorKey(), e, e.getMsgValues());
+//		}
 		return oldParticipant;
 	}
 
@@ -1493,36 +1495,36 @@ public class ParticipantManagerUtility
 	 */
 	public static boolean isParticipantIsProcessing(Long id) throws DAOException
 	{
-//		return new CommonParticipantDAO(getAppName(),null).isParticipantIsProcessing(id);
-		boolean status = false;
-		JDBCDAO dao = null;
-		String query = null;
-		try
-		{
-			//query = "SELECT * FROM MATCHED_PARTICIPANT_MAPPING WHERE SEARCHED_PARTICIPANT_ID=? AND NO_OF_MATCHED_PARTICIPANTS!=?";
-			query = "SELECT * FROM MATCHED_PARTICIPANT_MAPPING WHERE SEARCHED_PARTICIPANT_ID = ? "
-					+ "AND NO_OF_MATCHED_PARTICIPANTS != 0";
-			dao = getJDBCDAO();
-			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
-			columnValueBeanList
-					.add(new ColumnValueBean("SEARCHED_PARTICIPANT_ID", id, DBTypes.LONG));
-			//columnValueBeanList.add(new ColumnValueBean("NO_OF_MATCHED_PARTICIPANTS", 0,DBTypes.INTEGER));
-			List list = dao.executeQuery(query, null, columnValueBeanList);
-			if (!list.isEmpty() && !"".equals(list.get(0)))
-			{
-				status = true;
-			}
-		}
-		catch (DAOException exp)
-		{
-			LOGGER.info("ERROR WHILE GETTING THE EMPI STATUS");
-			throw new DAOException(exp.getErrorKey(), exp, exp.getMsgValues());
-		}
-		finally
-		{
-			dao.closeSession();
-		}
-		return status;
+		return new CommonParticipantDAO(getAppName(),null).isParticipantIsProcessing(id);
+//		boolean status = false;
+//		JDBCDAO dao = null;
+//		String query = null;
+//		try
+//		{
+//			//query = "SELECT * FROM MATCHED_PARTICIPANT_MAPPING WHERE SEARCHED_PARTICIPANT_ID=? AND NO_OF_MATCHED_PARTICIPANTS!=?";
+//			query = "SELECT * FROM MATCHED_PARTICIPANT_MAPPING WHERE SEARCHED_PARTICIPANT_ID = ? "
+//					+ "AND NO_OF_MATCHED_PARTICIPANTS != 0";
+//			dao = getJDBCDAO();
+//			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
+//			columnValueBeanList
+//					.add(new ColumnValueBean("SEARCHED_PARTICIPANT_ID", id, DBTypes.LONG));
+//			//columnValueBeanList.add(new ColumnValueBean("NO_OF_MATCHED_PARTICIPANTS", 0,DBTypes.INTEGER));
+//			List list = dao.executeQuery(query, null, columnValueBeanList);
+//			if (!list.isEmpty() && !"".equals(list.get(0)))
+//			{
+//				status = true;
+//			}
+//		}
+//		catch (DAOException exp)
+//		{
+//			LOGGER.info("ERROR WHILE GETTING THE EMPI STATUS");
+//			throw new DAOException(exp.getErrorKey(), exp, exp.getMsgValues());
+//		}
+//		finally
+//		{
+//			dao.closeSession();
+//		}
+//		return status;
 	}
 
 	/**
@@ -1537,39 +1539,39 @@ public class ParticipantManagerUtility
 	public static List<Long> getProcessedMatchedParticipantIds(Long userId) throws DAOException
 	{
 		
-//		return new CommonParticipantDAO(getAppName(),null).getProcessedMatchedParticipantIds(userId);
-		JDBCDAO dao = null;
-		List<Long> particpantIdColl = new ArrayList<Long>();
-		try
-		{
-
-			dao = ParticipantManagerUtility.getJDBCDAO();
-
-			String query = "SELECT SEARCHED_PARTICIPANT_ID FROM  MATCHED_PARTICIPANT_MAPPING PARTIMAPPING  "
-					+ " JOIN EMPI_PARTICIPANT_USER_MAPPING ON PARTIMAPPING.SEARCHED_PARTICIPANT_ID=EMPI_PARTICIPANT_USER_MAPPING.PARTICIPANT_ID"
-					+ " WHERE EMPI_PARTICIPANT_USER_MAPPING.USER_ID=? AND PARTIMAPPING.NO_OF_MATCHED_PARTICIPANTS!=?";
-
-			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
-			columnValueBeanList.add(new ColumnValueBean("USER_ID", userId, DBTypes.LONG));
-			columnValueBeanList.add(new ColumnValueBean("NO_OF_MATCHED_PARTICIPANTS", "-1",
-					DBTypes.INTEGER));
-
-			List resultSet = dao.executeQuery(query, null, columnValueBeanList);
-
-			for (Object object : resultSet)
-			{
-				ArrayList particpantIdList = (ArrayList) object;
-				if (particpantIdList != null && !particpantIdList.isEmpty())
-				{
-					particpantIdColl.add(Long.valueOf(particpantIdList.get(0).toString()));
-				}
-			}
-		}
-		finally
-		{
-			dao.closeSession();
-		}
-		return particpantIdColl;
+		return new CommonParticipantDAO(getAppName(),null).getProcessedMatchedParticipantIds(userId);
+//		JDBCDAO dao = null;
+//		List<Long> particpantIdColl = new ArrayList<Long>();
+//		try
+//		{
+//
+//			dao = ParticipantManagerUtility.getJDBCDAO();
+//
+//			String query = "SELECT SEARCHED_PARTICIPANT_ID FROM  MATCHED_PARTICIPANT_MAPPING PARTIMAPPING  "
+//					+ " JOIN EMPI_PARTICIPANT_USER_MAPPING ON PARTIMAPPING.SEARCHED_PARTICIPANT_ID=EMPI_PARTICIPANT_USER_MAPPING.PARTICIPANT_ID"
+//					+ " WHERE EMPI_PARTICIPANT_USER_MAPPING.USER_ID=? AND PARTIMAPPING.NO_OF_MATCHED_PARTICIPANTS!=?";
+//
+//			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
+//			columnValueBeanList.add(new ColumnValueBean("USER_ID", userId, DBTypes.LONG));
+//			columnValueBeanList.add(new ColumnValueBean("NO_OF_MATCHED_PARTICIPANTS", "-1",
+//					DBTypes.INTEGER));
+//
+//			List resultSet = dao.executeQuery(query, null, columnValueBeanList);
+//
+//			for (Object object : resultSet)
+//			{
+//				ArrayList particpantIdList = (ArrayList) object;
+//				if (particpantIdList != null && !particpantIdList.isEmpty())
+//				{
+//					particpantIdColl.add(Long.valueOf(particpantIdList.get(0).toString()));
+//				}
+//			}
+//		}
+//		finally
+//		{
+//			dao.closeSession();
+//		}
+//		return particpantIdColl;
 	}
 
 	/**
@@ -2084,25 +2086,25 @@ public class ParticipantManagerUtility
 	 * @param jdbcdao
 	 * @throws DAOException
 	 */
-	public void updateOldEMPIDetails(Long participantId, String empiId,JDBCDAO jdbcdao)
+	public void updateOldEMPIDetails(Long participantId, String empiId)
 			throws DAOException
 	{
-//		new CommonParticipantDAO(getAppName(),null).updateOldEMPIDetails(participantId, empiId);
-		final LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
-		final LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
-
-		String temporaryParticipantId = participantId + "T";
-		columnValueBeanList.add(new ColumnValueBean("PERMANENT_PARTICIPANT_ID", participantId,
-				DBTypes.VARCHAR));
-		columnValueBeanList.add(new ColumnValueBean("TEMPARARY_PARTICIPANT_ID",
-				temporaryParticipantId, DBTypes.VARCHAR));
-		columnValueBeanList.add(new ColumnValueBean("OLD_EMPI_ID", empiId, DBTypes.VARCHAR));
-		columnValueBeanList.add(new ColumnValueBean("TEMPMRNDATE", new Timestamp(System
-				.currentTimeMillis()), DBTypes.TIMESTAMP));
-
-		final String sql = "INSERT INTO PARTICIPANT_EMPI_ID_MAPPING VALUES(?,?,?,?)";
-		columnValueBeans.add(columnValueBeanList);
-		jdbcdao.executeUpdate(sql, columnValueBeans);
+		new CommonParticipantDAO(getAppName(),null).updateOldEMPIDetails(participantId, empiId);
+//		final LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
+//		final LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
+//
+//		String temporaryParticipantId = participantId + "T";
+//		columnValueBeanList.add(new ColumnValueBean("PERMANENT_PARTICIPANT_ID", participantId,
+//				DBTypes.VARCHAR));
+//		columnValueBeanList.add(new ColumnValueBean("TEMPARARY_PARTICIPANT_ID",
+//				temporaryParticipantId, DBTypes.VARCHAR));
+//		columnValueBeanList.add(new ColumnValueBean("OLD_EMPI_ID", empiId, DBTypes.VARCHAR));
+//		columnValueBeanList.add(new ColumnValueBean("TEMPMRNDATE", new Timestamp(System
+//				.currentTimeMillis()), DBTypes.TIMESTAMP));
+//
+//		final String sql = "INSERT INTO PARTICIPANT_EMPI_ID_MAPPING VALUES(?,?,?,?)";
+//		columnValueBeans.add(columnValueBeanList);
+//		jdbcdao.executeUpdate(sql, columnValueBeans);
 	}
 
 	/**
@@ -2112,17 +2114,17 @@ public class ParticipantManagerUtility
 	 * @param jdbcDao
 	 * @throws DAOException
 	 */
-	public static void setEMPIIdStatus(Long participantId, String status,JDBCDAO jdbcDao)
+	public static void setEMPIIdStatus(Long participantId, String status)
 			throws DAOException
 	{
-//		new CommonParticipantDAO(getAppName(),null).setEMPIIdStatus(participantId, status);
-		LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
-		LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
-		columnValueBeanList.add(new ColumnValueBean(status));
-		columnValueBeanList.add(new ColumnValueBean(participantId));
-		columnValueBeans.add(columnValueBeanList);
-		String sql = "UPDATE CATISSUE_PARTICIPANT SET EMPI_ID_STATUS=? WHERE IDENTIFIER=?";
-		jdbcDao.executeUpdate(sql, columnValueBeans);
+		new CommonParticipantDAO(getAppName(),null).setEMPIIdStatus(participantId, status);
+//		LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
+//		LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
+//		columnValueBeanList.add(new ColumnValueBean(status));
+//		columnValueBeanList.add(new ColumnValueBean(participantId));
+//		columnValueBeans.add(columnValueBeanList);
+//		String sql = "UPDATE CATISSUE_PARTICIPANT SET EMPI_ID_STATUS=? WHERE IDENTIFIER=?";
+//		jdbcDao.executeUpdate(sql, columnValueBeans);
 	}
 	/**
 	 * Gets the session data bean.

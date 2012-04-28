@@ -9,29 +9,26 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import edu.wustl.common.participant.dao.SQLQueryExecutorDAO;
 import edu.wustl.common.participant.domain.IParticipant;
 import edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
 import edu.wustl.common.participant.domain.ISite;
-import edu.wustl.common.participant.utility.ParticipantManagerUtility;
-import edu.wustl.dao.DAO;
-import edu.wustl.dao.JDBCDAO;
-import edu.wustl.dao.exception.DAOException;
-import edu.wustl.dao.query.generator.ColumnValueBean;
-import edu.wustl.dao.query.generator.DBTypes;
+import edu.wustl.common.util.global.CommonServiceLocator;
 import edu.wustl.patientLookUp.domain.PatientInformation;
-import edu.wustl.patientLookUp.util.Constants;
 import edu.wustl.patientLookUp.util.Logger;
 import edu.wustl.patientLookUp.util.PatientLookupException;
 
 public class SQLQueryExecutorImpl extends AbstractQueryExecutor
 {
 
+	private SQLQueryExecutorDAO sqlQueryExecutorDAO;
 	/**
 	 * Constructor
 	 */
-	public SQLQueryExecutorImpl(JDBCDAO jdbcDAO)
+	public SQLQueryExecutorImpl()
 	{
-		this.jdbcDAO = jdbcDAO;
+		//this.jdbcDAO = jdbcDAO;
+		sqlQueryExecutorDAO = new SQLQueryExecutorDAO(CommonServiceLocator.getInstance().getAppName(),null);
 	}
 
 	/**
@@ -44,17 +41,17 @@ public class SQLQueryExecutorImpl extends AbstractQueryExecutor
 			String participantObjName) throws PatientLookupException
 	{
 		List<PatientInformation> patientInformationList = new ArrayList<PatientInformation>();
-		DAO dao= null;
+		//DAO dao= null;
 		try
 		{
-		    dao = ParticipantManagerUtility.getDAO();
-			String fetchByLNameQry = ParticipantManagerUtility.getLastNameQry(protocolIdSet,
-					participantObjName);
-			List<ColumnValueBean> columnValueBeans = new ArrayList<ColumnValueBean>();
-			columnValueBeans.add(new ColumnValueBean(lastName + "%", DBTypes.VARCHAR));
-			columnValueBeans.add(new ColumnValueBean(Constants.ACTIVITY_STATUS_DISABLED,
-					DBTypes.VARCHAR));
-			List list = dao.executeQuery(fetchByLNameQry, columnValueBeans);
+//		    dao = ParticipantManagerUtility.getDAO();
+//			String fetchByLNameQry = ParticipantManagerUtility.getLastNameQry(protocolIdSet,
+//					participantObjName);
+//			List<ColumnValueBean> columnValueBeans = new ArrayList<ColumnValueBean>();
+//			columnValueBeans.add(new ColumnValueBean(lastName + "%", DBTypes.VARCHAR));
+//			columnValueBeans.add(new ColumnValueBean(Constants.ACTIVITY_STATUS_DISABLED,
+//					DBTypes.VARCHAR));
+			List list = sqlQueryExecutorDAO.executeQueryForName(lastName, protocolIdSet, participantObjName);//dao.executeQuery(fetchByLNameQry, columnValueBeans);
 			if (!list.isEmpty())
 			{
 				patientInformationList = populatePatientInfo(list);
@@ -65,16 +62,18 @@ public class SQLQueryExecutorImpl extends AbstractQueryExecutor
 			Logger.out.info(e.getMessage(), e);
 			Logger.out.info("Error while retriving the matched patients based on name\n");
 			throw new PatientLookupException(e.getMessage(), e);
-		}finally{
-			try
-			{
-				dao.closeSession();
-			}
-			catch (DAOException e)
-			{
-				// TODO Auto-generated catch block
-				throw new PatientLookupException(e.getMessage(), e);
-			}
+		}
+		finally
+		{
+//			try
+//			{
+//				dao.closeSession();
+//			}
+//			catch (DAOException e)
+//			{
+//				// TODO Auto-generated catch block
+//				throw new PatientLookupException(e.getMessage(), e);
+//			}
 		}
 
 		return patientInformationList;
@@ -84,17 +83,18 @@ public class SQLQueryExecutorImpl extends AbstractQueryExecutor
 			Set<Long> protocolIdSet, String participantObjName) throws PatientLookupException
 	{
 		List<PatientInformation> patientInformationList = new ArrayList<PatientInformation>();
-		DAO dao = null;
+//		DAO dao = null;
 		try
 		{
-			dao = ParticipantManagerUtility.getDAO();
-			String fetchByMetaPhoneQry = ParticipantManagerUtility.getMetaPhoneQry(protocolIdSet,
-					participantObjName);
-			List<ColumnValueBean> columnValueBeans = new ArrayList<ColumnValueBean>();
-			columnValueBeans.add(new ColumnValueBean(metaPhone, DBTypes.VARCHAR));
-			columnValueBeans.add(new ColumnValueBean(Constants.ACTIVITY_STATUS_DISABLED,
-					DBTypes.VARCHAR));
-			List list = dao.executeQuery(fetchByMetaPhoneQry, columnValueBeans);
+//			dao = ParticipantManagerUtility.getDAO();
+//			String fetchByMetaPhoneQry = ParticipantManagerUtility.getMetaPhoneQry(protocolIdSet,
+//					participantObjName);
+//			List<ColumnValueBean> columnValueBeans = new ArrayList<ColumnValueBean>();
+//			columnValueBeans.add(new ColumnValueBean(metaPhone, DBTypes.VARCHAR));
+//			columnValueBeans.add(new ColumnValueBean(Constants.ACTIVITY_STATUS_DISABLED,
+//					DBTypes.VARCHAR));
+//			List list = dao.executeQuery(fetchByMetaPhoneQry, columnValueBeans);
+			List list = sqlQueryExecutorDAO.executetQueryForPhonetic(metaPhone, protocolIdSet, participantObjName);
 			if (!list.isEmpty())
 			{
 				patientInformationList = populatePatientInfo(list);
@@ -108,15 +108,15 @@ public class SQLQueryExecutorImpl extends AbstractQueryExecutor
 		}
 		finally
 		{
-			try
-			{
-				dao.closeSession();
-			}
-			catch (DAOException e)
-			{
-				// TODO Auto-generated catch block
-				throw new PatientLookupException(e.getMessage(), e);
-			}
+//			try
+//			{
+//				dao.closeSession();
+//			}
+//			catch (DAOException e)
+//			{
+//				// TODO Auto-generated catch block
+//				throw new PatientLookupException(e.getMessage(), e);
+//			}
 		}
 
 		return patientInformationList;
@@ -132,23 +132,23 @@ public class SQLQueryExecutorImpl extends AbstractQueryExecutor
 			String participantObjName) throws PatientLookupException
 	{
 		List<PatientInformation> patientInformationList = new ArrayList<PatientInformation>();
-		DAO dao = null;
+		//DAO dao = null;
 		try
 		{
 			String ssnA = ssn.substring(0, 3);
 			String ssnB = ssn.substring(3, 5);
 			String ssnC = ssn.substring(5, 9);
 			ssn = ssnA + "-" + ssnB + "-" + ssnC;
-			dao = ParticipantManagerUtility.getDAO();
-			String fetchBySSNQry = ParticipantManagerUtility.getSSNQuery(protocolIdSet,
-					participantObjName);
-			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
-			columnValueBeanList.add(new ColumnValueBean(ssn, DBTypes.VARCHAR));
-			columnValueBeanList.add(new ColumnValueBean(Constants.ACTIVITY_STATUS_DISABLED,
-					DBTypes.VARCHAR));
-
-			List list = dao.executeQuery(fetchBySSNQry, columnValueBeanList);
-
+//			dao = ParticipantManagerUtility.getDAO();
+//			String fetchBySSNQry = ParticipantManagerUtility.getSSNQuery(protocolIdSet,
+//					participantObjName);
+//			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
+//			columnValueBeanList.add(new ColumnValueBean(ssn, DBTypes.VARCHAR));
+//			columnValueBeanList.add(new ColumnValueBean(Constants.ACTIVITY_STATUS_DISABLED,
+//					DBTypes.VARCHAR));
+//
+//			List list = dao.executeQuery(fetchBySSNQry, columnValueBeanList);
+			List list = sqlQueryExecutorDAO.executetQueryForSSN(ssn, protocolIdSet, participantObjName);
 			if (!list.isEmpty())
 			{
 				patientInformationList = populatePatientInfo(list);
@@ -162,15 +162,15 @@ public class SQLQueryExecutorImpl extends AbstractQueryExecutor
 		}
 		finally
 		{
-			try
-			{
-				dao.closeSession();
-			}
-			catch (DAOException e)
-			{
-				// TODO Auto-generated catch block
-				throw new PatientLookupException(e.getMessage(), e);
-			}
+//			try
+//			{
+//				dao.closeSession();
+//			}
+//			catch (DAOException e)
+//			{
+//				// TODO Auto-generated catch block
+//				throw new PatientLookupException(e.getMessage(), e);
+//			}
 		}
 
 		return patientInformationList;
@@ -186,20 +186,20 @@ public class SQLQueryExecutorImpl extends AbstractQueryExecutor
 			Set<Long> protocolIdSet, String pmiObjName) throws PatientLookupException
 	{
 		List<PatientInformation> patientInformationList = new ArrayList<PatientInformation>();
-		DAO dao = null;
+		//DAO dao = null;
 		try
 		{
-			dao = ParticipantManagerUtility.getDAO();
-			String fetchByMRNQry = ParticipantManagerUtility.getMRNQuery(protocolIdSet, pmiObjName);
-
-			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
-			columnValueBeanList.add(new ColumnValueBean(mrn, DBTypes.VARCHAR));
-			columnValueBeanList.add(new ColumnValueBean(Long.valueOf(siteId), DBTypes.LONG));
-			columnValueBeanList.add(new ColumnValueBean(Constants.ACTIVITY_STATUS_DISABLED,
-					DBTypes.VARCHAR));
-
-			List list = dao.executeQuery(fetchByMRNQry, columnValueBeanList);
-
+//			dao = ParticipantManagerUtility.getDAO();
+//			String fetchByMRNQry = ParticipantManagerUtility.getMRNQuery(protocolIdSet, pmiObjName);
+//
+//			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
+//			columnValueBeanList.add(new ColumnValueBean(mrn, DBTypes.VARCHAR));
+//			columnValueBeanList.add(new ColumnValueBean(Long.valueOf(siteId), DBTypes.LONG));
+//			columnValueBeanList.add(new ColumnValueBean(Constants.ACTIVITY_STATUS_DISABLED,
+//					DBTypes.VARCHAR));
+//
+//			List list = dao.executeQuery(fetchByMRNQry, columnValueBeanList);
+			List list = sqlQueryExecutorDAO.executeQueryForMRN(mrn, siteId, protocolIdSet, pmiObjName);
 			if (!list.isEmpty())
 			{
 				patientInformationList = populatePatientInfo(list);
@@ -214,15 +214,15 @@ public class SQLQueryExecutorImpl extends AbstractQueryExecutor
 		}
 		finally
 		{
-			try
-			{
-				dao.closeSession();
-			}
-			catch (DAOException e)
-			{
-				// TODO Auto-generated catch block
-				throw new PatientLookupException(e.getMessage(), e);
-			}
+//			try
+//			{
+//				dao.closeSession();
+//			}
+//			catch (DAOException e)
+//			{
+//				// TODO Auto-generated catch block
+//				throw new PatientLookupException(e.getMessage(), e);
+//			}
 		}
 		return patientInformationList;
 	}

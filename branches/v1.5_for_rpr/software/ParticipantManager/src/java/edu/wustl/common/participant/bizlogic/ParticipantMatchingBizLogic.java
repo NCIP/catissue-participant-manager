@@ -2,7 +2,6 @@
 package edu.wustl.common.participant.bizlogic;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
@@ -12,7 +11,7 @@ import java.util.List;
 import edu.wustl.common.exception.ApplicationException;
 import edu.wustl.common.exception.BizLogicException;
 import edu.wustl.common.exception.ErrorKey;
-import edu.wustl.common.participant.client.IParticipantManager;
+import edu.wustl.common.participant.dao.CommonParticipantDAO;
 import edu.wustl.common.participant.domain.IParticipant;
 import edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
 import edu.wustl.common.participant.domain.ISite;
@@ -20,11 +19,10 @@ import edu.wustl.common.participant.utility.Constants;
 import edu.wustl.common.participant.utility.ParticipantManagerException;
 import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.util.Utility;
+import edu.wustl.common.util.global.CommonServiceLocator;
 import edu.wustl.common.util.logger.Logger;
-import edu.wustl.dao.JDBCDAO;
 import edu.wustl.dao.exception.DAOException;
 import edu.wustl.dao.query.generator.ColumnValueBean;
-import edu.wustl.dao.query.generator.DBTypes;
 import edu.wustl.patientLookUp.domain.PatientInformation;
 import edu.wustl.patientLookUp.util.PatientLookupException;
 
@@ -38,6 +36,21 @@ public class ParticipantMatchingBizLogic
 	/** The Constant logger. */
 	private static final Logger logger = Logger.getCommonLogger(ParticipantMatchingBizLogic.class);
 
+	private CommonParticipantDAO participantDAO = new CommonParticipantDAO(CommonServiceLocator.getInstance().getAppName(),null);
+	
+	/**
+	 * Per form participant match.
+	 *
+	 * @throws Exception the exception
+	 */
+	public void perFormParticipantMatch() throws ApplicationException
+	{
+		final List<Long> participantIdList = participantDAO.fetchSearchParticipantIds();
+		if (!participantIdList.isEmpty())
+		{
+			perFormParticipantMatch(participantIdList);
+		}
+	}
 	/**
 	 * Per form participant match.
 	 *
@@ -45,15 +58,15 @@ public class ParticipantMatchingBizLogic
 	 *
 	 * @throws ApplicationException the application exception
 	 */
-	public void perFormParticipantMatch(List ParticipantIdLst) throws ApplicationException
+	public void perFormParticipantMatch(List<Long> ParticipantIdLst) throws ApplicationException
 	{
 		EMPIParticipantRegistrationBizLogic bizLogic = new EMPIParticipantRegistrationBizLogic();
 		for (int i = 0; i < ParticipantIdLst.size(); i++)
 		{
-			List idsList = (List) ParticipantIdLst.get(i);
-			if (!idsList.isEmpty() && idsList.get(0) != "")
+			Long identifier = ParticipantIdLst.get(i);
+			if (identifier!=null)
 			{
-				Long identifier = Long.valueOf((String) idsList.get(0));
+				//Long identifier = Long.valueOf((String) idsList.get(0));
 				logger.info("Fetching matches for participant : " + identifier);
 				try
 				{
@@ -84,6 +97,9 @@ public class ParticipantMatchingBizLogic
 				{
 					logger.error("Error while performing the EMPI participant match for participant with id "
 							+ identifier, e);
+					ErrorKey errorKey = ErrorKey.getErrorKey("failed.performing.empi.match");
+					throw new ApplicationException(errorKey,e,"Error while performing the EMPI participant match for participant with id "
+							+ identifier);
 				}
 				logger.info("Matches fetched for participant : " + identifier);
 			}
@@ -139,10 +155,10 @@ public class ParticipantMatchingBizLogic
 	private void storeMatchedParticipant(IParticipant participant, List matchPartpantLst) throws DAOException
 	{
 
-		JDBCDAO dao = null;
+//		JDBCDAO dao = null;
 		try
 		{
-			dao = ParticipantManagerUtility.getJDBCDAO();
+//			dao = ParticipantManagerUtility.getJDBCDAO();
 			String query = "";
 			String raceValues = null;
 			String mrnValue = "";
@@ -155,86 +171,87 @@ public class ParticipantMatchingBizLogic
 				patientInformation = (PatientInformation) matchPartpantLst.get(i);
 				raceValues = getRaceValues(patientInformation.getRaceCollection());
 				mrnValue = getMRNValues(patientInformation.getPmiCollection());
-				columnValueBeanList = new LinkedList<ColumnValueBean>();
-				columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
-				if (null != patientInformation.getId())
-				{
-					columnValueBeanList.add(new ColumnValueBean("PARTICIPANT_ID", patientInformation.getId(),
-							DBTypes.LONG));
-				}
-				columnValueBeanList.add(new ColumnValueBean("EMPI_ID", patientInformation.getUpi(), DBTypes.VARCHAR));
-				columnValueBeanList.add(new ColumnValueBean("LAST_NAME", patientInformation.getLastName(),
-						DBTypes.VARCHAR));
-				columnValueBeanList.add(new ColumnValueBean("FIRST_NAME", patientInformation.getFirstName(),
-						DBTypes.VARCHAR));
-				columnValueBeanList.add(new ColumnValueBean("MIDDLE_NAME", patientInformation.getMiddleName(),
-						DBTypes.VARCHAR));
-				columnValueBeanList.add(new ColumnValueBean("GENDER", patientInformation.getGender(), DBTypes.VARCHAR));
-				columnValueBeanList.add(new ColumnValueBean("SOCIAL_SECURITY_NUMBER", patientInformation.getSsn(),
-						DBTypes.VARCHAR));
-				columnValueBeanList.add(new ColumnValueBean("ACTIVITY_STATUS", patientInformation.getActivityStatus(),
-						DBTypes.VARCHAR));
-				columnValueBeanList.add(new ColumnValueBean("VITAL_STATUS", patientInformation.getVitalStatus(),
-						DBTypes.VARCHAR));
-				columnValueBeanList.add(new ColumnValueBean("PARTICIPANT_MRN", mrnValue, DBTypes.VARCHAR));
-				columnValueBeanList.add(new ColumnValueBean("PARTICIPANT_RACE", raceValues, DBTypes.VARCHAR));
-				//columnValueBeanList.add(new ColumnValueBean("IS_FROM_EMPI", patientInformation.getIsFromEMPI(), 11));
-				columnValueBeanList.add(new ColumnValueBean("SEARCHED_PARTICIPANT_ID", participant.getId(),
-						DBTypes.LONG));
-				columnValueBeanList.add(new ColumnValueBean("ORDER_NO", i+1,
-						DBTypes.LONG));
-				if (patientInformation.getDob() == null && patientInformation.getDeathDate() == null)
-				{
-					query = "INSERT INTO CATISSUE_MATCHED_PARTICIPANT(PARTICIPANT_ID,EMPI_ID,LAST_NAME,FIRST_"
-							+ "NAME,MIDDLE_NAME,GENDER,SOCIAL_SECURITY_NUMBER,ACTIVITY_STATUS,VITAL_STATUS,PART"
-							+ "ICIPANT_MRN,PARTICIPANT_RACE,SEARCHED_PARTICIPANT_ID,ORDER_NO) VALUES(?,?,?,"
-							+ "?,?,?,?,?,?,?,?,?,?)";
-				}
-				else if (patientInformation.getDob() == null && patientInformation.getDeathDate() != null)
-				{
-					query = "INSERT INTO CATISSUE_MATCHED_PARTICIPANT(PARTICIPANT_ID,EMPI_ID,LAST_NAME,FIRST_"
-							+ "NAME,MIDDLE_NAME,GENDER,SOCIAL_SECURITY_NUMBER,ACTIVITY_STATUS,VITAL_STATUS,PART"
-							+ "ICIPANT_MRN,PARTICIPANT_RACE,SEARCHED_PARTICIPANT_ID,ORDER_NO,DEATH_DATE) VA"
-							+ "LUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-					columnValueBeanList.add(new ColumnValueBean("DEATH_DATE", patientInformation.getDeathDate(),
-							DBTypes.DATE));
-				}
-				else if (patientInformation.getDob() != null && patientInformation.getDeathDate() == null)
-				{
-					query = "INSERT INTO CATISSUE_MATCHED_PARTICIPANT(PARTICIPANT_ID,EMPI_ID,LAST_NAME,FIRST_"
-							+ "NAME,MIDDLE_NAME,GENDER,SOCIAL_SECURITY_NUMBER,ACTIVITY_STATUS,VITAL_STATUS,PART"
-							+ "ICIPANT_MRN,PARTICIPANT_RACE,SEARCHED_PARTICIPANT_ID,ORDER_NO,BIRTH_DATE) VA"
-							+ "LUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-					columnValueBeanList
-							.add(new ColumnValueBean("BIRTH_DATE", patientInformation.getDob(), DBTypes.DATE));
-				}
-				else
-				{
-					query = "INSERT INTO CATISSUE_MATCHED_PARTICIPANT(PARTICIPANT_ID,EMPI_ID,LAST_NAME,FIRST_"
-							+ "NAME,MIDDLE_NAME,GENDER,SOCIAL_SECURITY_NUMBER,ACTIVITY_STATUS,VITAL_STATUS,PART"
-							+ "ICIPANT_MRN,PARTICIPANT_RACE,SEARCHED_PARTICIPANT_ID,ORDER_NO,BIRTH_DATE,DEA"
-							+ "TH_DATE) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-					columnValueBeanList
-							.add(new ColumnValueBean("BIRTH_DATE", patientInformation.getDob(), DBTypes.DATE));
-					columnValueBeanList.add(new ColumnValueBean("DEATH_DATE", patientInformation.getDeathDate(),
-							DBTypes.DATE));
-				}
-				columnValueBeans.add(columnValueBeanList);
-				dao.executeUpdate(query, columnValueBeans);
+				participantDAO.storeMatchedParticipant(participant, patientInformation, raceValues, mrnValue, i+1);
+//				columnValueBeanList = new LinkedList<ColumnValueBean>();
+//				columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
+//				if (null != patientInformation.getId())
+//				{
+//					columnValueBeanList.add(new ColumnValueBean("PARTICIPANT_ID", patientInformation.getId(),
+//							DBTypes.LONG));
+//				}
+//				columnValueBeanList.add(new ColumnValueBean("EMPI_ID", patientInformation.getUpi(), DBTypes.VARCHAR));
+//				columnValueBeanList.add(new ColumnValueBean("LAST_NAME", patientInformation.getLastName(),
+//						DBTypes.VARCHAR));
+//				columnValueBeanList.add(new ColumnValueBean("FIRST_NAME", patientInformation.getFirstName(),
+//						DBTypes.VARCHAR));
+//				columnValueBeanList.add(new ColumnValueBean("MIDDLE_NAME", patientInformation.getMiddleName(),
+//						DBTypes.VARCHAR));
+//				columnValueBeanList.add(new ColumnValueBean("GENDER", patientInformation.getGender(), DBTypes.VARCHAR));
+//				columnValueBeanList.add(new ColumnValueBean("SOCIAL_SECURITY_NUMBER", patientInformation.getSsn(),
+//						DBTypes.VARCHAR));
+//				columnValueBeanList.add(new ColumnValueBean("ACTIVITY_STATUS", patientInformation.getActivityStatus(),
+//						DBTypes.VARCHAR));
+//				columnValueBeanList.add(new ColumnValueBean("VITAL_STATUS", patientInformation.getVitalStatus(),
+//						DBTypes.VARCHAR));
+//				columnValueBeanList.add(new ColumnValueBean("PARTICIPANT_MRN", mrnValue, DBTypes.VARCHAR));
+//				columnValueBeanList.add(new ColumnValueBean("PARTICIPANT_RACE", raceValues, DBTypes.VARCHAR));
+//				//columnValueBeanList.add(new ColumnValueBean("IS_FROM_EMPI", patientInformation.getIsFromEMPI(), 11));
+//				columnValueBeanList.add(new ColumnValueBean("SEARCHED_PARTICIPANT_ID", participant.getId(),
+//						DBTypes.LONG));
+//				columnValueBeanList.add(new ColumnValueBean("ORDER_NO", i+1,
+//						DBTypes.LONG));
+//				if (patientInformation.getDob() == null && patientInformation.getDeathDate() == null)
+//				{
+//					query = "INSERT INTO CATISSUE_MATCHED_PARTICIPANT(PARTICIPANT_ID,EMPI_ID,LAST_NAME,FIRST_"
+//							+ "NAME,MIDDLE_NAME,GENDER,SOCIAL_SECURITY_NUMBER,ACTIVITY_STATUS,VITAL_STATUS,PART"
+//							+ "ICIPANT_MRN,PARTICIPANT_RACE,SEARCHED_PARTICIPANT_ID,ORDER_NO) VALUES(?,?,?,"
+//							+ "?,?,?,?,?,?,?,?,?,?)";
+//				}
+//				else if (patientInformation.getDob() == null && patientInformation.getDeathDate() != null)
+//				{
+//					query = "INSERT INTO CATISSUE_MATCHED_PARTICIPANT(PARTICIPANT_ID,EMPI_ID,LAST_NAME,FIRST_"
+//							+ "NAME,MIDDLE_NAME,GENDER,SOCIAL_SECURITY_NUMBER,ACTIVITY_STATUS,VITAL_STATUS,PART"
+//							+ "ICIPANT_MRN,PARTICIPANT_RACE,SEARCHED_PARTICIPANT_ID,ORDER_NO,DEATH_DATE) VA"
+//							+ "LUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+//					columnValueBeanList.add(new ColumnValueBean("DEATH_DATE", patientInformation.getDeathDate(),
+//							DBTypes.DATE));
+//				}
+//				else if (patientInformation.getDob() != null && patientInformation.getDeathDate() == null)
+//				{
+//					query = "INSERT INTO CATISSUE_MATCHED_PARTICIPANT(PARTICIPANT_ID,EMPI_ID,LAST_NAME,FIRST_"
+//							+ "NAME,MIDDLE_NAME,GENDER,SOCIAL_SECURITY_NUMBER,ACTIVITY_STATUS,VITAL_STATUS,PART"
+//							+ "ICIPANT_MRN,PARTICIPANT_RACE,SEARCHED_PARTICIPANT_ID,ORDER_NO,BIRTH_DATE) VA"
+//							+ "LUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+//					columnValueBeanList
+//							.add(new ColumnValueBean("BIRTH_DATE", patientInformation.getDob(), DBTypes.DATE));
+//				}
+//				else
+//				{
+//					query = "INSERT INTO CATISSUE_MATCHED_PARTICIPANT(PARTICIPANT_ID,EMPI_ID,LAST_NAME,FIRST_"
+//							+ "NAME,MIDDLE_NAME,GENDER,SOCIAL_SECURITY_NUMBER,ACTIVITY_STATUS,VITAL_STATUS,PART"
+//							+ "ICIPANT_MRN,PARTICIPANT_RACE,SEARCHED_PARTICIPANT_ID,ORDER_NO,BIRTH_DATE,DEA"
+//							+ "TH_DATE) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+//					columnValueBeanList
+//							.add(new ColumnValueBean("BIRTH_DATE", patientInformation.getDob(), DBTypes.DATE));
+//					columnValueBeanList.add(new ColumnValueBean("DEATH_DATE", patientInformation.getDeathDate(),
+//							DBTypes.DATE));
+//				}
+//				columnValueBeans.add(columnValueBeanList);
+//				dao.executeUpdate(query, columnValueBeans);
 
 			}
 
-			updateMatchedPartiMapping(dao, participant.getId().longValue(), matchPartpantLst.size());
-			dao.commit();
+			updateMatchedPartiMapping(participant.getId().longValue(), matchPartpantLst.size());
+//			dao.commit();
 		}
 		catch (DAOException e)
 		{
-			dao.rollback();
+//			dao.rollback();
 			throw new DAOException(e.getErrorKey(), e, e.getMessage());
 		}
 		finally
 		{
-			dao.closeSession();
+//			dao.closeSession();
 		}
 	}
 
@@ -247,28 +264,29 @@ public class ParticipantMatchingBizLogic
 	 *
 	 * @throws DAOException the DAO exception
 	 */
-	private void updateMatchedPartiMapping(JDBCDAO jdbcdao, long searchPartiId, int noOfMathcedPaticipants)
+	private void updateMatchedPartiMapping(long searchPartiId, int noOfMathcedPaticipants)
 			throws DAOException
 	{
-		Calendar.getInstance();
-		LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
-		LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
-		columnValueBeanList.add(new ColumnValueBean(noOfMathcedPaticipants));
-		columnValueBeanList.add(new ColumnValueBean(searchPartiId));
-		columnValueBeans.add(columnValueBeanList);
-		String query = (new StringBuilder()).append(
-				"UPDATE MATCHED_PARTICIPANT_MAPPING SET NO_OF_MATCHED_PARTICIPANTS = ?").append(
-				" WHERE SEARCHED_PARTICIPANT_ID=?").toString();
-		try
-		{
-			jdbcdao.executeUpdate(query, columnValueBeans);
-			//jdbcdao.commit();
-		}
-		catch (DAOException e)
-		{
-			jdbcdao.rollback();
-			throw new DAOException(e.getErrorKey(), e, e.getMessage());
-		}
+		participantDAO.updateMatchedPartiMapping(searchPartiId, noOfMathcedPaticipants);
+//		Calendar.getInstance();
+//		LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
+//		LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
+//		columnValueBeanList.add(new ColumnValueBean(noOfMathcedPaticipants));
+//		columnValueBeanList.add(new ColumnValueBean(searchPartiId));
+//		columnValueBeans.add(columnValueBeanList);
+//		String query = (new StringBuilder()).append(
+//				"UPDATE MATCHED_PARTICIPANT_MAPPING SET NO_OF_MATCHED_PARTICIPANTS = ?").append(
+//				" WHERE SEARCHED_PARTICIPANT_ID=?").toString();
+//		try
+//		{
+//			jdbcdao.executeUpdate(query, columnValueBeans);
+//			//jdbcdao.commit();
+//		}
+//		catch (DAOException e)
+//		{
+//			jdbcdao.rollback();
+//			throw new DAOException(e.getErrorKey(), e, e.getMessage());
+//		}
 	}
 
 	/**
@@ -337,27 +355,27 @@ public class ParticipantMatchingBizLogic
 		return mrnValue.toString();
 	}
 
-	/**
-	 * Populate list with cs name.
-	 *
-	 * @param list the list
-	 * @throws DAOException the dAO exception
-	 * @throws ParticipantManagerException
-	 * @throws BizLogicException
-	 */
-	public void populateListWithCSName(List list) throws DAOException, BizLogicException, ParticipantManagerException
-	{
-		JDBCDAO dao = null;
-		try
-		{
-			dao = ParticipantManagerUtility.getJDBCDAO();
-			populateListWithCSName(list, dao);
-		}
-		finally
-		{
-			dao.closeSession();
-		}
-	}
+//	/**
+//	 * Populate list with cs name.
+//	 *
+//	 * @param list the list
+//	 * @throws DAOException the dAO exception
+//	 * @throws ParticipantManagerException
+//	 * @throws BizLogicException
+//	 */
+//	public void populateListWithCSName(List list) throws DAOException, BizLogicException, ParticipantManagerException
+//	{
+//		JDBCDAO dao = null;
+//		try
+//		{
+//			dao = ParticipantManagerUtility.getJDBCDAO();
+//			populateListWithCSName(list, dao);
+//		}
+//		finally
+//		{
+//			dao.closeSession();
+//		}
+//	}
 
 	/**
 	 * Populate list with cs name.
@@ -370,7 +388,7 @@ public class ParticipantMatchingBizLogic
 	 * @throws BizLogicException
 	 */
 	@SuppressWarnings("unchecked")
-	private void populateListWithCSName(List list, JDBCDAO dao) throws DAOException, BizLogicException, ParticipantManagerException
+	private void populateListWithCSName(List list) throws DAOException, BizLogicException, ParticipantManagerException
 	{
 		if (list != null && !list.isEmpty())
 		{
@@ -401,7 +419,7 @@ public class ParticipantMatchingBizLogic
 					if (values.get(0) != "")
 					{
 						Long partiId = Long.valueOf((String) values.get(0));
-						String clinstdyNames = getClinicalStudyNames(partiId, dao);
+						String clinstdyNames = getClinicalStudyNames(partiId);
 						values.add(0, Integer.valueOf(0));
 						values.add(values.size(), clinstdyNames);
 					}
@@ -423,38 +441,50 @@ public class ParticipantMatchingBizLogic
 	 * @throws ParticipantManagerException
 	 * @throws BizLogicException
 	 */
-	private String getClinicalStudyNames(Long participantId, JDBCDAO dao) throws DAOException, ParticipantManagerException, BizLogicException
+	private String getClinicalStudyNames(Long participantId) throws DAOException, ParticipantManagerException, BizLogicException
 	{
 
-		IParticipantManager participantManagerImplObj = ParticipantManagerUtility.getParticipantMgrImplObj();
-		String query= participantManagerImplObj.getClinicalStudyNamesQuery();
-
-
-		LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
-		columnValueBeanList.add(new ColumnValueBean("PARTICIPANT_ID", participantId, DBTypes.LONG));
-		List list = dao.executeQuery(query, null, columnValueBeanList);
+//		IParticipantManager participantManagerImplObj = ParticipantManagerUtility.getParticipantMgrImplObj();
+//		String query= participantManagerImplObj.getClinicalStudyNamesQuery();
+//
+//
+//		LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
+//		columnValueBeanList.add(new ColumnValueBean("PARTICIPANT_ID", participantId, DBTypes.LONG));
+//		List list = dao.executeQuery(query, null, columnValueBeanList);
+		List<String> list = participantDAO.getClinicalStudyNames(participantId);
 		StringBuffer csNames = new StringBuffer();
-		if (!list.isEmpty())
+		for(String csShortTitle :list)
 		{
-			for (int i = 0; i < list.size(); i++)
+			if (csNames.length() == 0)
 			{
-				List clinStuNameLst = (List) list.get(i);
-				if (clinStuNameLst.isEmpty() || clinStuNameLst.get(0) == "")
-				{
-					continue;
-				}
-				if (csNames.length() == 0)
-				{
-					csNames.append(clinStuNameLst.get(0));
-				}
-				else
-				{
-					csNames.append(",");
-					csNames.append(clinStuNameLst.get(0));
-				}
+				csNames.append(csShortTitle);
 			}
-
+			else
+			{
+				csNames.append(",");
+				csNames.append(csShortTitle);
+			}
 		}
+//		if (!list.isEmpty())
+//		{
+//			for (int i = 0; i < list.size(); i++)
+//			{
+//				List clinStuNameLst = (List) list.get(i);
+//				if (clinStuNameLst.isEmpty() || clinStuNameLst.get(0) == "")
+//				{
+//					continue;
+//				}
+//				if (csNames.length() == 0)
+//				{
+//					csNames.append(clinStuNameLst.get(0));
+//				}
+//				else
+//				{
+//					csNames.append(",");
+//					csNames.append(clinStuNameLst.get(0));
+//				}
+//			}
+//		}
 		return csNames.toString();
 	}
 
@@ -470,68 +500,70 @@ public class ParticipantMatchingBizLogic
 	 */
 	public List getProcessedMatchedParticipants(Long userId, int recordsPerPage) throws DAOException, ParticipantManagerException
 	{
-		JDBCDAO dao = null;
-		List list = null;
-		String query = null;
-		try
-		{
-			dao = ParticipantManagerUtility.getJDBCDAO();
-			/*
-						String query = "SELECT SEARCHED_PARTICIPANT_ID,LAST_NAME,FIRST_NAME,CREATION_DATE,NO_OF_MATCHED_"
-								+ "PARTICIPANTS FROM MATCHED_PARTICIPANT_MAPPING  PARTIMAPPING JOIN CATISSUE_PARTIC"
-								+ "IPANT PARTI ON PARTI.IDENTIFIER=PARTIMAPPING.SEARCHED_PARTICIPANT_ID WHERE PARTI"
-								+ "MAPPING.USER_ID='"
-								+ userId
-								+ "' AND PARTIMAPPING.NO_OF_MATCHED_PARTICIPANTS!='-1'";
-
-			*/
-			/*query = "SELECT SEARCHED_PARTICIPANT_ID,LAST_NAME,FIRST_NAME,CREATION_DATE,NO_OF_MATCHED_PARTICIPANTS FROM "
-					+ " MATCHED_PARTICIPANT_MAPPING PARTIMAPPING JOIN CATISSUE_PARTICIPANT PARTI ON PARTI.IDENTIFIER=PARTIMAPPING.SEARCHED_PARTICIPANT_ID "
-					+ " JOIN EMPI_PARTICIPANT_USER_MAPPING ON PARTIMAPPING.SEARCHED_PARTICIPANT_ID=EMPI_PARTICIPANT_USER_MAPPING.PARTICIPANT_ID"
-					+ " WHERE EMPI_PARTICIPANT_USER_MAPPING.USER_ID=? AND PARTIMAPPING.NO_OF_MATCHED_PARTICIPANTS!=? ORDER BY CREATION_DATE";
-			*/
-			final IParticipantManager participantMgrImplObj = ParticipantManagerUtility.getParticipantMgrImplObj();
-			query = participantMgrImplObj.getProcessedMatchedParticipantQuery(userId);
-			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
-			columnValueBeanList.add(new ColumnValueBean("USER_ID", userId, DBTypes.LONG));
-			columnValueBeanList.add(new ColumnValueBean("NO_OF_MATCHED_PARTICIPANTS", "-1", DBTypes.INTEGER));
-			list = dao.executeQuery(query, recordsPerPage, null);
-			//populateListWithCSName(list, dao);
-		}
-		finally
-		{
-			dao.closeSession();
-		}
-		return list;
+		return participantDAO.getProcessedMatchedParticipants(userId, recordsPerPage);
+//		JDBCDAO dao = null;
+//		List list = null;
+//		String query = null;
+//		try
+//		{
+//			dao = ParticipantManagerUtility.getJDBCDAO();
+//			/*
+//						String query = "SELECT SEARCHED_PARTICIPANT_ID,LAST_NAME,FIRST_NAME,CREATION_DATE,NO_OF_MATCHED_"
+//								+ "PARTICIPANTS FROM MATCHED_PARTICIPANT_MAPPING  PARTIMAPPING JOIN CATISSUE_PARTIC"
+//								+ "IPANT PARTI ON PARTI.IDENTIFIER=PARTIMAPPING.SEARCHED_PARTICIPANT_ID WHERE PARTI"
+//								+ "MAPPING.USER_ID='"
+//								+ userId
+//								+ "' AND PARTIMAPPING.NO_OF_MATCHED_PARTICIPANTS!='-1'";
+//
+//			*/
+//			/*query = "SELECT SEARCHED_PARTICIPANT_ID,LAST_NAME,FIRST_NAME,CREATION_DATE,NO_OF_MATCHED_PARTICIPANTS FROM "
+//					+ " MATCHED_PARTICIPANT_MAPPING PARTIMAPPING JOIN CATISSUE_PARTICIPANT PARTI ON PARTI.IDENTIFIER=PARTIMAPPING.SEARCHED_PARTICIPANT_ID "
+//					+ " JOIN EMPI_PARTICIPANT_USER_MAPPING ON PARTIMAPPING.SEARCHED_PARTICIPANT_ID=EMPI_PARTICIPANT_USER_MAPPING.PARTICIPANT_ID"
+//					+ " WHERE EMPI_PARTICIPANT_USER_MAPPING.USER_ID=? AND PARTIMAPPING.NO_OF_MATCHED_PARTICIPANTS!=? ORDER BY CREATION_DATE";
+//			*/
+//			final IParticipantManager participantMgrImplObj = ParticipantManagerUtility.getParticipantMgrImplObj();
+//			query = participantMgrImplObj.getProcessedMatchedParticipantQuery(userId);
+//			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
+//			columnValueBeanList.add(new ColumnValueBean("USER_ID", userId, DBTypes.LONG));
+//			columnValueBeanList.add(new ColumnValueBean("NO_OF_MATCHED_PARTICIPANTS", "-1", DBTypes.INTEGER));
+//			list = dao.executeQuery(query, recordsPerPage, null);
+//			//populateListWithCSName(list, dao);
+//		}
+//		finally
+//		{
+//			dao.closeSession();
+//		}
+//		return list;
 	}
 
 
 
 	public int getTotalCount(Long userId) throws DAOException
 	{
-		int count = 0;
-		JDBCDAO dao = null;
-		try
-		{
-			dao = ParticipantManagerUtility.getJDBCDAO();
-			String query = "SELECT count(*) FROM MATCHED_PARTICIPANT_MAPPING PARTIMAPPING "
-					+ " JOIN EMPI_PARTICIPANT_USER_MAPPING ON "
-					+ " PARTIMAPPING.SEARCHED_PARTICIPANT_ID=EMPI_PARTICIPANT_USER_MAPPING.PARTICIPANT_ID "
-					+ " WHERE EMPI_PARTICIPANT_USER_MAPPING.USER_ID=? AND PARTIMAPPING.NO_OF_MATCHED_PARTICIPANTS!=?";
-
-			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
-			columnValueBeanList.add(new ColumnValueBean("USER_ID", userId, DBTypes.LONG));
-			columnValueBeanList.add(new ColumnValueBean("NO_OF_MATCHED_PARTICIPANTS", "-1",
-					DBTypes.INTEGER));
-			List list = dao.executeQuery(query, null, columnValueBeanList);
-			count = Integer.parseInt(((java.util.ArrayList) list.get(0)).get(0).toString());
-
-		}
-		finally
-		{
-			dao.closeSession();
-		}
-		return count;
+		return participantDAO.getTotalCount(userId);
+//		int count = 0;
+//		JDBCDAO dao = null;
+//		try
+//		{
+//			dao = ParticipantManagerUtility.getJDBCDAO();
+//			String query = "SELECT count(*) FROM MATCHED_PARTICIPANT_MAPPING PARTIMAPPING "
+//					+ " JOIN EMPI_PARTICIPANT_USER_MAPPING ON "
+//					+ " PARTIMAPPING.SEARCHED_PARTICIPANT_ID=EMPI_PARTICIPANT_USER_MAPPING.PARTICIPANT_ID "
+//					+ " WHERE EMPI_PARTICIPANT_USER_MAPPING.USER_ID=? AND PARTIMAPPING.NO_OF_MATCHED_PARTICIPANTS!=?";
+//
+//			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
+//			columnValueBeanList.add(new ColumnValueBean("USER_ID", userId, DBTypes.LONG));
+//			columnValueBeanList.add(new ColumnValueBean("NO_OF_MATCHED_PARTICIPANTS", "-1",
+//					DBTypes.INTEGER));
+//			List list = dao.executeQuery(query, null, columnValueBeanList);
+//			count = Integer.parseInt(((java.util.ArrayList) list.get(0)).get(0).toString());
+//
+//		}
+//		finally
+//		{
+//			dao.closeSession();
+//		}
+//		return count;
 	}
 
 	/*protected String getCountQuery(String originalQuery)

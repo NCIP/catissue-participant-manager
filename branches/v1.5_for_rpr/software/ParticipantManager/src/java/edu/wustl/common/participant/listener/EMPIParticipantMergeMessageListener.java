@@ -2,12 +2,9 @@
 
 package edu.wustl.common.participant.listener;
 
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
@@ -15,10 +12,14 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.TextMessage;
+import javax.naming.InitialContext;
+import javax.transaction.Status;
+import javax.transaction.UserTransaction;
 
 import edu.wustl.common.exception.ApplicationException;
 import edu.wustl.common.exception.BizLogicException;
 import edu.wustl.common.participant.bizlogic.CommonParticipantBizlogic;
+import edu.wustl.common.participant.dao.EMPIParticipantDAO;
 import edu.wustl.common.participant.domain.IParticipant;
 import edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
 import edu.wustl.common.participant.domain.ISite;
@@ -26,11 +27,9 @@ import edu.wustl.common.participant.utility.Constants;
 import edu.wustl.common.participant.utility.ParticipantManagerException;
 import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.participant.utility.PropertyHandler;
+import edu.wustl.common.util.global.CommonServiceLocator;
 import edu.wustl.common.util.logger.Logger;
-import edu.wustl.dao.JDBCDAO;
 import edu.wustl.dao.exception.DAOException;
-import edu.wustl.dao.query.generator.ColumnValueBean;
-import edu.wustl.dao.query.generator.DBTypes;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -51,6 +50,8 @@ public class EMPIParticipantMergeMessageListener implements MessageListener
 	private static final Logger LOGGER = Logger
 			.getCommonLogger(EMPIParticipantMergeMessageListener.class);
 
+	private EMPIParticipantDAO empiDAO = new EMPIParticipantDAO(CommonServiceLocator.getInstance().getAppName(),null);
+	
 	/**
 	 * This method will be called as soon as the participant demographic message arrives in the queue.
 	 * Read the message from queue and update the participant.
@@ -62,8 +63,15 @@ public class EMPIParticipantMergeMessageListener implements MessageListener
 
 		String mergeMessage = "";
 		Map<String, String> messageValueMap = null;
+		UserTransaction transaction = null;
 		try
 		{
+			transaction = (UserTransaction) new InitialContext().lookup("java:comp/UserTransaction");
+			if (transaction.getStatus() == Status.STATUS_NO_TRANSACTION)
+			{
+				LOGGER.info("=========== Starting a new Transaction ================");
+				transaction.begin();
+			}
 			if (message instanceof TextMessage)
 			{
 				mergeMessage = ((TextMessage) message).getText();
@@ -73,6 +81,7 @@ public class EMPIParticipantMergeMessageListener implements MessageListener
 				getMessageToknized(mergeMessage, messageValueMap);
 				processMergeMessage(messageValueMap);
 				LOGGER.info("Processed merge message--------------------");
+				transaction.commit();
 			}
 		}
 		catch (JMSException exp)
@@ -84,6 +93,16 @@ public class EMPIParticipantMergeMessageListener implements MessageListener
 		{
 			LOGGER.error(Constants.PARTICIPANT_ERROR + messageValueMap.get(Constants.OLD_EMPIID));
 			LOGGER.error(be.getMessage(),be);
+			LOGGER.error("Error during participant timer task", be);
+			try
+			{
+				if(transaction!=null)
+					transaction.rollback();
+			}
+			catch (final Exception rollbackFailed)
+			{
+				LOGGER.error("Transaction failed !", rollbackFailed);
+			}
 		}
 
 	}
@@ -185,68 +204,68 @@ public class EMPIParticipantMergeMessageListener implements MessageListener
 		return empiId;
 	}
 
-	/**
-	 * Store merge message.
-	 *
-	 * @param jdbcdao the jdbcdao
-	 * @param hl7Message the hl7 message
-	 * @param messageType the message type
-	 * @param status the status
-	 *
-	 * @throws DAOException the DAO exception
-	 */
-	private void storeMergeMessage( final String hl7Message,
-			final String messageType ,final String status)
-			throws DAOException
-	{
-		long idenifier = 0L;
-		String insQuery = "";
-		String identifier = "";
-		String query =null;
-		JDBCDAO jdbcdao = ParticipantManagerUtility.getJDBCDAO();
-		try
-		{
-			query = "SELECT MAX(IDENTIFIER) from PARTICIPANT_MERGE_MESSAGES";
-			final List maxIdList = jdbcdao.executeQuery(query,null,null);
-			if (!maxIdList.isEmpty())
-			{
-				final List idList = (List) maxIdList.get(0);
-				if (!idList.isEmpty() && idList.get(0) != null && !"".equals(idList.get(0)))
-				{
-					identifier = (String) idList.get(0);
-					idenifier = Long.valueOf(identifier).longValue() + 1L;
-				}
-			}
-			final Calendar cal = Calendar.getInstance();
-			final java.util.Date date = cal.getTime();
-			if (idenifier == 0L)
-			{
-				idenifier = 1L;
-			}
-			insQuery = "INSERT INTO PARTICIPANT_MERGE_MESSAGES VALUES(?,?,?,?,?)";
-			final LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
-			final LinkedList<ColumnValueBean> colValBeanList = new LinkedList<ColumnValueBean>();
-			colValBeanList.add(new ColumnValueBean("IDENTIFIER", Long.valueOf(idenifier),DBTypes.INTEGER));
-			colValBeanList.add(new ColumnValueBean("MESSAGE_TYPE", messageType, DBTypes.VARCHAR));
-			colValBeanList.add(new ColumnValueBean("MESSAGE_DATE", date, DBTypes.DATE));
-			colValBeanList.add(new ColumnValueBean("HL7_MESSAGE", hl7Message,DBTypes.VARCHAR));
-			colValBeanList.add(new ColumnValueBean("MESSAGE_STATUS", status, DBTypes.VARCHAR));
-			columnValueBeans.add(colValBeanList);
-			jdbcdao.executeUpdate(insQuery, columnValueBeans);
-			jdbcdao.commit();
-			jdbcdao.closeSession();
-			LOGGER.info("\n \n  ----------- STORED MERGE MESSAGE ----------  \n\n");
-			LOGGER.info(hl7Message);
-		}
-		catch (DAOException e)
-		{
-			LOGGER
-					.info("\n \n --------  ERROR WHILE STORING THE FOLLOWING MERGE MESSAGE ----------\n\n\n");
-			LOGGER.info(hl7Message);
-			LOGGER.info(e.getMessage());
-			throw new DAOException(e.getErrorKey(), e, e.getMessage());
-		}
-	}
+//	/**
+//	 * Store merge message.
+//	 *
+//	 * @param jdbcdao the jdbcdao
+//	 * @param hl7Message the hl7 message
+//	 * @param messageType the message type
+//	 * @param status the status
+//	 *
+//	 * @throws DAOException the DAO exception
+//	 */
+//	private void storeMergeMessage( final String hl7Message,
+//			final String messageType ,final String status)
+//			throws DAOException
+//	{
+//		long idenifier = 0L;
+//		String insQuery = "";
+//		String identifier = "";
+//		String query =null;
+//		JDBCDAO jdbcdao = ParticipantManagerUtility.getJDBCDAO();
+//		try
+//		{
+//			query = "SELECT MAX(IDENTIFIER) from PARTICIPANT_MERGE_MESSAGES";
+//			final List maxIdList = jdbcdao.executeQuery(query,null,null);
+//			if (!maxIdList.isEmpty())
+//			{
+//				final List idList = (List) maxIdList.get(0);
+//				if (!idList.isEmpty() && idList.get(0) != null && !"".equals(idList.get(0)))
+//				{
+//					identifier = (String) idList.get(0);
+//					idenifier = Long.valueOf(identifier).longValue() + 1L;
+//				}
+//			}
+//			final Calendar cal = Calendar.getInstance();
+//			final java.util.Date date = cal.getTime();
+//			if (idenifier == 0L)
+//			{
+//				idenifier = 1L;
+//			}
+//			insQuery = "INSERT INTO PARTICIPANT_MERGE_MESSAGES VALUES(?,?,?,?,?)";
+//			final LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
+//			final LinkedList<ColumnValueBean> colValBeanList = new LinkedList<ColumnValueBean>();
+//			colValBeanList.add(new ColumnValueBean("IDENTIFIER", Long.valueOf(idenifier),DBTypes.INTEGER));
+//			colValBeanList.add(new ColumnValueBean("MESSAGE_TYPE", messageType, DBTypes.VARCHAR));
+//			colValBeanList.add(new ColumnValueBean("MESSAGE_DATE", date, DBTypes.DATE));
+//			colValBeanList.add(new ColumnValueBean("HL7_MESSAGE", hl7Message,DBTypes.VARCHAR));
+//			colValBeanList.add(new ColumnValueBean("MESSAGE_STATUS", status, DBTypes.VARCHAR));
+//			columnValueBeans.add(colValBeanList);
+//			jdbcdao.executeUpdate(insQuery, columnValueBeans);
+//			jdbcdao.commit();
+//			jdbcdao.closeSession();
+//			LOGGER.info("\n \n  ----------- STORED MERGE MESSAGE ----------  \n\n");
+//			LOGGER.info(hl7Message);
+//		}
+//		catch (DAOException e)
+//		{
+//			LOGGER
+//					.info("\n \n --------  ERROR WHILE STORING THE FOLLOWING MERGE MESSAGE ----------\n\n\n");
+//			LOGGER.info(hl7Message);
+//			LOGGER.info(e.getMessage());
+//			throw new DAOException(e.getErrorKey(), e, e.getMessage());
+//		}
+//	}
 
 	/**
 	 * Process merge message.
@@ -261,7 +280,7 @@ public class EMPIParticipantMergeMessageListener implements MessageListener
 	 * @throws BizLogicException
 	 * @throws DAOException
 	 */
-	public void processMergeMessage(final Map<String, String> mergeMessageMap)
+	private void processMergeMessage(final Map<String, String> mergeMessageMap)
 			throws BizLogicException, DAOException
 
 	{
@@ -313,7 +332,7 @@ public class EMPIParticipantMergeMessageListener implements MessageListener
 			{
 				status = Constants.PARTICIPANT_ERROR;
 			}
-			storeMergeMessage(mergeMessageMap.get(Constants.MERGE_MESSAGE), mergeMessageMap
+			empiDAO.storeMergeMessage(mergeMessageMap.get(Constants.MERGE_MESSAGE), mergeMessageMap
 					.get(Constants.hl7EventType), status);
 		}
 

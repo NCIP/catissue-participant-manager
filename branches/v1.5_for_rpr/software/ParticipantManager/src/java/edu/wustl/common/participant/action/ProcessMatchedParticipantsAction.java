@@ -30,6 +30,7 @@ import edu.wustl.common.util.XMLPropertyHandler;
 import edu.wustl.common.util.global.QuerySessionData;
 import edu.wustl.common.util.logger.Logger;
 import edu.wustl.dao.exception.DAOException;
+import edu.wustl.dao.newdao.ActionStatus;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -80,17 +81,18 @@ public class ProcessMatchedParticipantsAction extends SecureAction
 			storeList(request, session, columnNames, list, recordsPerPage);
 
 			target = edu.wustl.common.util.global.Constants.SUCCESS;
-
+			request.setAttribute(ActionStatus.ACTIONSTAUS, ActionStatus.SUCCESSFUL);
 			return mapping.findForward(target);
 		}
-		catch (DAOException daoExp)
-		{
-			setErrorMessage(request);
-			LOGGER.info(daoExp.getMessage());
-			throw new ApplicationException(null, daoExp, daoExp.getMessage());
-		}
+//		catch (DAOException daoExp)
+//		{
+//			
+//			LOGGER.info(daoExp.getMessage());
+//			throw new ApplicationException(null, daoExp, daoExp.getMessage());
+//		}
 		catch (Exception e)
 		{
+			setErrorMessage(request);
 			LOGGER.info(e.getMessage());
 			throw new ApplicationException(null, e, e.getMessage());
 		}
@@ -222,6 +224,8 @@ public class ProcessMatchedParticipantsAction extends SecureAction
 		}
 		final ActionError actionError = new ActionError("participant.processed.delete.failure");
 		actionErrors.add(ActionErrors.GLOBAL_ERROR, actionError);
+		request.removeAttribute(ActionStatus.ACTIONSTAUS);
+		request.setAttribute(ActionStatus.ACTIONSTAUS, ActionStatus.FAIL);
 		saveErrors(request, actionErrors);
 	}
 }

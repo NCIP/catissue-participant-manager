@@ -4,14 +4,11 @@ package edu.wustl.common.participant.listener;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
 
 import javax.jms.Message;
 import javax.jms.MessageListener;
@@ -33,6 +30,7 @@ import edu.wustl.common.exception.ApplicationException;
 import edu.wustl.common.exception.BizLogicException;
 import edu.wustl.common.participant.bizlogic.CommonParticipantBizlogic;
 import edu.wustl.common.participant.bizlogic.EMPIParticipantRegistrationBizLogic;
+import edu.wustl.common.participant.dao.EMPIParticipantDAO;
 import edu.wustl.common.participant.domain.IParticipant;
 import edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
 import edu.wustl.common.participant.domain.IRace;
@@ -43,10 +41,9 @@ import edu.wustl.common.participant.utility.ParticipantManagerException;
 import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.participant.utility.PropertyHandler;
 import edu.wustl.common.util.XMLPropertyHandler;
+import edu.wustl.common.util.global.CommonServiceLocator;
 import edu.wustl.common.util.logger.Logger;
-import edu.wustl.dao.JDBCDAO;
 import edu.wustl.dao.exception.DAOException;
-import edu.wustl.dao.query.generator.ColumnValueBean;
 import edu.wustl.patientLookUp.util.PatientLookupException;
 
 
@@ -79,6 +76,7 @@ public class EMPIParticipantListener implements MessageListener
 	/** The participant id. */
 	public String participantId;
 
+	private EMPIParticipantDAO empiDAO = new EMPIParticipantDAO(CommonServiceLocator.getInstance().getAppName(),null);
 	/**
 	 * Instantiates a new eMPI participant listener.
 	 */
@@ -256,35 +254,35 @@ public class EMPIParticipantListener implements MessageListener
 	 * @throws DAOException the DAO exception
 	 * @throws SQLException the SQL exception
 	 */
-	private String getPermanentId(final String clinPortalId) throws DAOException, SQLException
+	private String getPermanentId(final String clinPortalId) throws DAOException
 	{
-		String permanentId = null;
-
-		JDBCDAO jdbcdao = null;
-		ResultSet result = null;
-		try
-		{
-			jdbcdao = ParticipantManagerUtility.getJDBCDAO();
-			final LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
-			columnValueBeanList.add(new ColumnValueBean(clinPortalId));
-			final String query = "SELECT PERMANENT_PARTICIPANT_ID FROM PARTICIPANT_EMPI_ID_MAPPING WHERE TEMPARARY_PARTICIPANT_ID=?";
-
-			result = jdbcdao.getResultSet(query, columnValueBeanList, null);
-			if (result != null)
-			{
-				while (result.next())
-				{
-					permanentId = result.getString("permanent_participant_id");
-				}
-			}
-
-		}
-		finally
-		{
-			result.close();
-			jdbcdao.closeSession();
-		}
-		return permanentId;
+		return empiDAO.getPermanentId(clinPortalId);
+//		String permanentId = null;
+//		JDBCDAO jdbcdao = null;
+//		ResultSet result = null;
+//		try
+//		{
+//			jdbcdao = ParticipantManagerUtility.getJDBCDAO();
+//			final LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
+//			columnValueBeanList.add(new ColumnValueBean(clinPortalId));
+//			final String query = "SELECT PERMANENT_PARTICIPANT_ID FROM PARTICIPANT_EMPI_ID_MAPPING WHERE TEMPARARY_PARTICIPANT_ID=?";
+//
+//			result = jdbcdao.getResultSet(query, columnValueBeanList, null);
+//			if (result != null)
+//			{
+//				while (result.next())
+//				{
+//					permanentId = result.getString("permanent_participant_id");
+//				}
+//			}
+//
+//		}
+//		finally
+//		{
+//			result.close();
+//			jdbcdao.closeSession();
+//		}
+//		return permanentId;
 	}
 
 	/**
@@ -623,35 +621,36 @@ public class EMPIParticipantListener implements MessageListener
 	 * @throws DAOException the DAO exception
 	 * @throws SQLException the SQL exception
 	 */
-	private String getOldEmpiId(final String clinPortalId) throws DAOException, SQLException
+	private String getOldEmpiId(final String clinPortalId) throws DAOException
 	{
-		String oldEmpiID = null;
-		JDBCDAO jdbcdao = null;
-		try
-		{
-			jdbcdao = ParticipantManagerUtility.getJDBCDAO();
-			final LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
-			columnValueBeanList.add(new ColumnValueBean(clinPortalId));
-			final String query = "SELECT * FROM PARTICIPANT_EMPI_ID_MAPPING WHERE PERMANENT_PARTICIPANT_ID=? ORDER BY TEMPMRNDATE DESC";
-
-			List<Object> idList = jdbcdao.executeQuery(query, null,	columnValueBeanList);
-			if (null != idList && idList.size() > 0) {
-
-				if (null != idList.get(0)) {
-					Object obj = idList.get(0);
-					oldEmpiID = ((ArrayList) obj).get(2)
-							.toString();
-
-				}
-			}
-
-		}
-		finally
-		{
-
-			jdbcdao.closeSession();
-		}
-		return oldEmpiID;
+		return empiDAO.getOldEmpiId(clinPortalId);
+//		String oldEmpiID = null;
+//		JDBCDAO jdbcdao = null;
+//		try
+//		{
+//			jdbcdao = ParticipantManagerUtility.getJDBCDAO();
+//			final LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
+//			columnValueBeanList.add(new ColumnValueBean(clinPortalId));
+//			final String query = "SELECT * FROM PARTICIPANT_EMPI_ID_MAPPING WHERE PERMANENT_PARTICIPANT_ID=? ORDER BY TEMPMRNDATE DESC";
+//
+//			List<Object> idList = jdbcdao.executeQuery(query, null,	columnValueBeanList);
+//			if (null != idList && idList.size() > 0) {
+//
+//				if (null != idList.get(0)) {
+//					Object obj = idList.get(0);
+//					oldEmpiID = ((ArrayList) obj).get(2)
+//							.toString();
+//
+//				}
+//			}
+//
+//		}
+//		finally
+//		{
+//
+//			jdbcdao.closeSession();
+//		}
+//		return oldEmpiID;
 	}
 
 
