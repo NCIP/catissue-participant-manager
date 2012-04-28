@@ -1,13 +1,11 @@
 package edu.wustl.common.participant.bizlogic;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 
@@ -18,7 +16,7 @@ import edu.wustl.common.exception.BizLogicException;
 import edu.wustl.common.exception.ErrorKey;
 import edu.wustl.common.factory.AbstractFactoryConfig;
 import edu.wustl.common.factory.IFactory;
-import edu.wustl.common.participant.client.IParticipantManager;
+import edu.wustl.common.participant.dao.EMPIParticipantDAO;
 import edu.wustl.common.participant.domain.IParticipant;
 import edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
 import edu.wustl.common.participant.domain.IRace;
@@ -33,13 +31,7 @@ import edu.wustl.common.util.Utility;
 import edu.wustl.common.util.XMLPropertyHandler;
 import edu.wustl.common.util.global.CommonServiceLocator;
 import edu.wustl.common.util.logger.Logger;
-import edu.wustl.dao.DAO;
-import edu.wustl.dao.JDBCDAO;
-import edu.wustl.dao.daofactory.DAOConfigFactory;
-import edu.wustl.dao.daofactory.IDAOFactory;
 import edu.wustl.dao.exception.DAOException;
-import edu.wustl.dao.query.generator.ColumnValueBean;
-import edu.wustl.dao.query.generator.DBTypes;
 import edu.wustl.patientLookUp.domain.PatientInformation;
 import edu.wustl.patientLookUp.queryExecutor.IQueryExecutor;
 import edu.wustl.patientLookUp.util.PatientLookupException;
@@ -55,6 +47,7 @@ public class EMPIParticipantRegistrationBizLogic {
 	private static final Logger LOGGER = Logger
 			.getCommonLogger(EMPIParticipantRegistrationBizLogic.class);
 
+	private EMPIParticipantDAO empiDAO = new EMPIParticipantDAO(CommonServiceLocator.getInstance().getAppName(),null);
 	/** The blank literal. */
 	private final transient String blankLiteral;
 
@@ -145,11 +138,11 @@ public class EMPIParticipantRegistrationBizLogic {
 	 */
 	public void registerPatientToeMPI(final IParticipant participant) throws ApplicationException
 	{
-		JDBCDAO jdbcdao = null;
+		//JDBCDAO jdbcdao = null;
 
 		try
 		{
-			jdbcdao = getJDBCDAO();
+			//jdbcdao = getJDBCDAO();
 
 			//update status to 'CREATED' before sending HL7 message, because user selected a record and resolved match, so new empiId was created for user
 			/*queryForStatusUpdate = "UPDATE CATISSUE_PARTICIPANT SET EMPI_ID_STATUS = 'CREATED' WHERE IDENTIFIER = "
@@ -159,18 +152,19 @@ public class EMPIParticipantRegistrationBizLogic {
 
 			//for update flow,HL7 message needs to be sent with temporary participant Id,
 			// hence queries the temp Participant Id from PARTICIPANT_EMPI_ID_MAPPING table
-			String query = "SELECT * FROM PARTICIPANT_EMPI_ID_MAPPING WHERE PERMANENT_PARTICIPANT_ID=?";
-			LinkedList<ColumnValueBean> colValueBeanList = new LinkedList<ColumnValueBean>();
-			colValueBeanList.add(new ColumnValueBean("PERMANENT_PARTICIPANT_ID", participant
-					.getId(), DBTypes.LONG));
-			List<Object> idList = jdbcdao.executeQuery(query, null, colValueBeanList);
+//			String query = "SELECT * FROM PARTICIPANT_EMPI_ID_MAPPING WHERE PERMANENT_PARTICIPANT_ID=?";
+//			LinkedList<ColumnValueBean> colValueBeanList = new LinkedList<ColumnValueBean>();
+//			colValueBeanList.add(new ColumnValueBean("PERMANENT_PARTICIPANT_ID", participant
+//					.getId(), DBTypes.LONG));
+//			List<Object> idList = jdbcdao.executeQuery(query, null, colValueBeanList);
+			List<Object[]> idList = empiDAO.getTempParticipantIdFromParticipantEMPIMapping(participant.getId());
 			if (null != idList && idList.size() > 0)
 			{
 				String temporaryParticipantId = "";
-				if (null != idList.get(0))
+				Object[] obj = idList.get(0);
+				if (null != obj[0])
 				{
-					Object obj = idList.get(0);
-					temporaryParticipantId = ((ArrayList) obj).get(1).toString();
+					temporaryParticipantId = obj[1].toString();//((ArrayList) obj).get(1).toString();
 				}
 				//send HL7 message with temp participant Id queried
 				this.setTempMrnId(temporaryParticipantId);
@@ -182,7 +176,7 @@ public class EMPIParticipantRegistrationBizLogic {
 		}
 		catch (DAOException e)
 		{
-			jdbcdao.rollback();
+			//jdbcdao.rollback();
 			throw new DAOException(e.getErrorKey(), e, e.getMessage());
 		}
 		catch (Exception e)
@@ -193,29 +187,29 @@ public class EMPIParticipantRegistrationBizLogic {
 		}
 		finally
 		{
-			jdbcdao.closeSession();
+			//jdbcdao.closeSession();
 		}
 	}
 
 
 
-	/**
-	 * Gets the jDBCDAO.
-	 *
-	 * @return the jDBCDAO
-	 *
-	 * @throws DAOException
-	 *             the DAO exception
-	 */
-	public static JDBCDAO getJDBCDAO() throws DAOException {
-		String appName = CommonServiceLocator.getInstance().getAppName();
-		IDAOFactory daoFactory = DAOConfigFactory.getInstance().getDAOFactory(
-				appName);
-		JDBCDAO jdbcdao = null;
-		jdbcdao = daoFactory.getJDBCDAO();
-		jdbcdao.openSession(null);
-		return jdbcdao;
-	}
+//	/**
+//	 * Gets the jDBCDAO.
+//	 *
+//	 * @return the jDBCDAO
+//	 *
+//	 * @throws DAOException
+//	 *             the DAO exception
+//	 */
+//	public static JDBCDAO getJDBCDAO() throws DAOException {
+//		String appName = CommonServiceLocator.getInstance().getAppName();
+//		IDAOFactory daoFactory = DAOConfigFactory.getInstance().getDAOFactory(
+//				appName);
+//		JDBCDAO jdbcdao = null;
+//		jdbcdao = daoFactory.getJDBCDAO();
+//		jdbcdao.openSession(null);
+//		return jdbcdao;
+//	}
 
 	/**
 	 * Gets the reg h l7 message.
@@ -600,27 +594,30 @@ public class EMPIParticipantRegistrationBizLogic {
 		String pvSegment;
 		String csPILastName = null;
 		String csPIFirstName = null;
-		DAO dao = null;
+//		DAO dao = null;
 		pvSegment = null;
-		try {
+		try 
+		{
 
 			// dao = ParticipantManagerUtility.getJDBCDAO();
-			final String appName = CommonServiceLocator.getInstance()
-					.getAppName();
-			final IDAOFactory daoFactory = DAOConfigFactory.getInstance()
-					.getDAOFactory(appName);
-			dao = daoFactory.getDAO();
-			dao.openSession(null);
-
-			// final String hql = getQuery(participant.getId().longValue());
-			final String hql = getQueryForPICordinators();
-			List<ColumnValueBean> columnValueBeans = new ArrayList<ColumnValueBean>();
-			columnValueBeans.add(new ColumnValueBean(participant.getId()
-					.longValue()));
-
-			// final List csPINameColl = dao.executeQuery(hql);
-			final List csPINameColl = dao.executeQuery(hql, columnValueBeans);
-			if (csPINameColl != null && !csPINameColl.isEmpty()) {
+//			final String appName = CommonServiceLocator.getInstance()
+//					.getAppName();
+//			final IDAOFactory daoFactory = DAOConfigFactory.getInstance()
+//					.getDAOFactory(appName);
+//			dao = daoFactory.getDAO();
+//			dao.openSession(null);
+//
+//			// final String hql = getQuery(participant.getId().longValue());
+//			final String hql = getQueryForPICordinators();
+//			List<ColumnValueBean> columnValueBeans = new ArrayList<ColumnValueBean>();
+//			columnValueBeans.add(new ColumnValueBean(participant.getId()
+//					.longValue()));
+//
+//			// final List csPINameColl = dao.executeQuery(hql);
+//			final List csPINameColl = dao.executeQuery(hql, columnValueBeans);
+			final List csPINameColl = empiDAO.executeQueryForPICordinators(participant.getId());
+			if (csPINameColl != null && !csPINameColl.isEmpty()) 
+			{
 				final Object names[] = (Object[]) csPINameColl.get(0);
 				csPIFirstName = (String) names[0];
 				csPILastName = (String) names[1];
@@ -637,55 +634,59 @@ public class EMPIParticipantRegistrationBizLogic {
 					+ "||||||";
 
 			LOGGER.info(pvSegment + "\n");
-		} catch (DAOException e) {
+		}
+		catch (DAOException e) 
+		{
 			LOGGER.info("Error while sending HL7 message to EMPI ");
 			LOGGER.info(e.getMessage());
 			throw new DAOException(e.getErrorKey(), e, e.getMessage());
-		} finally {
-			dao.closeSession();
+		}
+		finally 
+		{
+			//dao.closeSession();
 		}
 		return pvSegment;
 	}
 
-	/**
-	 * Gets the query.
-	 *
-	 * @param csId
-	 *            the cs id
-	 *
-	 * @return the query
-	 *
-	 * @throws DAOException
-	 *             the DAO exception
-	 * @throws ParticipantManagerException
-	 * @throws BizLogicException
-	 */
-	private String getQueryForPICordinators() throws DAOException,
-			ParticipantManagerException, BizLogicException {
-
-
-
-		IParticipantManager participantManagerImplObj = ParticipantManagerUtility.getParticipantMgrImplObj();
-		return participantManagerImplObj.getPICordinatorsofProtocol();
-
-		/*
-		 * String application = null; try { application =
-		 * PropertyHandler.getValue("application"); } catch (Exception e) {
-		 * LOGGER.info(e.getMessage()); throw new DAOException(null, e,
-		 * "Error while get value from PatientInfoLookUpService.properties"); }
-		 * final StringBuffer hql = new StringBuffer(); if
-		 * (Constants.CLINPORTAL_APPLICATION_NAME.equals(application)) { hql
-		 * .append(
-		 * "select CSReg.clinicalStudy.principalInvestigator.firstName,CSReg.clinicalStudy.p"
-		 * +
-		 * "rincipalInvestigator.lastName from edu.wustl.clinportal.domain.ClinicalStudyRegistration "
-		 * + " CSReg where CSReg.participant.id= ? "); } else { hql.append(
-		 * "select CSReg.clinicalStudy.principalInvestigator.firstName,CSReg.clinicalStudy.p"
-		 * + "rincipalInvestigator.lastName from " +
-		 * " edu.wustl.catissuecore.domain.ClinicalStudyRegistration" +
-		 * " CSReg where CSReg.participant.id= ?"); } return hql.toString();
-		 */
-	}
+//	/**
+//	 * Gets the query.
+//	 *
+//	 * @param csId
+//	 *            the cs id
+//	 *
+//	 * @return the query
+//	 *
+//	 * @throws DAOException
+//	 *             the DAO exception
+//	 * @throws ParticipantManagerException
+//	 * @throws BizLogicException
+//	 */
+//	private String getQueryForPICordinators() throws DAOException,
+//			ParticipantManagerException, BizLogicException {
+//
+//
+//
+//		IParticipantManager participantManagerImplObj = ParticipantManagerUtility.getParticipantMgrImplObj();
+//		return participantManagerImplObj.getPICordinatorsofProtocol();
+//
+//		/*
+//		 * String application = null; try { application =
+//		 * PropertyHandler.getValue("application"); } catch (Exception e) {
+//		 * LOGGER.info(e.getMessage()); throw new DAOException(null, e,
+//		 * "Error while get value from PatientInfoLookUpService.properties"); }
+//		 * final StringBuffer hql = new StringBuffer(); if
+//		 * (Constants.CLINPORTAL_APPLICATION_NAME.equals(application)) { hql
+//		 * .append(
+//		 * "select CSReg.clinicalStudy.principalInvestigator.firstName,CSReg.clinicalStudy.p"
+//		 * +
+//		 * "rincipalInvestigator.lastName from edu.wustl.clinportal.domain.ClinicalStudyRegistration "
+//		 * + " CSReg where CSReg.participant.id= ? "); } else { hql.append(
+//		 * "select CSReg.clinicalStudy.principalInvestigator.firstName,CSReg.clinicalStudy.p"
+//		 * + "rincipalInvestigator.lastName from " +
+//		 * " edu.wustl.catissuecore.domain.ClinicalStudyRegistration" +
+//		 * " CSReg where CSReg.participant.id= ?"); } return hql.toString();
+//		 */
+//	}
 
 	/**
 	 * Send hl message.
@@ -921,35 +922,35 @@ public class EMPIParticipantRegistrationBizLogic {
 	 */
 	public void ignoreAndCreateNewFlow(final IParticipant participant) throws ApplicationException
 	{
-		JDBCDAO jdbcdao = null;
+//		JDBCDAO jdbcdao = null;
 
 		try
 		{
-			jdbcdao = getJDBCDAO();
+//			jdbcdao = getJDBCDAO();
 
 			// if block to insert tempMRN entry in case eMPI ID was earlier generated
 			if (null != participant.getEmpiId() && !("").equals(participant.getEmpiId()))
 			{
 				// Update PARTICIPANT_EMPI_ID_MAPPING table with tempMRN
 				ParticipantManagerUtility utility = new ParticipantManagerUtility();
-				utility.updateOldEMPIDetails(participant.getId(), participant.getEmpiId(), jdbcdao);
+				utility.updateOldEMPIDetails(participant.getId(), participant.getEmpiId());
 				participant.setEmpiId("");
 				this.setTempMrnId(participant.getId() + "T");
 			}
 
 			// for new eMPIId generation, directly send HL7 message and
 			// before sending HL7 message, reset empiId to blank and empiIdstatus to PENDING
-			String queryForStatusUpdate = "UPDATE CATISSUE_PARTICIPANT SET EMPI_ID = '', "
-					+ "EMPI_ID_STATUS='PENDING' WHERE IDENTIFIER = " + participant.getId();
-			jdbcdao.executeUpdate(queryForStatusUpdate);
-			jdbcdao.commit();
-
+//			String queryForStatusUpdate = "UPDATE CATISSUE_PARTICIPANT SET EMPI_ID = '', "
+//					+ "EMPI_ID_STATUS='PENDING' WHERE IDENTIFIER = " + participant.getId();
+//			jdbcdao.executeUpdate(queryForStatusUpdate);
+			//jdbcdao.commit();
+			empiDAO.executeQueryForStatusUpdate(participant.getId());
 			String hl7Message = getRegHL7Message(participant);
 			sendHLMessage(hl7Message);
 		}
 		catch (DAOException e)
 		{
-			jdbcdao.rollback();
+			//jdbcdao.rollback();
 			throw new DAOException(e.getErrorKey(), e, e.getMessage());
 		}
 		catch (Exception e)
@@ -960,7 +961,7 @@ public class EMPIParticipantRegistrationBizLogic {
 		}
 		finally
 		{
-			jdbcdao.closeSession();
+			//jdbcdao.closeSession();
 		}
 	}
 

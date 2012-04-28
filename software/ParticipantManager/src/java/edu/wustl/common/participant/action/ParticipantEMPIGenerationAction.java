@@ -35,6 +35,7 @@ import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.util.Utility;
 import edu.wustl.common.util.logger.Logger;
 import edu.wustl.dao.exception.DAOException;
+import edu.wustl.dao.newdao.ActionStatus;
 
 /**
  * The Class ParticipantEMPIGenerationAction.
@@ -99,6 +100,7 @@ public class ParticipantEMPIGenerationAction extends CommonAddEditAction
 								.getId());
 						// process next participant
 						forward = mapping.findForward(Constants.PROCESS_NEXT_PARTCIPANT);
+						request.setAttribute(ActionStatus.ACTIONSTAUS, ActionStatus.SUCCESSFUL);
 					}
 				}
 			}
@@ -124,6 +126,7 @@ public class ParticipantEMPIGenerationAction extends CommonAddEditAction
 					 setMessage(request, "participant.empiid.generation.message",
 					 participantName);
 					forward = mapping.findForward(edu.wustl.common.util.global.Constants.SUCCESS);
+					request.setAttribute(ActionStatus.ACTIONSTAUS, ActionStatus.SUCCESSFUL);
 				}
 			}
 		}
@@ -194,6 +197,8 @@ public class ParticipantEMPIGenerationAction extends CommonAddEditAction
 			actionErr = new ActionErrors();
 		}
 		actionErr.add(ActionErrors.GLOBAL_ERROR, new ActionError(key, errMes));
+		request.removeAttribute(ActionStatus.ACTIONSTAUS);
+		request.setAttribute(ActionStatus.ACTIONSTAUS, ActionStatus.FAIL);
 		saveMessages(request, actionErr);
 	}
 

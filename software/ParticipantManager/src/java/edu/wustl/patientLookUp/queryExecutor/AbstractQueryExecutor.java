@@ -3,9 +3,8 @@ package edu.wustl.patientLookUp.queryExecutor;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.util.List;
+
 import edu.wustl.dao.JDBCDAO;
-import edu.wustl.patientLookUp.domain.PatientInformation;
 import edu.wustl.patientLookUp.util.Logger;
 import edu.wustl.patientLookUp.util.PatientLookupException;
 
