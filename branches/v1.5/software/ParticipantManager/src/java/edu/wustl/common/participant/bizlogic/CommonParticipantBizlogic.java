@@ -359,7 +359,9 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 				{
 					newPMICollection.add(partiMedobj);
 				}
-				if (site != null)
+				/* 	commented the check for fixing the bug : 21686
+				  	Changed By Pavan
+				 if (site != null)
 				{
 					boolean checkDuplicate = siteIdset.add(site.getId());
 					if (!checkDuplicate)
@@ -367,7 +369,7 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 						throw new BizLogicException(null, null,
 								"errors.participant.mediden.duplicate", "");
 					}
-				}
+				}**/
 			}
 		}
 		participant.setParticipantMedicalIdentifierCollection(newPMICollection);
