@@ -1,10 +1,17 @@
 
 package edu.wustl.common.participant.client;
 
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 import edu.wustl.common.exception.ApplicationException;
+import edu.wustl.common.participant.domain.IParticipant;
+import edu.wustl.common.participant.domain.ISite;
+import edu.wustl.dao.exception.DAOException;
+import edu.wustl.dao.query.generator.ColumnValueBean;
+import edu.wustl.patientLookUp.domain.PatientInformation;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -15,12 +22,20 @@ import edu.wustl.common.exception.ApplicationException;
 public interface IParticipantManager
 {
 
+	public Long getSiteIdByName(String siteName) throws ApplicationException;
+	
+	public IParticipant getParticipantById(Long identifier) throws ApplicationException;
+	
+	public List getSiteObject(final String facilityId) throws ApplicationException;
+	
+	public IParticipant getParticpantByEmpiId(String empiId) throws ApplicationException;
+	
 	/**
 	 * Gets the pI cordinators first name and last name.
 	 *
 	 * @return the pI cordinatorsof protocol
 	 */
-	public String getPICordinatorsofProtocol();
+	public List getPICordinatorsofProtocol(Long participantId) throws ApplicationException;
 
 	/**
 	 * This method will return all the protocol ids
@@ -48,7 +63,7 @@ public interface IParticipantManager
 	 *
 	 * @return the last name query
 	 */
-	public String getLastNameQuery(Set<Long> protocolIdSet);
+	public List<IParticipant> getParticipantsByLastName(Set<Long> protocolIdSet,String lastName) throws ApplicationException;
 
 	/**
 	 * Gets the meta phone code query.
@@ -57,7 +72,7 @@ public interface IParticipantManager
 	 *
 	 * @return the meta phone code query
 	 */
-	public String getMetaPhoneCodeQuery(Set<Long> protocolIdSet);
+	public List<IParticipant> getParticipantsByMetaPhoneCode(Set<Long> protocolIdSet,String metaPhoneCode) throws ApplicationException;
 
 	/**
 	 * Gets the mRN query.
@@ -66,7 +81,7 @@ public interface IParticipantManager
 	 *
 	 * @return the mRN query
 	 */
-	public String getMRNQuery(Set<Long> protocolIdSet);
+	public List<IParticipant> getParticipantsByMRN(Set<Long> protocolIdSet,String medicalRecordNumber,Long siteId) throws ApplicationException;
 
 	/**
 	 * Gets the sSN query.
@@ -75,7 +90,7 @@ public interface IParticipantManager
 	 *
 	 * @return the sSN query
 	 */
-	public String getSSNQuery(Set<Long> protocolIdSet);
+	public List<IParticipant> getParticipantsBySSN(Set<Long> protocolIdSet,String socialSecurityNumber) throws ApplicationException;
 
 	/**
 	 * Fetch the PI and co-ordinators ids.
@@ -90,11 +105,11 @@ public interface IParticipantManager
 	 * @param participantId
 	 * @return
 	 */
-	public String getIsEmpiEnabledQuery();
+	public List isEmpiEnabled(Long participantId) throws ApplicationException;
 
-	public String getParticipantCodeQuery(Set<Long> protocolIdSet);
+	public List<IParticipant> getParticipantsByParticipantCode(Set<Long> protocolIdSet,String participantCode) throws ApplicationException;
 
-	public String getClinicalStudyNamesQuery();
+	public List<String> getClinicalStudyNamesQuery(Long participantId) throws ApplicationException;
 
-	public String getProcessedMatchedParticipantQuery(Long userId);
+	public String getProcessedMatchedParticipantQuery(Long userId) ;
 }

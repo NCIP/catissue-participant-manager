@@ -25,7 +25,6 @@ import edu.wustl.common.participant.domain.IUser;
 import edu.wustl.common.participant.utility.Constants;
 import edu.wustl.common.participant.utility.ParticipantManagerException;
 import edu.wustl.common.participant.utility.ParticipantManagerUtility;
-import edu.wustl.common.util.Utility;
 import edu.wustl.common.util.XMLPropertyHandler;
 import edu.wustl.common.util.global.CommonServiceLocator;
 import edu.wustl.common.util.logger.Logger;
@@ -135,7 +134,16 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 					&& pmIdentifier.getSite().getName() != null)
 			{
 				final ISite site = pmIdentifier.getSite();
-				Long siteId = participantDao.getSiteIdByName(site.getName());
+				Long siteId = null;
+				try
+				{
+					siteId = ParticipantManagerUtility.getParticipantMgrImplObj().getSiteIdByName(site.getName());
+				}
+				catch(Exception appExp)
+				{
+					logger.error("Exception occurred in checkForSiteIdentifierInPMI" +appExp.getMessage());
+					throw new BizLogicException(null,appExp,appExp.getMessage());
+				}
 
 				if (siteId != null)
 				{
@@ -482,7 +490,7 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 					participant.getFirstName(), participant.getBirthDate(), participant
 							.getSocialSecurityNumber(), mrn))
 			{
-				String empIdStatus = participantDao.getEMPIIDStatus(participant.getId());
+				String empIdStatus = participantDao.getPartiEMPIStatus(participant.getId());
 				if (empIdStatus == null)
 				{
 					empIdStatus = "";
@@ -568,9 +576,9 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 	 * @throws BizLogicException the biz logic exception
 	 * @throws DAOException
 	 */
-	public IParticipant getParticipant(String empiId) throws BizLogicException, DAOException
+	public IParticipant getParticipant(String empiId) throws BizLogicException, ApplicationException,ParticipantManagerException
 	{
-		IParticipant participant = participantDao.getParticpantByEmpiId(empiId);
+		IParticipant participant = ParticipantManagerUtility.getParticipantMgrImplObj().getParticpantByEmpiId(empiId);
 //		final String sourceObjectName = IParticipant.class.getName();
 //		final String[] selectColumnName = {"id"};
 //		final QueryWhereClause queryWhereClause = new QueryWhereClause(sourceObjectName);

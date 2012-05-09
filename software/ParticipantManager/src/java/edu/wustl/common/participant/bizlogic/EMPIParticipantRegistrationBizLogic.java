@@ -615,7 +615,8 @@ public class EMPIParticipantRegistrationBizLogic {
 //
 //			// final List csPINameColl = dao.executeQuery(hql);
 //			final List csPINameColl = dao.executeQuery(hql, columnValueBeans);
-			final List csPINameColl = empiDAO.executeQueryForPICordinators(participant.getId());
+			final List csPINameColl = ParticipantManagerUtility.getParticipantMgrImplObj().getPICordinatorsofProtocol(participant.getId()); 
+				//empiDAO.executeQueryForPICordinators(participant.getId());
 			if (csPINameColl != null && !csPINameColl.isEmpty()) 
 			{
 				final Object names[] = (Object[]) csPINameColl.get(0);
@@ -635,11 +636,11 @@ public class EMPIParticipantRegistrationBizLogic {
 
 			LOGGER.info(pvSegment + "\n");
 		}
-		catch (DAOException e) 
+		catch (ApplicationException e) 
 		{
 			LOGGER.info("Error while sending HL7 message to EMPI ");
 			LOGGER.info(e.getMessage());
-			throw new DAOException(e.getErrorKey(), e, e.getMessage());
+			throw new BizLogicException(e.getErrorKey(), e, e.getMessage());
 		}
 		finally 
 		{

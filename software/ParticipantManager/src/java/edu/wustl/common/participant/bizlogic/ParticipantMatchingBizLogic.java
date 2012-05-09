@@ -11,6 +11,7 @@ import java.util.List;
 import edu.wustl.common.exception.ApplicationException;
 import edu.wustl.common.exception.BizLogicException;
 import edu.wustl.common.exception.ErrorKey;
+import edu.wustl.common.participant.client.IParticipantManager;
 import edu.wustl.common.participant.dao.CommonParticipantDAO;
 import edu.wustl.common.participant.domain.IParticipant;
 import edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
@@ -443,49 +444,55 @@ public class ParticipantMatchingBizLogic
 	 */
 	private String getClinicalStudyNames(Long participantId) throws DAOException, ParticipantManagerException, BizLogicException
 	{
-
-//		IParticipantManager participantManagerImplObj = ParticipantManagerUtility.getParticipantMgrImplObj();
-//		String query= participantManagerImplObj.getClinicalStudyNamesQuery();
-//
-//
-//		LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
-//		columnValueBeanList.add(new ColumnValueBean("PARTICIPANT_ID", participantId, DBTypes.LONG));
-//		List list = dao.executeQuery(query, null, columnValueBeanList);
-		List<String> list = participantDAO.getClinicalStudyNames(participantId);
-		StringBuffer csNames = new StringBuffer();
-		for(String csShortTitle :list)
+		try
 		{
-			if (csNames.length() == 0)
+			IParticipantManager participantManagerImplObj = ParticipantManagerUtility.getParticipantMgrImplObj();
+	//		String query= participantManagerImplObj.getClinicalStudyNamesQuery();
+	//
+	//
+	//		LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
+	//		columnValueBeanList.add(new ColumnValueBean("PARTICIPANT_ID", participantId, DBTypes.LONG));
+	//		List list = dao.executeQuery(query, null, columnValueBeanList);
+			List<String> list = participantManagerImplObj.getClinicalStudyNamesQuery(participantId);
+			StringBuffer csNames = new StringBuffer();
+			for(String csShortTitle :list)
 			{
-				csNames.append(csShortTitle);
+				if (csNames.length() == 0)
+				{
+					csNames.append(csShortTitle);
+				}
+				else
+				{
+					csNames.append(",");
+					csNames.append(csShortTitle);
+				}
 			}
-			else
-			{
-				csNames.append(",");
-				csNames.append(csShortTitle);
-			}
+	//		if (!list.isEmpty())
+	//		{
+	//			for (int i = 0; i < list.size(); i++)
+	//			{
+	//				List clinStuNameLst = (List) list.get(i);
+	//				if (clinStuNameLst.isEmpty() || clinStuNameLst.get(0) == "")
+	//				{
+	//					continue;
+	//				}
+	//				if (csNames.length() == 0)
+	//				{
+	//					csNames.append(clinStuNameLst.get(0));
+	//				}
+	//				else
+	//				{
+	//					csNames.append(",");
+	//					csNames.append(clinStuNameLst.get(0));
+	//				}
+	//			}
+	//		}
+			return csNames.toString();
 		}
-//		if (!list.isEmpty())
-//		{
-//			for (int i = 0; i < list.size(); i++)
-//			{
-//				List clinStuNameLst = (List) list.get(i);
-//				if (clinStuNameLst.isEmpty() || clinStuNameLst.get(0) == "")
-//				{
-//					continue;
-//				}
-//				if (csNames.length() == 0)
-//				{
-//					csNames.append(clinStuNameLst.get(0));
-//				}
-//				else
-//				{
-//					csNames.append(",");
-//					csNames.append(clinStuNameLst.get(0));
-//				}
-//			}
-//		}
-		return csNames.toString();
+		catch(ApplicationException exp)
+		{
+			throw new BizLogicException(null,exp,exp.getMessage());
+		}
 	}
 
 	/**
@@ -498,9 +505,20 @@ public class ParticipantMatchingBizLogic
 	 * @throws DAOException the DAO exception
 	 * @throws ParticipantManagerException
 	 */
-	public List getProcessedMatchedParticipants(Long userId, int recordsPerPage) throws DAOException, ParticipantManagerException
+	public List getProcessedMatchedParticipants(Long userId, int recordsPerPage) throws BizLogicException, ParticipantManagerException
 	{
-		return participantDAO.getProcessedMatchedParticipants(userId, recordsPerPage);
+		try
+		{
+			final IParticipantManager participantMgrImplObj = ParticipantManagerUtility.getParticipantMgrImplObj();
+			List list = participantDAO.getProcessedMatchedParticipants(userId,recordsPerPage);
+			populateListWithCSName(list);
+			return list;
+		}	
+		catch(DAOException daoExp)
+		{
+			logger.error("Exception occurred while getProcessedMatchedParticipants "+daoExp.getMessage(),daoExp);
+			throw new BizLogicException(daoExp);
+		}
 //		JDBCDAO dao = null;
 //		List list = null;
 //		String query = null;

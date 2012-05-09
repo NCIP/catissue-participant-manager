@@ -281,7 +281,7 @@ public class EMPIParticipantMergeMessageListener implements MessageListener
 	 * @throws DAOException
 	 */
 	private void processMergeMessage(final Map<String, String> mergeMessageMap)
-			throws BizLogicException, DAOException
+			throws BizLogicException, DAOException,ApplicationException,ParticipantManagerException
 
 	{
 		final CommonParticipantBizlogic bizLogic = new CommonParticipantBizlogic();

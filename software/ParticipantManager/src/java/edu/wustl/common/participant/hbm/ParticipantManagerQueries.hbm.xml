@@ -1,0 +1,70 @@
+<?xml version='1.0'?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+	<sql-query name="isParticipantMatchWithinCSCPEnable">
+		SELECT SP.PARTCIPNT_MATCH_WITHIN_CSCP FROM  CATISSUE_SPECIMEN_PROTOCOL SP WHERE SP.IDENTIFIER=:id
+	</sql-query>
+	
+	<sql-query name="getPartcipantIdsList">
+		SELECT PARTICIPANT_ID FROM CATISSUE_CLINICAL_STUDY_REG WHERE CLINICAL_STUDY_ID in (:cpIdList)
+	</sql-query>
+	
+	<sql-query name="getColumnList">
+ 		SELECT  columnData.COLUMN_NAME,displayData.DISPLAY_NAME FROM CATISSUE_INTERFACE_COLUMN_DATA columnData,
+ 		CATISSUE_TABLE_RELATION relationData,CATISSUE_QUERY_TABLE_DATA tableData,CATISSUE_SEARCH_DISPLAY_DATA displayData 
+ 		where relationData.CHILD_TABLE_ID = columnData.TABLE_ID and relationData.PARENT_TABLE_ID = tableData.TABLE_ID and 
+ 		relationData.RELATIONSHIP_ID = displayData.RELATIONSHIP_ID and columnData.IDENTIFIER = displayData.COL_ID and tableData.ALIAS_NAME = :participant
+	</sql-query>
+	
+	<sql-query name="getPartiEMPIStatus">
+		SELECT EMPI_ID_STATUS FROM CATISSUE_PARTICIPANT  WHERE IDENTIFIER=:id
+	</sql-query>
+	
+	<sql-query name="isParticipantIsProcessing">
+		SELECT * FROM MATCHED_PARTICIPANT_MAPPING WHERE SEARCHED_PARTICIPANT_ID = :participantId
+		AND NO_OF_MATCHED_PARTICIPANTS != 0
+	</sql-query>
+
+	<sql-query name="getProcessedMatchedParticipantIds">
+		SELECT SEARCHED_PARTICIPANT_ID FROM  MATCHED_PARTICIPANT_MAPPING PARTIMAPPING JOIN EMPI_PARTICIPANT_USER_MAPPING 
+		ON PARTIMAPPING.SEARCHED_PARTICIPANT_ID=EMPI_PARTICIPANT_USER_MAPPING.PARTICIPANT_ID WHERE EMPI_PARTICIPANT_USER_MAPPING.USER_ID=:userId 
+		AND PARTIMAPPING.NO_OF_MATCHED_PARTICIPANTS!=:noOfMatchedParticipant
+	</sql-query>
+
+
+	<sql-query name="isOldMatchesPresent">
+		SELECT SEARCHED_PARTICIPANT_ID FROM MATCHED_PARTICIPANT_MAPPING WHERE SEARCHED_PARTICIPANT_ID=:participantId
+	</sql-query>
+	
+	<sql-query name="retrieveMatchedParticipantList">
+		SELECT * FROM CATISSUE_MATCHED_PARTICIPANT WHERE SEARCHED_PARTICIPANT_ID=:participantId order by ORDER_NO
+	</sql-query>
+	
+	<sql-query name="fetchSearchParticipantIds">
+		SELECT SEARCHED_PARTICIPANT_ID FROM MATCHED_PARTICIPANT_MAPPING WHERE NO_OF_MATCHED_PARTICIPANTS=:noOfMatchedParticpants
+	</sql-query>
+	<sql-query name="getTotalCount">
+		SELECT count(*) FROM MATCHED_PARTICIPANT_MAPPING PARTIMAPPING JOIN EMPI_PARTICIPANT_USER_MAPPING ON  
+		PARTIMAPPING.SEARCHED_PARTICIPANT_ID=EMPI_PARTICIPANT_USER_MAPPING.PARTICIPANT_ID WHERE 
+		EMPI_PARTICIPANT_USER_MAPPING.USER_ID=:userId AND PARTIMAPPING.NO_OF_MATCHED_PARTICIPANTS!=:noOfMacthedParticipant
+	</sql-query>
+	
+	<sql-query name="getTempParticipantIdFromParticipantEMPIMapping">
+		SELECT * FROM PARTICIPANT_EMPI_ID_MAPPING WHERE PERMANENT_PARTICIPANT_ID=:participantId
+	</sql-query>
+	
+	<sql-query name="getPermanentId">
+		SELECT PERMANENT_PARTICIPANT_ID FROM PARTICIPANT_EMPI_ID_MAPPING WHERE TEMPARARY_PARTICIPANT_ID=:clinPortalId
+	</sql-query>
+
+	<sql-query name="getOldEmpiId">
+		SELECT * FROM PARTICIPANT_EMPI_ID_MAPPING WHERE PERMANENT_PARTICIPANT_ID=:clinPortalId ORDER BY TEMPMRNDATE DESC
+	</sql-query>
+
+	<sql-query name="">
+	</sql-query>
+	
+
+</hibernate-mapping>
