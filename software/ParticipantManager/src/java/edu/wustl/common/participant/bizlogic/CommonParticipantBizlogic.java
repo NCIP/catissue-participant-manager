@@ -4,6 +4,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -342,12 +343,25 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 		{
 			final Iterator itr = paticipantMedCol.iterator();
 			java.util.HashSet<Long> siteIdset = new java.util.HashSet<Long>();
+			HashSet<Long> duplicateSiteSet = new HashSet<Long>();
+
 			while (itr.hasNext())
 			{
 				final IParticipantMedicalIdentifier<IParticipant, ISite> partiMedobj = (IParticipantMedicalIdentifier<IParticipant, ISite>) itr
 						.next();
 				final ISite site = partiMedobj.getSite();
 				final String medicalRecordNo = partiMedobj.getMedicalRecordNumber();
+				if (site != null)
+				{
+					boolean checkDuplicate = siteIdset.add(site.getId());
+					if (!checkDuplicate)
+					{
+						//duplicate site present in collection , so find old one delete that one as well.
+						duplicateSiteSet.add(site.getId());
+						//throw new BizLogicException(null, null,
+							//	"errors.participant.mediden.duplicate", "");
+					}
+				}
 				if (validator.isEmpty(medicalRecordNo) || site == null || site.getId() == null)
 				{
 					if (partiMedobj.getId() == null)
@@ -359,17 +373,12 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 				{
 					newPMICollection.add(partiMedobj);
 				}
-				/* 	commented the check for fixing the bug : 21686
-				  	Changed By Pavan
-				 if (site != null)
-				{
-					boolean checkDuplicate = siteIdset.add(site.getId());
-					if (!checkDuplicate)
-					{
-						throw new BizLogicException(null, null,
-								"errors.participant.mediden.duplicate", "");
-					}
-				}**/
+
+			}
+			// now remove duplicate PMI bug fix: 21686
+			if(!duplicateSiteSet.isEmpty())
+			{
+				removeDuplicatePmi(newPMICollection, duplicateSiteSet);
 			}
 		}
 		participant.setParticipantMedicalIdentifierCollection(newPMICollection);
@@ -408,6 +417,21 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 			}
 		}
 		return true;
+	}
+
+	private static void removeDuplicatePmi(final Collection newPMICollection,
+			HashSet<Long> duplicateSiteSet)
+	{
+		final Iterator newPMIiterator = newPMICollection.iterator();
+		while (newPMIiterator.hasNext())
+		{
+			final IParticipantMedicalIdentifier<IParticipant, ISite> partiMedobj = (IParticipantMedicalIdentifier<IParticipant, ISite>) newPMIiterator
+					.next();
+			if (duplicateSiteSet.contains(partiMedobj.getSite().getId()))
+			{
+				newPMIiterator.remove();
+			}
+		}
 	}
 
     /**
