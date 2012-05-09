@@ -9,11 +9,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import edu.wustl.common.participant.dao.SQLQueryExecutorDAO;
 import edu.wustl.common.participant.domain.IParticipant;
 import edu.wustl.common.participant.domain.IParticipantMedicalIdentifier;
 import edu.wustl.common.participant.domain.ISite;
-import edu.wustl.common.util.global.CommonServiceLocator;
+import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.patientLookUp.domain.PatientInformation;
 import edu.wustl.patientLookUp.util.Logger;
 import edu.wustl.patientLookUp.util.PatientLookupException;
@@ -21,14 +20,12 @@ import edu.wustl.patientLookUp.util.PatientLookupException;
 public class SQLQueryExecutorImpl extends AbstractQueryExecutor
 {
 
-	private SQLQueryExecutorDAO sqlQueryExecutorDAO;
 	/**
 	 * Constructor
 	 */
 	public SQLQueryExecutorImpl()
 	{
 		//this.jdbcDAO = jdbcDAO;
-		sqlQueryExecutorDAO = new SQLQueryExecutorDAO(CommonServiceLocator.getInstance().getAppName(),null);
 	}
 
 	/**
@@ -51,7 +48,8 @@ public class SQLQueryExecutorImpl extends AbstractQueryExecutor
 //			columnValueBeans.add(new ColumnValueBean(lastName + "%", DBTypes.VARCHAR));
 //			columnValueBeans.add(new ColumnValueBean(Constants.ACTIVITY_STATUS_DISABLED,
 //					DBTypes.VARCHAR));
-			List list = sqlQueryExecutorDAO.executeQueryForName(lastName, protocolIdSet, participantObjName);//dao.executeQuery(fetchByLNameQry, columnValueBeans);
+			List list = ParticipantManagerUtility.getParticipantMgrImplObj().getParticipantsByLastName(protocolIdSet, lastName); 
+				
 			if (!list.isEmpty())
 			{
 				patientInformationList = populatePatientInfo(list);
@@ -94,7 +92,7 @@ public class SQLQueryExecutorImpl extends AbstractQueryExecutor
 //			columnValueBeans.add(new ColumnValueBean(Constants.ACTIVITY_STATUS_DISABLED,
 //					DBTypes.VARCHAR));
 //			List list = dao.executeQuery(fetchByMetaPhoneQry, columnValueBeans);
-			List list = sqlQueryExecutorDAO.executetQueryForPhonetic(metaPhone, protocolIdSet, participantObjName);
+			List list = ParticipantManagerUtility.getParticipantMgrImplObj().getParticipantsByMetaPhoneCode(protocolIdSet, metaPhone); 
 			if (!list.isEmpty())
 			{
 				patientInformationList = populatePatientInfo(list);
@@ -148,7 +146,7 @@ public class SQLQueryExecutorImpl extends AbstractQueryExecutor
 //					DBTypes.VARCHAR));
 //
 //			List list = dao.executeQuery(fetchBySSNQry, columnValueBeanList);
-			List list = sqlQueryExecutorDAO.executetQueryForSSN(ssn, protocolIdSet, participantObjName);
+			List list = ParticipantManagerUtility.getParticipantMgrImplObj().getParticipantsBySSN(protocolIdSet, ssn);
 			if (!list.isEmpty())
 			{
 				patientInformationList = populatePatientInfo(list);
@@ -199,7 +197,7 @@ public class SQLQueryExecutorImpl extends AbstractQueryExecutor
 //					DBTypes.VARCHAR));
 //
 //			List list = dao.executeQuery(fetchByMRNQry, columnValueBeanList);
-			List list = sqlQueryExecutorDAO.executeQueryForMRN(mrn, siteId, protocolIdSet, pmiObjName);
+			List list = ParticipantManagerUtility.getParticipantMgrImplObj().getParticipantsByMRN(protocolIdSet, mrn, Long.valueOf(siteId)); 
 			if (!list.isEmpty())
 			{
 				patientInformationList = populatePatientInfo(list);

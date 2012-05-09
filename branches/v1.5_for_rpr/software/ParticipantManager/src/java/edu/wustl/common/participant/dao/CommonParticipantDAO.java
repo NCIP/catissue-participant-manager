@@ -2,7 +2,6 @@ package edu.wustl.common.participant.dao;
 
 import java.sql.Timestamp;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
@@ -15,8 +14,6 @@ import edu.wustl.common.beans.SessionDataBean;
 import edu.wustl.common.exception.BizLogicException;
 import edu.wustl.common.participant.client.IParticipantManager;
 import edu.wustl.common.participant.domain.IParticipant;
-import edu.wustl.common.participant.domain.ISite;
-import edu.wustl.common.participant.utility.Constants;
 import edu.wustl.common.participant.utility.ParticipantManagerException;
 import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.util.logger.Logger;
@@ -30,114 +27,97 @@ import edu.wustl.patientLookUp.domain.PatientInformation;
 public class CommonParticipantDAO extends GenericHibernateDAO<IParticipant, Long>
 {
 	private static final Logger LOGGER = Logger.getCommonLogger(CommonParticipantDAO.class);
+	private static final String ID = "id";
+	private static final String CP_ID_LIST = "cpIdList";
+	private static final String PARTICIPANT_ID = "participantId";
+	private static final String USER_ID = "userId";
+	private static final String NO_OF_MATCHED_PARTICIPANT = "noOfMatchedParticipant";
+	
+	private static final String IS_PART_MATCH_WITHIN_CSCP_ENABLED ="isParticipantMatchWithinCSCPEnable";
+	private static final String GET_PART_ID_LIST ="getPartcipantIdsList";
+	private static final String GET_COLUMN_LIST ="getColumnList";
+	private static final String GET_PART_EMPI_STATUS ="getPartiEMPIStatus";
+	private static final String IS_PART_PROCESSING ="isParticipantIsProcessing";
+	private static final String GET_PROCESSED_MATCHED_PART_ID ="getProcessedMatchedParticipantIds";
+	private static final String IS_OLD_MATCHES_PRESENT ="isOldMatchesPresent";
+	private static final String GET_MATCHED_PART_LIST ="retrieveMatchedParticipantList";
+	private static final String GET_SEARCH_PART_IDS ="fetchSearchParticipantIds";
+	private static final String GET_TOTAL_COUNT ="getTotalCount";
+	
+	private static final String SET_EMPI_SQL = "UPDATE CATISSUE_PARTICIPANT SET EMPI_ID_STATUS=? WHERE IDENTIFIER=?";
+	private static final String UPDATE_OLD_EMPI_SQL = "INSERT INTO PARTICIPANT_EMPI_ID_MAPPING VALUES(?,?,?,?)";
+	
+	private static final String ADD_PART_TO_PROCESS_MSG_QUEUE = "INSERT INTO MATCHED_PARTICIPANT_MAPPING(NO_OF_MATCHED_PARTICIPANTS," +
+			"CREATION_DATE,SEARCHED_PARTICIPANT_ID) VALUES(?,?,?)";
+	
+	private static final String UPDATE_PART_USER_MAP_SQL = "INSERT INTO EMPI_PARTICIPANT_USER_MAPPING VALUES(?,?)";
+	private static final String DELETE_PROCESS_PART_SQL = "DELETE FROM MATCHED_PARTICIPANT_MAPPING WHERE SEARCHED_PARTICIPANT_ID=?";
+	
+	private static final String UPDATE_PROCESS_PART_SQL = "UPDATE MATCHED_PARTICIPANT_MAPPING SET NO_OF_MATCHED_PARTICIPANTS=0 "
+			+ "WHERE SEARCHED_PARTICIPANT_ID=?";
+	
+	private static final String STORE_MATCH_PART_SQL = "INSERT INTO CATISSUE_MATCHED_PARTICIPANT(PARTICIPANT_ID,EMPI_ID,LAST_NAME,FIRST_"
+		+ "NAME,MIDDLE_NAME,GENDER,SOCIAL_SECURITY_NUMBER,ACTIVITY_STATUS,VITAL_STATUS,PART"
+		+ "ICIPANT_MRN,PARTICIPANT_RACE,SEARCHED_PARTICIPANT_ID,ORDER_NO,BIRTH_DATE,DEA"
+		+ "TH_DATE) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+	
+	private static final String UPDATE_MATCH_PART_MAPPING = "UPDATE MATCHED_PARTICIPANT_MAPPING SET NO_OF_MATCHED_PARTICIPANTS = ? WHERE SEARCHED_PARTICIPANT_ID=?";
+
+	
 	
 	public CommonParticipantDAO(String applicationName,SessionDataBean sessionDataBean) 
 	{
 		super(applicationName, sessionDataBean);
 	}
-	
-	public Long getSiteIdByName(String siteName) throws DAOException
-	{
-		Long siteId = null;
-		String hql = "Select id from " + ISite.class.getName() + " as site where site.name=:siteName";
-		List<ColumnValueBean> valueList = new ArrayList<ColumnValueBean>();		
-		valueList.add(new ColumnValueBean(siteName,siteName));
-		List<Long> result = executeQuery(hql, null, null, valueList);
-		if(result!=null&&!result.isEmpty())
-		{
-			siteId = result.get(0);
-		}
-		return siteId;
-	}
-	
-	public IParticipant getParticipantById(final Long identifier) throws DAOException
-	{
-		String sourceObjectName = IParticipant.class.getName();
-		String hql = "from "+sourceObjectName+" where id=:id";
-		List<ColumnValueBean> valueList = new ArrayList<ColumnValueBean>();
-		valueList.add(new ColumnValueBean("id",identifier));
-		List<IParticipant> list = executeQuery(hql, null, null, valueList);
-		IParticipant participant = null;
-		if(!list.isEmpty())
-		{
-			participant = list.get(0);
-		}
-		return participant;
 
-	}
-	
-	public List executeParticipantCodeQry(Set<Long> protocolIdList,String participantCode) throws DAOException
-	{
-		List patientInfoList = null;
-		try
-		{
-			String hql = ParticipantManagerUtility.getParticipantCodeQry(protocolIdList);
-			List<ColumnValueBean> valueList = new ArrayList<ColumnValueBean>();
-			ColumnValueBean participantCodeValue = new ColumnValueBean("participantCode",participantCode);
-			ColumnValueBean activityStatusValue = new ColumnValueBean("activityStatus","Disabled");
-			valueList.add(participantCodeValue);
-			valueList.add(activityStatusValue);
-			patientInfoList =  executeQuery(hql, null,null,valueList);
-		}
-		catch(ParticipantManagerException exp)
-		{
-			LOGGER.error("ERROR WHILE executeParticipantCodeQry",exp);
-		}
-		return patientInfoList;
-	}
-	
+	/**
+	 * PUT in PMhql
+	 * @param id
+	 * @return
+	 * @throws DAOException
+	 */
 	public List isParticipantMatchWithinCSCPEnable(Long id) throws DAOException
 	{
-		String query = "SELECT SP.PARTCIPNT_MATCH_WITHIN_CSCP FROM  CATISSUE_SPECIMEN_PROTOCOL SP WHERE SP.IDENTIFIER=:id";;
-		List<ColumnValueBean> columnValueBeanList = new ArrayList<ColumnValueBean>();
-		columnValueBeanList.add(new ColumnValueBean("id", id));
-		return executeSQLQuery(query,null,null,columnValueBeanList);
+		return executeNamedQuery(IS_PART_MATCH_WITHIN_CSCP_ENABLED,null,null,new ColumnValueBean(ID, id));
 	}
 	
+	/**
+	 * PUT in Clinportalhql
+	 * @param cpIdList
+	 * @return
+	 * @throws DAOException
+	 */
 	public List getPartcipantIdsList(Set cpIdList) throws DAOException
 	{
 		List idListArray = null;
-		String query = "SELECT PARTICIPANT_ID FROM CATISSUE_CLINICAL_STUDY_REG WHERE CLINICAL_STUDY_ID in (:cpIdList)";
-
 		if (cpIdList != null && !cpIdList.isEmpty())
 		{
-			List<ColumnValueBean> columnValueBeanList = new ArrayList<ColumnValueBean>();
-			columnValueBeanList.add(new ColumnValueBean("cpIdList", cpIdList));
-			idListArray = executeSQLQuery(query,null,null, columnValueBeanList);
+			idListArray = executeNamedQuery(GET_PART_ID_LIST,null,null,new ColumnValueBean(CP_ID_LIST, cpIdList));
 		}
 		return idListArray;
 	}
-
+	
+	/**
+	 * PUT in Clinportalhql
+	 * @return
+	 * @throws DAOException
+	 */
 	public List<Object[]> getColumnList() throws DAOException
 	{
-
-		String sql = "SELECT  columnData.COLUMN_NAME,displayData.DISPLAY_NAME FROM CATISSUE_INTERFACE_"
-				+ "COLUMN_DATA columnData,CATISSUE_TABLE_RELATION relationData,CATISSUE_QUERY_TABLE"
-				+ "_DATA tableData,CATISSUE_SEARCH_DISPLAY_DATA displayData where relationData.CHIL"
-				+ "D_TABLE_ID = columnData.TABLE_ID and relationData.PARENT_TABLE_ID = tableData.TA"
-				+ "BLE_ID and relationData.RELATIONSHIP_ID = displayData.RELATIONSHIP_ID and column"
-				+ "Data.IDENTIFIER = displayData.COL_ID and tableData.ALIAS_NAME = 'Participant'";
-		LOGGER.debug("DATA ELEMENT SQL : " + sql);
-		return executeSQLQuery(sql,null,null, null);
-	}
-	
-	public List isEMPIEnable(String query,Long participantId) throws DAOException
-	{
-		List statusList = null;
-		List<ColumnValueBean> columnValueBeanList = new ArrayList<ColumnValueBean>();
-		columnValueBeanList.add(new ColumnValueBean("participantId", participantId));
-		return executeSQLQuery(query,null,null, columnValueBeanList);
+		return executeNamedQuery(GET_COLUMN_LIST,null,null,new ColumnValueBean("participant","Participant"));
 	}
 	
 	
+	/**
+	 * @param participantI
+	 * @return
+	 * @throws DAOException
+	 */
 	public String getPartiEMPIStatus(long participantId) throws DAOException
 	{
 
 		String eMPIStatus = "";
-		String query = "SELECT EMPI_ID_STATUS FROM CATISSUE_PARTICIPANT  WHERE IDENTIFIER=:id";
-		List<ColumnValueBean> columnValueBeanList = new ArrayList<ColumnValueBean>();
-		columnValueBeanList.add(new ColumnValueBean("id", participantId));
-		List list = executeSQLQuery(query,null,null, columnValueBeanList);
+		List list = executeNamedQuery(GET_PART_EMPI_STATUS,null,null, new ColumnValueBean(ID, participantId));
 		if (!list.isEmpty())
 		{
 			eMPIStatus = (String) list.get(0);
@@ -145,15 +125,17 @@ public class CommonParticipantDAO extends GenericHibernateDAO<IParticipant, Long
 		return eMPIStatus;
 	}
 	
+	/**
+	 * PUT in PMhql
+	 * @param id
+	 * @return
+	 * @throws DAOException
+	 */
 	public boolean isParticipantIsProcessing(Long id) throws DAOException
 	{
 
 		boolean status = false;
-		String query =  "SELECT * FROM MATCHED_PARTICIPANT_MAPPING WHERE SEARCHED_PARTICIPANT_ID = :participantId "
-			+ "AND NO_OF_MATCHED_PARTICIPANTS != 0";
-		LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
-		columnValueBeanList.add(new ColumnValueBean("participantId", id));
-		List list = executeSQLQuery(query,null,null, columnValueBeanList);
+		List list = executeNamedQuery(IS_PART_PROCESSING,null,null, new ColumnValueBean(PARTICIPANT_ID, id));
 		if (!list.isEmpty() && !"".equals(list.get(0)))
 		{
 			status = true;
@@ -161,18 +143,19 @@ public class CommonParticipantDAO extends GenericHibernateDAO<IParticipant, Long
 		return status;
 	}
 	
+	/**
+	 * PUT in PMhql
+	 * @param userId
+	 * @return
+	 * @throws DAOException
+	 */
 	public List<Long> getProcessedMatchedParticipantIds(Long userId) throws DAOException
 	{
-		List<Long> particpantIdColl = new ArrayList<Long>();
-		String query = "SELECT SEARCHED_PARTICIPANT_ID FROM  MATCHED_PARTICIPANT_MAPPING PARTIMAPPING  "
-				+ " JOIN EMPI_PARTICIPANT_USER_MAPPING ON PARTIMAPPING.SEARCHED_PARTICIPANT_ID=EMPI_PARTICIPANT_USER_MAPPING.PARTICIPANT_ID"
-				+ " WHERE EMPI_PARTICIPANT_USER_MAPPING.USER_ID=:userId AND PARTIMAPPING.NO_OF_MATCHED_PARTICIPANTS!=:noOfMatchedParticipant";
-
 		LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
-		columnValueBeanList.add(new ColumnValueBean("userId", userId));
-		columnValueBeanList.add(new ColumnValueBean("noOfMatchedParticipant", Integer.valueOf("-1")));
+		columnValueBeanList.add(new ColumnValueBean(USER_ID, userId));
+		columnValueBeanList.add(new ColumnValueBean(NO_OF_MATCHED_PARTICIPANT, Integer.valueOf("-1")));
 
-		return executeSQLQuery(query,null,null, columnValueBeanList);
+		return executeNamedQuery(GET_PROCESSED_MATCHED_PART_ID,null,null, columnValueBeanList);
 
 //		for (Long object : resultSet)
 //		{
@@ -189,6 +172,8 @@ public class CommonParticipantDAO extends GenericHibernateDAO<IParticipant, Long
 //		return particpantIdColl;
 	}
 	
+	
+	
 	public void setEMPIIdStatus(Long participantId, String status) throws DAOException
 	{
 		LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
@@ -196,8 +181,7 @@ public class CommonParticipantDAO extends GenericHibernateDAO<IParticipant, Long
 		columnValueBeanList.add(new ColumnValueBean(status));
 		columnValueBeanList.add(new ColumnValueBean(participantId));
 		columnValueBeans.add(columnValueBeanList);
-		String sql = "UPDATE CATISSUE_PARTICIPANT SET EMPI_ID_STATUS=? WHERE IDENTIFIER=?";
-		executeSQLUpdate(sql, columnValueBeans);
+		executeSQLUpdate(SET_EMPI_SQL, columnValueBeans);
 	}
 	
 	public void updateOldEMPIDetails(Long participantId, String empiId) throws DAOException
@@ -214,17 +198,13 @@ public class CommonParticipantDAO extends GenericHibernateDAO<IParticipant, Long
 		columnValueBeanList.add(new ColumnValueBean("TEMPMRNDATE", new Timestamp(System
 				.currentTimeMillis()), DBTypes.TIMESTAMP));
 		
-		final String sql = "INSERT INTO PARTICIPANT_EMPI_ID_MAPPING VALUES(?,?,?,?)";
 		columnValueBeans.add(columnValueBeanList);
-		executeSQLUpdate(sql, columnValueBeans);
+		executeSQLUpdate(UPDATE_OLD_EMPI_SQL, columnValueBeans);
 	}
 	
 	public void addParticipantToProcessMessageQueue(LinkedHashSet<Long> userIdSet,
 			Long participantId) throws DAOException
 	{
-		String query = "INSERT INTO MATCHED_PARTICIPANT_MAPPING(NO_OF_MATCHED_PARTICIPANTS,"
-			+ "CREATION_DATE,SEARCHED_PARTICIPANT_ID) VALUES(?,?,?)";
-
 		// delete old data from DB to start up clean with matching process
 		// Bug fix 18823
 		deleteProcessedParticipant(participantId);
@@ -241,7 +221,7 @@ public class CommonParticipantDAO extends GenericHibernateDAO<IParticipant, Long
 		columnValueBeanList.add(new ColumnValueBean("SEARCHED_PARTICIPANT_ID", participantId,
 				DBTypes.LONG));
 		columnValueBeans.add(columnValueBeanList);
-		executeSQLUpdate(query, columnValueBeans);
+		executeSQLUpdate(ADD_PART_TO_PROCESS_MSG_QUEUE, columnValueBeans);
 
 		updateParticipantUserMapping(userIdSet, participantId);
 	}
@@ -260,7 +240,6 @@ public class CommonParticipantDAO extends GenericHibernateDAO<IParticipant, Long
 		Iterator iterator = userIdSet.iterator();
 		while (iterator.hasNext())
 		{
-			String query = "INSERT INTO EMPI_PARTICIPANT_USER_MAPPING VALUES(?,?)";
 			Long userId = (Long) iterator.next();
 			LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
 			LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
@@ -269,7 +248,7 @@ public class CommonParticipantDAO extends GenericHibernateDAO<IParticipant, Long
 					DBTypes.LONG));
 			columnValueBeanList.add(new ColumnValueBean("USER_ID", userId, DBTypes.LONG));
 			columnValueBeans.add(columnValueBeanList);
-			executeSQLUpdate(query, columnValueBeans);
+			executeSQLUpdate(UPDATE_PART_USER_MAP_SQL, columnValueBeans);
 		}
 	}
 	
@@ -279,8 +258,7 @@ public class CommonParticipantDAO extends GenericHibernateDAO<IParticipant, Long
 		LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
 		columnValueBeanList.add(new ColumnValueBean(id));
 		columnValueBeans.add(columnValueBeanList);
-		String query = "DELETE FROM MATCHED_PARTICIPANT_MAPPING WHERE SEARCHED_PARTICIPANT_ID=?";
-		executeSQLUpdate(query, columnValueBeans);
+		executeSQLUpdate(DELETE_PROCESS_PART_SQL, columnValueBeans);
 	}
 
 	public void updateProcessedParticipant(Long id) throws DAOException
@@ -289,40 +267,18 @@ public class CommonParticipantDAO extends GenericHibernateDAO<IParticipant, Long
 		LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
 		columnValueBeanList.add(new ColumnValueBean(id));
 		columnValueBeans.add(columnValueBeanList);
-		String query = "UPDATE MATCHED_PARTICIPANT_MAPPING SET NO_OF_MATCHED_PARTICIPANTS=0 "
-				+ "WHERE SEARCHED_PARTICIPANT_ID=?";
-		executeSQLUpdate(query, columnValueBeans);
+		executeSQLUpdate(UPDATE_PROCESS_PART_SQL, columnValueBeans);
 	}
 	
-	public List getSiteObject(final String facilityId) throws DAOException
-	{
-		String hql = "select id,name from "+ISite.class.getName()+ "where facilityId=:facilityId"; 
-		List<ColumnValueBean> columnValueBeans = new ArrayList<ColumnValueBean>();
-		columnValueBeans.add(new ColumnValueBean("facilityId",facilityId));
-		return executeQuery(hql, null, null, columnValueBeans);
-	}
-	
-	public String getEMPIIDStatus(Long participantId) throws DAOException
-	{
-		String query = "SELECT EMPI_ID_STATUS FROM CATISSUE_PARTICIPANT WHERE IDENTIFIER=:id";
-		List<ColumnValueBean> colValueBeanList = new ArrayList<ColumnValueBean>();
-		colValueBeanList.add(new ColumnValueBean("id", participantId));
-		List<String> idList = executeSQLQuery(query,null,null, colValueBeanList);
-		String empIdStatus = null;
-		if (null != idList && !idList.isEmpty())
-		{
-			empIdStatus = idList.get(0);
-		}
-		return empIdStatus;
-	}
-	
+	/**
+	 * PUT in PMhql
+	 * @param participantId
+	 * @return
+	 * @throws DAOException
+	 */
 	public boolean isOldMatchesPresent(Long participantId) throws DAOException
 	{
-		String query = "SELECT SEARCHED_PARTICIPANT_ID FROM MATCHED_PARTICIPANT_MAPPING "
-			+ "WHERE SEARCHED_PARTICIPANT_ID=:participantId";
-		List<ColumnValueBean> colValueBeanList = new ArrayList<ColumnValueBean>();
-		colValueBeanList.add(new ColumnValueBean("participantId", participantId));
-		List<Object> partIdList = executeSQLQuery(query,null,null, colValueBeanList);
+		List<Object> partIdList = executeNamedQuery(IS_OLD_MATCHES_PRESENT,null,null, new ColumnValueBean(PARTICIPANT_ID, participantId));
 		boolean isOldMatchesPresent = false;
 		if (!partIdList.isEmpty() && partIdList.get(0) != null)
 		{
@@ -331,36 +287,29 @@ public class CommonParticipantDAO extends GenericHibernateDAO<IParticipant, Long
 		return isOldMatchesPresent;
 	}
 	
-	public IParticipant getParticpantByEmpiId(String empiId) throws DAOException
-	{
-		IParticipant part = null;
-		final String sourceObjectName = IParticipant.class.getName();
-		String hql = "from " + sourceObjectName + " where empiId:empiId";
-		List<ColumnValueBean> columnValueBeans = new ArrayList<ColumnValueBean>();
-		columnValueBeans.add(new ColumnValueBean(Constants.PARTICIPANT_EMPIID,empiId));
-		final List list = executeQuery(hql, null, null, columnValueBeans);
-		if (!list.isEmpty())
-		{
-			part = (IParticipant) list.get(0);
-		}
-		return part;
-	}
-	
+	/**
+	 * PUT in PMhql
+	 * @param participantId
+	 * @return
+	 * @throws DAOException
+	 * @throws BizLogicException
+	 * @throws ParseException
+	 * @throws ParticipantManagerException
+	 */
 	public List retrieveMatchedParticipantList(final long participantId)
 	throws DAOException, BizLogicException, ParseException, ParticipantManagerException
 	{
-		final String query = "SELECT * FROM CATISSUE_MATCHED_PARTICIPANT WHERE SEARCHED_PARTICIPANT_ID=:participantId order by ORDER_NO";
-		final List<ColumnValueBean> columnValueBeanList = new ArrayList<ColumnValueBean>();
-		columnValueBeanList.add(new ColumnValueBean("participantId", participantId));
-		return executeSQLQuery(query,null,null, columnValueBeanList);
+		return executeNamedQuery(GET_MATCHED_PART_LIST,null,null, new ColumnValueBean(PARTICIPANT_ID, participantId));
 	}
 	
+	/**
+	 * PUT in PMhql
+	 * @return
+	 * @throws DAOException
+	 */
 	public List<Long> fetchSearchParticipantIds() throws DAOException
 	{
-		final String query = "SELECT SEARCHED_PARTICIPANT_ID FROM MATCHED_PARTICIPANT_MAPPING WHERE NO_OF_MATCHED_PARTICIPANTS=:noOfMatchedParticpants";
-		final LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
-		columnValueBeanList.add(new ColumnValueBean("noOfMatchedParticpants", "-1"));
-		return executeSQLQuery(query,null,null, columnValueBeanList);
+		return executeNamedQuery(GET_SEARCH_PART_IDS,null,null,new ColumnValueBean(NO_OF_MATCHED_PARTICIPANT, Integer.valueOf("-1")));
 	}
 	
 	// CIDER PARTICIPANT MATCH
@@ -369,10 +318,6 @@ public class CommonParticipantDAO extends GenericHibernateDAO<IParticipant, Long
 
 		LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();;
 		LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();;
-		String query = "INSERT INTO CATISSUE_MATCHED_PARTICIPANT(PARTICIPANT_ID,EMPI_ID,LAST_NAME,FIRST_"
-			+ "NAME,MIDDLE_NAME,GENDER,SOCIAL_SECURITY_NUMBER,ACTIVITY_STATUS,VITAL_STATUS,PART"
-			+ "ICIPANT_MRN,PARTICIPANT_RACE,SEARCHED_PARTICIPANT_ID,ORDER_NO,BIRTH_DATE,DEA"
-			+ "TH_DATE) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 		columnValueBeanList.add(new ColumnValueBean("PARTICIPANT_ID", patientInformation.getId(),
 				DBTypes.LONG));
 		columnValueBeanList.add(new ColumnValueBean("EMPI_ID", patientInformation.getUpi(), DBTypes.VARCHAR));
@@ -402,7 +347,7 @@ public class CommonParticipantDAO extends GenericHibernateDAO<IParticipant, Long
 		DBTypes.DATE));
 		
 		columnValueBeans.add(columnValueBeanList);
-		executeSQLUpdate(query, columnValueBeans);
+		executeSQLUpdate(STORE_MATCH_PART_SQL, columnValueBeans);
 	}
 	
 	public void updateMatchedPartiMapping(long searchPartiId, int noOfMathcedPaticipants)
@@ -414,58 +359,41 @@ public class CommonParticipantDAO extends GenericHibernateDAO<IParticipant, Long
 		columnValueBeanList.add(new ColumnValueBean(noOfMathcedPaticipants));
 		columnValueBeanList.add(new ColumnValueBean(searchPartiId));
 		columnValueBeans.add(columnValueBeanList);
-		String query = (new StringBuilder()).append(
-				"UPDATE MATCHED_PARTICIPANT_MAPPING SET NO_OF_MATCHED_PARTICIPANTS = ?").append(
-				" WHERE SEARCHED_PARTICIPANT_ID=?").toString();
-		executeSQLUpdate(query, columnValueBeans);
+		executeSQLUpdate(UPDATE_MATCH_PART_MAPPING, columnValueBeans);
 	}
 	
 	/**
-	 * Gets the clinical study names.
-	 *
-	 * @param participantId the participant id
-	 * @param dao the dao
-	 *
-	 * @return the clinical study names
-	 *
-	 * @throws DAOException the DAO exception
+	 * PUT in Clinportalhql
+	 * @param userId
+	 * @param recordsPerPage
+	 * @return
+	 * @throws DAOException
 	 * @throws ParticipantManagerException
-	 * @throws BizLogicException
 	 */
-	public List<String> getClinicalStudyNames(Long participantId) throws DAOException, ParticipantManagerException
-	{
-		IParticipantManager participantManagerImplObj = ParticipantManagerUtility.getParticipantMgrImplObj();
-		String query= participantManagerImplObj.getClinicalStudyNamesQuery();
-
-
-		LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
-		columnValueBeanList.add(new ColumnValueBean("participantId", participantId));
-		return executeSQLQuery(query,null,null,columnValueBeanList);
-	}
-	
 	public List getProcessedMatchedParticipants(Long userId, int recordsPerPage) throws DAOException, ParticipantManagerException
 	{
 		final IParticipantManager participantMgrImplObj = ParticipantManagerUtility.getParticipantMgrImplObj();
 		String query = participantMgrImplObj.getProcessedMatchedParticipantQuery(userId);
 		LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
-		columnValueBeanList.add(new ColumnValueBean("userId", userId));
-		columnValueBeanList.add(new ColumnValueBean("noOfMacthedParticipant", "-1"));
+		columnValueBeanList.add(new ColumnValueBean(USER_ID, userId));
+		columnValueBeanList.add(new ColumnValueBean(NO_OF_MATCHED_PARTICIPANT, Integer.valueOf("-1")));
 		return executeSQLQuery(query, 0,recordsPerPage, columnValueBeanList);
 	}
 
 
+	/**
+	 * PUT in PMhql
+	 * @param userId
+	 * @return
+	 * @throws DAOException
+	 */
 
 	public int getTotalCount(Long userId) throws DAOException
 	{
-		String query = "SELECT count(*) FROM MATCHED_PARTICIPANT_MAPPING PARTIMAPPING "
-			+ " JOIN EMPI_PARTICIPANT_USER_MAPPING ON "
-			+ " PARTIMAPPING.SEARCHED_PARTICIPANT_ID=EMPI_PARTICIPANT_USER_MAPPING.PARTICIPANT_ID "
-			+ " WHERE EMPI_PARTICIPANT_USER_MAPPING.USER_ID=:userId AND PARTIMAPPING.NO_OF_MATCHED_PARTICIPANTS!=:noOfMacthedParticipant";
-
 		LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
-		columnValueBeanList.add(new ColumnValueBean("userId", userId));
-		columnValueBeanList.add(new ColumnValueBean("noOfMacthedParticipant", "-1"));
-		List list = executeSQLQuery(query, null,null, columnValueBeanList);
+		columnValueBeanList.add(new ColumnValueBean(USER_ID, userId));
+		columnValueBeanList.add(new ColumnValueBean(NO_OF_MATCHED_PARTICIPANT,Integer.valueOf("-1")));
+		List list = executeNamedQuery(GET_TOTAL_COUNT, null,null, columnValueBeanList);
 		return Integer.parseInt(list.get(0).toString());
 	}
 }

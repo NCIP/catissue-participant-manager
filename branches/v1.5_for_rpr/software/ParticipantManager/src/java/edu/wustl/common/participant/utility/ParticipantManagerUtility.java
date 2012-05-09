@@ -245,7 +245,7 @@ public class ParticipantManagerUtility
 		ISite site = null;
 		try
 		{
-			List siteObject = new CommonParticipantDAO(getAppName(),null).getSiteObject(facilityId);
+			List siteObject = getParticipantMgrImplObj().getSiteObject(facilityId);
 			if (siteObject != null && siteObject.size() > 0)
 			{
 				Object siteList[] = (Object[]) siteObject.get(0);
@@ -259,7 +259,13 @@ public class ParticipantManagerUtility
 		}
 		catch (DAOException e)
 		{
+			LOGGER.error("Error occurred in getSiteObject: "+e.getMessage(),e);
 			throw new BizLogicException(e);
+		}
+		catch (ApplicationException e)
+		{
+			LOGGER.error("Error occurred in getSiteObject: "+e.getMessage(),e);
+			throw new BizLogicException(null,e,e.getMessage());
 		}
 //		String sourceObjectName = ISite.class.getName();
 //		String selectColumnNames[] = {"id", "name"};
@@ -345,11 +351,12 @@ public class ParticipantManagerUtility
 		IParticipant participant = null;
 		try
 		{
-			participant = new CommonParticipantDAO(CommonServiceLocator.getInstance().getAppName(),null).getParticipantById(identifier);
+			participant = getParticipantMgrImplObj().getParticipantById(identifier);
 		}
-		catch (DAOException e)
+		catch (Exception e)
 		{
-			throw new BizLogicException(e);
+			LOGGER.error("Exception occurred in getParticipantById: "+e.getMessage(),e);
+			throw new BizLogicException(null,e,e.getMessage());
 		}
 		if(participant==null)
 		{
@@ -893,26 +900,26 @@ public class ParticipantManagerUtility
 //		return displayList;
 	}
 
-	/**
-	 * Gets the query.
-	 *
-	 * @param csId the cs id
-	 *
-	 * @return the query
-	 *
-	 * @throws DAOException the DAO exception
-	 * @throws ParticipantManagerException
-	 * @throws BizLogicException
-	 */
-	private static String getQueryForEmpiEnabled() throws DAOException, ParticipantManagerException,
-			BizLogicException
-	{
-
-
-		IParticipantManager participantManagerImplObj = getParticipantMgrImplObj();
-
-		return participantManagerImplObj.getIsEmpiEnabledQuery();
-	}
+//	/**
+//	 * Gets the query.
+//	 *
+//	 * @param csId the cs id
+//	 *
+//	 * @return the query
+//	 *
+//	 * @throws DAOException the DAO exception
+//	 * @throws ParticipantManagerException
+//	 * @throws BizLogicException
+//	 */
+//	private static String getQueryForEmpiEnabled() throws DAOException, ParticipantManagerException,
+//			BizLogicException
+//	{
+//
+//
+//		IParticipantManager participantManagerImplObj = getParticipantMgrImplObj();
+//
+//		return participantManagerImplObj.getIsEmpiEnabledQuery();
+//	}
 
 	/**
 	 * Cs empi status.
@@ -928,7 +935,7 @@ public class ParticipantManagerUtility
 		boolean status = false;
 		try
 		{
-			List statusList = new CommonParticipantDAO(getAppName(),null).isEMPIEnable(getQueryForEmpiEnabled(), participantId);
+			List statusList = getParticipantMgrImplObj().isEmpiEnabled(participantId);
 			if (statusList != null&&!statusList.isEmpty())
 			{
 				for (int i = 0; i < statusList.size(); i++)
@@ -951,16 +958,22 @@ public class ParticipantManagerUtility
 				}
 			}
 		}
-		catch (DAOException exp)
-		{
-			LOGGER.error(exp.getMessage(), exp);
-			throw new BizLogicException(exp);
-		}
+//		catch (DAOException exp)
+//		{
+//			LOGGER.error(exp.getMessage(), exp);
+//			throw new BizLogicException(exp);
+//		}
 		catch (ParticipantManagerException e)
 		{
 			LOGGER.error(e.getMessage(), e);
 			throw new BizLogicException(null,e,e.getMessage());
 		}
+		catch (ApplicationException e)
+		{
+			LOGGER.error(e.getMessage(), e);
+			throw new BizLogicException(null,e,e.getMessage());
+		}
+
 		return status;
 //		JDBCDAO dao = null;
 //		status = false;
@@ -1916,104 +1929,104 @@ public class ParticipantManagerUtility
 
 	}
 
-	/**
-	 * Gets the last name query.
-	 *
-	 * @param protocolIdSet the protocol id set
-	 * @param participantObjName the participant object name
-	 *
-	 * @return the last name query
-	 *
-	 * @throws ParticipantManagerException the participant manager exception
-	 */
-	public static String getLastNameQry(Set<Long> protocolIdSet, String participantObjName)
-			throws ParticipantManagerException
-	{
-		String fetchByNameQry = null;
-		IParticipantManager participantManagerImplObj = getParticipantMgrImplObj();
-
-		fetchByNameQry = participantManagerImplObj.getLastNameQuery(protocolIdSet);
-
-		return fetchByNameQry;
-	}
-
-	/**
-	 * Gets the meta phone query.
-	 *
-	 * @param protocolIdSet the protocol id set
-	 * @param participantObjName the participant object name
-	 *
-	 * @return the meta phone query
-	 *
-	 * @throws ParticipantManagerException the participant manager exception
-	 */
-	public static String getMetaPhoneQry(Set<Long> protocolIdSet, String participantObjName)
-			throws ParticipantManagerException
-	{
-		String fetchByMetaPhoneQry = null;
-		IParticipantManager participantManagerImplObj = getParticipantMgrImplObj();
-		fetchByMetaPhoneQry = participantManagerImplObj.getMetaPhoneCodeQuery(protocolIdSet);
-		return fetchByMetaPhoneQry;
-	}
-
-	/**
-	 * Gets the sSN query.
-	 *
-	 * @param protocolIdSet the protocol id set
-	 * @param participantObjName the participant obj name
-	 *
-	 * @return the sSN query
-	 *
-	 * @throws ParticipantManagerException the participant manager exception
-	 */
-	public static String getSSNQuery(Set<Long> protocolIdSet, String participantObjName)
-			throws ParticipantManagerException
-	{
-		String fetchBySSNQry = null;
-		IParticipantManager participantManagerImplObj = getParticipantMgrImplObj();
-
-		fetchBySSNQry = participantManagerImplObj.getSSNQuery(protocolIdSet);
-
-		return fetchBySSNQry;
-
-	}
-
-	/**
-	 * Gets the mRN query.
-	 *
-	 * @param protocolIdSet the protocol id set
-	 * @param pmiObjName the pmi object name
-	 *
-	 * @return the mRN query
-	 *
-	 * @throws ParticipantManagerException the participant manager exception
-	 */
-	public static String getMRNQuery(Set<Long> protocolIdSet, String pmiObjName)
-			throws ParticipantManagerException
-	{
-		IParticipantManager participantManagerImplObj = getParticipantMgrImplObj();
-		String fetchByMRNQry = null;
-		fetchByMRNQry = participantManagerImplObj.getMRNQuery(protocolIdSet);
-		return fetchByMRNQry;
-	}
-
-	/**
-	 *
-	 * @param protocolIdSet
-	 * @param participantObjName
-	 * @return
-	 * @throws ParticipantManagerException
-	 */
-	public static String getParticipantCodeQry(Set<Long> protocolIdSet)
-	throws ParticipantManagerException
-	{
-		String fetchByNameQry = null;
-		IParticipantManager participantManagerImplObj = getParticipantMgrImplObj();
-
-		fetchByNameQry = participantManagerImplObj.getParticipantCodeQuery(protocolIdSet);
-
-		return fetchByNameQry;
-	}
+//	/**
+//	 * Gets the last name query.
+//	 *
+//	 * @param protocolIdSet the protocol id set
+//	 * @param participantObjName the participant object name
+//	 *
+//	 * @return the last name query
+//	 *
+//	 * @throws ParticipantManagerException the participant manager exception
+//	 */
+//	public static String getLastNameQry(Set<Long> protocolIdSet, String participantObjName)
+//			throws ParticipantManagerException
+//	{
+//		String fetchByNameQry = null;
+//		IParticipantManager participantManagerImplObj = getParticipantMgrImplObj();
+//
+//		fetchByNameQry = participantManagerImplObj.getLastNameQuery(protocolIdSet);
+//
+//		return fetchByNameQry;
+//	}
+//
+//	/**
+//	 * Gets the meta phone query.
+//	 *
+//	 * @param protocolIdSet the protocol id set
+//	 * @param participantObjName the participant object name
+//	 *
+//	 * @return the meta phone query
+//	 *
+//	 * @throws ParticipantManagerException the participant manager exception
+//	 */
+//	public static String getMetaPhoneQry(Set<Long> protocolIdSet, String participantObjName)
+//			throws ParticipantManagerException
+//	{
+//		String fetchByMetaPhoneQry = null;
+//		IParticipantManager participantManagerImplObj = getParticipantMgrImplObj();
+//		fetchByMetaPhoneQry = participantManagerImplObj.getMetaPhoneCodeQuery(protocolIdSet);
+//		return fetchByMetaPhoneQry;
+//	}
+//
+//	/**
+//	 * Gets the sSN query.
+//	 *
+//	 * @param protocolIdSet the protocol id set
+//	 * @param participantObjName the participant obj name
+//	 *
+//	 * @return the sSN query
+//	 *
+//	 * @throws ParticipantManagerException the participant manager exception
+//	 */
+//	public static String getSSNQuery(Set<Long> protocolIdSet, String participantObjName)
+//			throws ParticipantManagerException
+//	{
+//		String fetchBySSNQry = null;
+//		IParticipantManager participantManagerImplObj = getParticipantMgrImplObj();
+//
+//		fetchBySSNQry = participantManagerImplObj.getSSNQuery(protocolIdSet);
+//
+//		return fetchBySSNQry;
+//
+//	}
+//
+//	/**
+//	 * Gets the mRN query.
+//	 *
+//	 * @param protocolIdSet the protocol id set
+//	 * @param pmiObjName the pmi object name
+//	 *
+//	 * @return the mRN query
+//	 *
+//	 * @throws ParticipantManagerException the participant manager exception
+//	 */
+//	public static String getMRNQuery(Set<Long> protocolIdSet, String pmiObjName)
+//			throws ParticipantManagerException
+//	{
+//		IParticipantManager participantManagerImplObj = getParticipantMgrImplObj();
+//		String fetchByMRNQry = null;
+//		fetchByMRNQry = participantManagerImplObj.getMRNQuery(protocolIdSet);
+//		return fetchByMRNQry;
+//	}
+//
+//	/**
+//	 *
+//	 * @param protocolIdSet
+//	 * @param participantObjName
+//	 * @return
+//	 * @throws ParticipantManagerException
+//	 */
+//	public static String getParticipantCodeQry(Set<Long> protocolIdSet)
+//	throws ParticipantManagerException
+//	{
+//		String fetchByNameQry = null;
+//		IParticipantManager participantManagerImplObj = getParticipantMgrImplObj();
+//
+//		fetchByNameQry = participantManagerImplObj.getParticipantCodeQuery(protocolIdSet);
+//
+//		return fetchByNameQry;
+//	}
 	/**
 	 * Fetch the PI and coordinators IDs.
 	 * @param participantId

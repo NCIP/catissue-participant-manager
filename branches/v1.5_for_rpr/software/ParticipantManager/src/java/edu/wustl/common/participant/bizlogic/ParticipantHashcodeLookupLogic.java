@@ -10,6 +10,7 @@ import edu.wustl.common.lookup.LookupParameters;
 import edu.wustl.common.participant.client.IParticipantManagerLookupLogic;
 import edu.wustl.common.participant.dao.CommonParticipantDAO;
 import edu.wustl.common.participant.domain.IParticipant;
+import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.util.global.CommonServiceLocator;
 
 
@@ -28,7 +29,7 @@ public class ParticipantHashcodeLookupLogic implements IParticipantManagerLookup
 //		ColumnValueBean activityStatusValue = new ColumnValueBean("Disabled");
 //		valueList.add(participantCodeValue);
 //		valueList.add(activityStatusValue);
-		List patientInfoList =  new CommonParticipantDAO(CommonServiceLocator.getInstance().getAppName(),null).executeParticipantCodeQry(protocolIdList, participant.getParticipantCode());
+		List patientInfoList =  ParticipantManagerUtility.getParticipantMgrImplObj().getParticipantsByParticipantCode(protocolIdList, participant.getParticipantCode());
 //		List patientInfoList =  dao.executeQuery(fetchByNameQry, valueList);
 		if(!patientInfoList.isEmpty())
 		{
