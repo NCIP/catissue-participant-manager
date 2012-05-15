@@ -9,6 +9,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.codec.language.Metaphone;
 
@@ -343,7 +344,6 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 		{
 			final Iterator itr = paticipantMedCol.iterator();
 			java.util.HashSet<Long> siteIdset = new java.util.HashSet<Long>();
-			HashSet<Long> duplicateSiteSet = new HashSet<Long>();
 
 			while (itr.hasNext())
 			{
@@ -357,9 +357,8 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 					if (!checkDuplicate)
 					{
 						//duplicate site present in collection , so find old one delete that one as well.
-						duplicateSiteSet.add(site.getId());
-						//throw new BizLogicException(null, null,
-							//	"errors.participant.mediden.duplicate", "");
+						throw new BizLogicException(null, null,
+							"errors.participant.mediden.duplicate", "");
 					}
 				}
 				if (validator.isEmpty(medicalRecordNo) || site == null || site.getId() == null)
@@ -373,12 +372,6 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 				{
 					newPMICollection.add(partiMedobj);
 				}
-
-			}
-			// now remove duplicate PMI bug fix: 21686
-			if(!duplicateSiteSet.isEmpty())
-			{
-				removeDuplicatePmi(newPMICollection, duplicateSiteSet);
 			}
 		}
 		participant.setParticipantMedicalIdentifierCollection(newPMICollection);
@@ -419,20 +412,7 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 		return true;
 	}
 
-	private static void removeDuplicatePmi(final Collection newPMICollection,
-			HashSet<Long> duplicateSiteSet)
-	{
-		final Iterator newPMIiterator = newPMICollection.iterator();
-		while (newPMIiterator.hasNext())
-		{
-			final IParticipantMedicalIdentifier<IParticipant, ISite> partiMedobj = (IParticipantMedicalIdentifier<IParticipant, ISite>) newPMIiterator
-					.next();
-			if (duplicateSiteSet.contains(partiMedobj.getSite().getId()))
-			{
-				newPMIiterator.remove();
-			}
-		}
-	}
+
 
     /**
      * @param participant
@@ -1237,9 +1217,38 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 				participantEMPI.getParticipantMedicalIdentifierCollection().addAll(medIdColTemp);
 			}
 		}
+		removeAllDuplicateMRNS(participantEMPI.getParticipantMedicalIdentifierCollection());
 		participant.setParticipantMedicalIdentifierCollection(participantEMPI.getParticipantMedicalIdentifierCollection());
 		participant.setEmpiId(participantEMPI.getEmpiId());
 		participant.setEmpiIdStatus(participantEMPI.getEmpiIdStatus());
+
+	}
+
+	private void removeAllDuplicateMRNS(
+			Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> participantMedicalIdentifierCollection)
+	{
+		Set<Long> duplicateSiteId = new HashSet<Long>();
+		Set<Long> siteIdSet = new HashSet<Long>();
+		for( IParticipantMedicalIdentifier<IParticipant, ISite> partMedId : participantMedicalIdentifierCollection)
+		{
+			if (partMedId.getSite() != null)
+			{
+				if(!siteIdSet.add(partMedId.getSite().getId()))
+				{
+					duplicateSiteId.add(partMedId.getSite().getId());
+				}
+			}
+		}
+		final Iterator newPMIiterator = participantMedicalIdentifierCollection.iterator();
+		while (newPMIiterator.hasNext())
+		{
+			final IParticipantMedicalIdentifier<IParticipant, ISite> partiMedobj = (IParticipantMedicalIdentifier<IParticipant, ISite>) newPMIiterator
+					.next();
+			if (duplicateSiteId.contains(partiMedobj.getSite().getId()))
+			{
+				newPMIiterator.remove();
+			}
+		}
 
 	}
 
