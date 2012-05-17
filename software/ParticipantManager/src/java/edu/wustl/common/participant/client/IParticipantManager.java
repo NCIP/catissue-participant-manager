@@ -9,6 +9,7 @@ import java.util.Set;
 import edu.wustl.common.exception.ApplicationException;
 import edu.wustl.common.participant.domain.IParticipant;
 import edu.wustl.common.participant.domain.ISite;
+import edu.wustl.common.participant.domain.IUser;
 import edu.wustl.dao.exception.DAOException;
 import edu.wustl.dao.query.generator.ColumnValueBean;
 import edu.wustl.patientLookUp.domain.PatientInformation;
@@ -23,6 +24,10 @@ public interface IParticipantManager
 {
 
 	public Long getSiteIdByName(String siteName) throws ApplicationException;
+	
+	public ISite getSiteByName(String siteName) throws ApplicationException;
+	
+	public IUser getUserByLoginNameAndActivityStatus(String loginName,String activityStatus) throws ApplicationException;
 	
 	public IParticipant getParticipantById(Long identifier) throws ApplicationException;
 	
