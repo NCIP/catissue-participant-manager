@@ -12,6 +12,7 @@ import java.util.List;
 import org.apache.commons.codec.language.Metaphone;
 
 import edu.wustl.common.beans.SessionDataBean;
+import edu.wustl.common.bizlogic.NewDefaultBizLogic;
 import edu.wustl.common.exception.ApplicationException;
 import edu.wustl.common.exception.BizLogicException;
 import edu.wustl.common.exception.ErrorKey;
@@ -30,11 +31,15 @@ import edu.wustl.common.util.global.CommonServiceLocator;
 import edu.wustl.common.util.logger.Logger;
 import edu.wustl.dao.exception.DAOException;
 import edu.wustl.patientLookUp.domain.PatientInformation;
+import edu.wustl.security.exception.SMException;
+import edu.wustl.security.global.Permissions;
+import edu.wustl.security.privilege.PrivilegeCache;
+import edu.wustl.security.privilege.PrivilegeManager;
 
 /**
  * The Class CommonParticipantBizlogic.
  */
-public class CommonParticipantBizlogic extends CommonDefaultBizLogic
+public class CommonParticipantBizlogic extends NewDefaultBizLogic
 {
 
 	/** The Constant logger. */
@@ -607,7 +612,7 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 	 */
 	public void updateParticipant(final IParticipant newpartcipantObj,
 			final IParticipant oldPartcipantObj) throws BizLogicException,
-			ParticipantManagerException
+			ParticipantManagerException,ApplicationException
 	{
 		final String loginName = XMLPropertyHandler.getValue(Constants.HL7_LISTENER_ADMIN_USER);
 		final IUser validUser = ParticipantManagerUtility.getUser(loginName,
@@ -625,23 +630,14 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 	 * @throws ParticipantManagerException
 	 * @throws BizLogicException
 	 */
-	public ISite getSite(final String siteName) throws ParticipantManagerException,
-			BizLogicException
+	public ISite getSite(final String siteName) throws ApplicationException,BizLogicException,ParticipantManagerException
 	{
-		ISite site = null;
-		String siteClassName = edu.wustl.common.participant.utility.PropertyHandler
-				.getValue(Constants.SITE_CLASS);
-		final String getSite = "from " + siteClassName + " site where site.name= '" + siteName
-				+ "'";
-		final List sites = this.executeQuery(getSite);
-		if (sites != null && !sites.isEmpty())
-		{
-			site = (ISite) sites.get(0);
-		}
-		else
+		ISite site = ParticipantManagerUtility.getParticipantMgrImplObj().getSiteByName(siteName);
+		if(site==null)
 		{
 			throw new BizLogicException(null, null, null);
 		}
+
 		return site;
 	}
 
@@ -1064,6 +1060,63 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic
 		{
 			medIdColTemp.add(partMedIdLocal);
 		}
+	}
+
+	@Override
+	protected Object getObject(Long arg0)
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean isAuthorized(Object domainObject, SessionDataBean sessionDataBean) throws BizLogicException
+	{
+		try
+		{
+			boolean isAuthorized = false;
+			if (sessionDataBean != null)
+			{
+				if (domainObject == null)
+				{
+					isAuthorized = true;
+				}
+				else
+				{
+					PrivilegeCache privilegeCache = PrivilegeManager.getInstance()
+							.getPrivilegeCache(sessionDataBean.getUserName());
+					isAuthorized = privilegeCache.hasPrivilege(domainObject.getClass().getName(), Permissions.EXECUTE);
+				}
+			}
+
+			if (!isAuthorized)
+			{
+				throw new BizLogicException(ErrorKey.getErrorKey("access.execute.action.denied"),
+						null, "");
+			}
+			return isAuthorized;
+		}
+		catch (SMException smException)
+		{
+			throw new BizLogicException(ErrorKey.getErrorKey("error.security"), smException,
+			"Security Exception");
+		}
+
+	}
+
+	@Override
+	public void insert(Object participant, SessionDataBean sessionDataBean, int dummy) throws BizLogicException
+	{
+		
+		
+	}
+
+	@Override
+	public void update(Object participant, Object oldParticipant, int dummy, SessionDataBean sessionDataBean)
+			throws BizLogicException
+	{
+		update((IParticipant)participant, (IParticipant)oldParticipant);
+		
 	}
 
 }

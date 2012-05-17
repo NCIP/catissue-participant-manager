@@ -2213,19 +2213,16 @@ public class ParticipantManagerUtility
 		 * @throws ParticipantManagerException
 		 */
 		public static IUser getUser(final String loginName, final String activityStatus)
-				throws BizLogicException, ParticipantManagerException
+				throws BizLogicException, ParticipantManagerException,ApplicationException
 		{
-			IUser validUser = null;
-			String userClassName=edu.wustl.common.participant.utility.PropertyHandler.getValue(Constants.USER_CLASS);
-			final String getActiveUser = "from "+userClassName+" user where user.activityStatus= '"
-					+ activityStatus + "' and user.loginName =" + "'" + loginName + "'";
-			final DefaultBizLogic bizlogic = new DefaultBizLogic();
-			final List users = bizlogic.executeQuery(getActiveUser);
-			if (users != null && !users.isEmpty())
+			try
 			{
-				validUser = (IUser) users.get(0);
+				return getParticipantMgrImplObj().getUserByLoginNameAndActivityStatus(loginName, activityStatus);
 			}
-			return validUser;
+			catch(DAOException daoExp)
+			{
+				throw new BizLogicException(daoExp);
+			}
 		}
 
 		/**
