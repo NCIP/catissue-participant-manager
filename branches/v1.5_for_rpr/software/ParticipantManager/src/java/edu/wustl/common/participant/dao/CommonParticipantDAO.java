@@ -121,6 +121,12 @@ public class CommonParticipantDAO extends GenericHibernateDAO<IParticipant, Long
 		if (!list.isEmpty())
 		{
 			eMPIStatus = (String) list.get(0);
+			//Bug 23731
+			if (eMPIStatus == null)
+			{
+				eMPIStatus = "";
+			}
+			// -- end --
 		}
 		return eMPIStatus;
 	}
