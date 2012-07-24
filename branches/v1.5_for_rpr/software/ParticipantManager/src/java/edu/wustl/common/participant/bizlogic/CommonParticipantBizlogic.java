@@ -1105,7 +1105,7 @@ public class CommonParticipantBizlogic extends NewDefaultBizLogic
 	}
 
 	@Override
-	public void insert(Object participant, SessionDataBean sessionDataBean)
+	public void insert(Object participant, SessionDataBean sessionDataBean, int dummy)
 			throws BizLogicException
 	{
 		
@@ -1113,7 +1113,8 @@ public class CommonParticipantBizlogic extends NewDefaultBizLogic
 	}
 
 	@Override
-	public void update(Object participant, Object oldParticipant, SessionDataBean sessionDataBean)
+	public void update(Object participant, Object oldParticipant, int dummy,
+			SessionDataBean sessionDataBean)
 			throws BizLogicException
 	{
 		update((IParticipant)participant, (IParticipant)oldParticipant);
