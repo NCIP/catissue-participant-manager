@@ -41,7 +41,7 @@ public class CommonParticipantDAO extends GenericHibernateDAO<IParticipant, Long
 	private static final String GET_PROCESSED_MATCHED_PART_ID ="getProcessedMatchedParticipantIds";
 	private static final String IS_OLD_MATCHES_PRESENT ="isOldMatchesPresent";
 	private static final String GET_MATCHED_PART_LIST ="retrieveMatchedParticipantList";
-	private static final String GET_SEARCH_PART_IDS ="fetchSearchParticipantIds";
+	private static final String GET_SEARCH_PART_IDS ="SELECT SEARCHED_PARTICIPANT_ID FROM MATCHED_PARTICIPANT_MAPPING WHERE NO_OF_MATCHED_PARTICIPANTS=?";
 	private static final String GET_TOTAL_COUNT ="getTotalCount";
 	
 	private static final String SET_EMPI_SQL = "UPDATE CATISSUE_PARTICIPANT SET EMPI_ID_STATUS=? WHERE IDENTIFIER=?";
@@ -315,8 +315,13 @@ public class CommonParticipantDAO extends GenericHibernateDAO<IParticipant, Long
 	 */
 	public List<Long> fetchSearchParticipantIds() throws DAOException
 	{
-		return executeNamedQuery(GET_SEARCH_PART_IDS,null,null,new ColumnValueBean(NO_OF_MATCHED_PARTICIPANT, Integer.valueOf("-1")));
+		final LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
+		columnValueBeanList.add(new ColumnValueBean("NO_OF_MATCHED_PARTICIPANTS", "-1",
+				DBTypes.INTEGER));
+		return executeSQLQuery(GET_SEARCH_PART_IDS, null, null, columnValueBeanList);
+	//	return executeNamedQuery(GET_SEARCH_PART_IDS,null,null,new ColumnValueBean(NO_OF_MATCHED_PARTICIPANT, Integer.valueOf("-1")));
 	}
+	
 	
 	// CIDER PARTICIPANT MATCH
 	public void storeMatchedParticipant(IParticipant participant,PatientInformation patientInformation,String raceValues,String mrnValue,int orderNo) throws DAOException
