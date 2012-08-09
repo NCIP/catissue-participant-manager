@@ -40,14 +40,18 @@ public class PatientInfoByName
 			throws PatientLookupException
 	{
 
-		List<PatientInformation> matchedPatientsByName = null;
+		List<PatientInformation> matchedPatientsByName = new ArrayList<PatientInformation>();
 		List<PatientInformation> matchedPatientsByMetaPhone = null;
 		List<PatientInformation> matchedParticipantList = new ArrayList<PatientInformation>();
 		try
 		{
-			String lastName = Utility.compressLastName(patientInformation.getLastName());
-			matchedPatientsByName = queryExecutor.executeQueryForName(lastName, patientInformation
-					.getProtocolIdSet(), patientInformation.getParticipantObjName());
+			//added a empty check for fixing bug :22880
+			if(patientInformation.getLastName() !=null && !"".equals(patientInformation.getLastName()))
+			{
+				String lastName = Utility.compressLastName(patientInformation.getLastName());
+				matchedPatientsByName.addAll(queryExecutor.executeQueryForName(lastName, patientInformation
+						.getProtocolIdSet(), patientInformation.getParticipantObjName()));
+			}
 			// get meta phone value
 			Metaphone metaPhoneObj = new Metaphone();
 			String metaPhone = metaPhoneObj.metaphone(patientInformation.getLastName());
