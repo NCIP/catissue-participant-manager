@@ -2,6 +2,7 @@
 package edu.wustl.common.participant.bizlogic;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
@@ -511,6 +512,7 @@ public class ParticipantMatchingBizLogic
 		{
 			final IParticipantManager participantMgrImplObj = ParticipantManagerUtility.getParticipantMgrImplObj();
 			List list = participantDAO.getProcessedMatchedParticipants(userId,recordsPerPage);
+			list = new ArrayList(Arrays.asList(list));
 			//populateListWithCSName(list);
 			return list;
 		}	
