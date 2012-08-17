@@ -511,7 +511,7 @@ public class ParticipantMatchingBizLogic
 		{
 			final IParticipantManager participantMgrImplObj = ParticipantManagerUtility.getParticipantMgrImplObj();
 			List list = participantDAO.getProcessedMatchedParticipants(userId,recordsPerPage);
-			populateListWithCSName(list);
+			//populateListWithCSName(list);
 			return list;
 		}	
 		catch(DAOException daoExp)
