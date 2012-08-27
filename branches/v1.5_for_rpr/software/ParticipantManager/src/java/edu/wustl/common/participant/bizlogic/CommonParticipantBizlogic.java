@@ -811,7 +811,8 @@ public class CommonParticipantBizlogic extends NewDefaultBizLogic
 		if (mrnString != null && !"".equals(mrnString))
 		{
 			final Collection partiMediIdColn = getPartiMediIdColnCollection(mrnString);
-			participant.setParticipantMedicalIdentifierCollection(partiMediIdColn);
+			participant.getParticipantMedicalIdentifierCollection().clear();
+			participant.getParticipantMedicalIdentifierCollection().addAll(partiMediIdColn);
 		}
 		final String raceString = (String) participantValueList[12];
 		if (raceString != null && !"".equals(raceString))
