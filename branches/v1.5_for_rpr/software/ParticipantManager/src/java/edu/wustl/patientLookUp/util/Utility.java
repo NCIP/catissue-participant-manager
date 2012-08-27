@@ -446,4 +446,19 @@ public class Utility
 			}
 		}
 	}
+	
+	public static List<List> convertToListofList(List<Object[]> list)
+	{
+		List<List> outerList =  new ArrayList<List>();
+		for (Object[] innerObjArray : list)
+		{
+				List<Object> innerList = new ArrayList();
+				for (Object object : innerObjArray)
+				{
+					innerList.add(object);
+				}
+				outerList.add(innerList);
+		}
+		return outerList;
+	}
 }
