@@ -9,6 +9,8 @@ import javax.transaction.UserTransaction;
 
 import edu.wustl.common.participant.bizlogic.ParticipantMatchingBizLogic;
 import edu.wustl.common.util.logger.Logger;
+import edu.wustl.dao.exception.DAOException;
+import edu.wustl.dao.util.DAOUtility;
 
 /**
  * @author geeta_jaggal.
@@ -25,15 +27,17 @@ public class ParticipantMatchingTimerTask extends TimerTask
 	 */
 	public void run()
 	{
-		UserTransaction transaction = null;
+	//	UserTransaction transaction = null;
+		DAOUtility daoUtil = DAOUtility.getInstance();
 		try
 		{
-			transaction = (UserTransaction) new InitialContext().lookup("java:comp/UserTransaction");
+			/*transaction = (UserTransaction) new InitialContext().lookup("java:comp/UserTransaction");
 			if (transaction.getStatus() == Status.STATUS_NO_TRANSACTION)
 			{
 				logger.info("=========== Starting a new Transaction ================");
 				transaction.begin();
-			}
+			}*/
+			daoUtil.beginTransaction();
 			new ParticipantMatchingBizLogic().perFormParticipantMatch();
 		}
 		catch (Exception e)
@@ -42,12 +46,24 @@ public class ParticipantMatchingTimerTask extends TimerTask
 			System.out.println("Error during participant timer task");
 			try
 			{
-				if(transaction!=null)
-					transaction.rollback();
+			/*	if(transaction!=null)
+					transaction.rollback();*/
+				daoUtil.rollbackTransaction();
 			}
 			catch (final Exception rollbackFailed)
 			{
 				logger.error("Transaction failed !", rollbackFailed);
+			}
+		}
+		finally
+		{
+			try
+			{
+				daoUtil.commitTransaction();
+			}
+			catch (DAOException e)
+			{
+				logger.error("Failed to Commit..",e);
 			}
 		}
 	}

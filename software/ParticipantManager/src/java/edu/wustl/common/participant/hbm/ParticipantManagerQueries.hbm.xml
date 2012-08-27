@@ -43,11 +43,26 @@
 	
 	<sql-query name="retrieveMatchedParticipantList">
 	<return-scalar column="part_Id" type="long"/>
-		SELECT PARTICIPANT_ID as part_Id,EMPI_ID,LAST_NAME,FIRST_NAME,MIDDLE_NAME,BIRTH_DATE,GENDER,SOCIAL_SECURITY_NUMBER,ACTIVITY_STATUS,DEATH_DATE,VITAL_STATUS,PARTICIPANT_MRN,PARTICIPANT_RACE,IS_FROM_EMPI,SEARCHED_PARTICIPANT_ID,ORDER_NO FROM CATISSUE_MATCHED_PARTICIPANT WHERE SEARCHED_PARTICIPANT_ID=:participantId order by ORDER_NO
+	<return-scalar column="empiId" type="string"/>
+	<return-scalar column="lname" type="string"/>
+	<return-scalar column="fname" type="string"/>
+	<return-scalar column="mname" type="string"/>
+	<return-scalar column="bdate" type="date"/>
+	<return-scalar column="gender" type="string"/>
+	<return-scalar column="ssn" type="string"/>
+	<return-scalar column="status" type="string"/>
+	<return-scalar column="ddate" type="date"/>	
+	<return-scalar column="vstatus" type="string"/>
+	<return-scalar column="mrn" type="string"/>
+	<return-scalar column="race" type="string"/>	
+	<return-scalar column="isempi" type="string"/>
+	<return-scalar column="search_part_id" type="long"/>
+		<return-scalar column="orderNo" type="long"/>
+		SELECT PARTICIPANT_ID as part_Id,EMPI_ID as empiId,LAST_NAME as lname ,FIRST_NAME as fname,MIDDLE_NAME as mname ,BIRTH_DATE as bdate ,GENDER as gender,SOCIAL_SECURITY_NUMBER as ssn,ACTIVITY_STATUS as status,DEATH_DATE as ddate,VITAL_STATUS as vstatus ,PARTICIPANT_MRN as mrn,PARTICIPANT_RACE as race,IS_FROM_EMPI as isempi,SEARCHED_PARTICIPANT_ID as search_part_id,ORDER_NO as orderNo FROM CATISSUE_MATCHED_PARTICIPANT WHERE SEARCHED_PARTICIPANT_ID=:participantId order by ORDER_NO
 	</sql-query>
 	
 	<sql-query name="fetchSearchParticipantIds">
-		<return-scalar column="search_part_Id" type="long"/>
+	<return-scalar column="search_part_id" type="long"/>
 		SELECT SEARCHED_PARTICIPANT_ID as search_part_Id FROM MATCHED_PARTICIPANT_MAPPING WHERE NO_OF_MATCHED_PARTICIPANTS=:noOfMatchedParticipant
 	</sql-query>
 	<sql-query name="getTotalCount">
@@ -70,8 +85,41 @@
 		SELECT * FROM PARTICIPANT_EMPI_ID_MAPPING WHERE PERMANENT_PARTICIPANT_ID=:clinPortalId ORDER BY TEMPMRNDATE DESC
 	</sql-query>
 
-	<sql-query name="">
+	<sql-query name="getProcessedMatchedParticipantQuery">
+		<return-scalar column="temp" type="string" />
+		<return-scalar column="part_Id" type="string" />
+		<return-scalar column="lname" type="string" />
+		<return-scalar column="fname" type="string" />
+		<return-scalar column="creationDate" type="string" />
+		<return-scalar column="cnt" type="string" />		
+		<return-scalar column="SHORT_TITLE" type="string" />
+
+		select temp, SEARCHED_PARTICIPANT_ID as part_id, INITCAP(LAST_NAME) as
+		lname,INITCAP(FIRST_NAME) as fname, CREATION_DATE as creationDate,
+		NO_OF_MATCHED_PARTICIPANTS as cnt,
+		substr(SYS_CONNECT_BY_PATH(SHORT_TITLE, ';'),2) as SHORT_TITLE from
+		(SELECT CSNAME.SHORT_TITLE,0 as temp,
+		PARTIMAPPING.SEARCHED_PARTICIPANT_ID,PARTI.LAST_NAME,PARTI.FIRST_NAME,
+		to_char(CREATION_DATE,'MM-dd-yyyy') as CREATION_DATE,
+		PARTIMAPPING.NO_OF_MATCHED_PARTICIPANTS,
+		count(*) OVER (partition by PARTIMAPPING.SEARCHED_PARTICIPANT_ID) CNT1,
+		ROW_NUMBER() OVER(partition by PARTIMAPPING.SEARCHED_PARTICIPANT_ID
+		ORDER BY CSNAME.SHORT_TITLE) SEQ1
+		FROM MATCHED_PARTICIPANT_MAPPING PARTIMAPPING JOIN CATISSUE_PARTICIPANT
+		PARTI
+		ON PARTI.IDENTIFIER=PARTIMAPPING.SEARCHED_PARTICIPANT_ID JOIN
+		EMPI_PARTICIPANT_USER_MAPPING
+		ON
+		PARTIMAPPING.SEARCHED_PARTICIPANT_ID=EMPI_PARTICIPANT_USER_MAPPING.PARTICIPANT_ID
+		,
+		( SELECT SHORT_TITLE,PARTICIPANT_ID FROM CATISSUE_CLINICAL_STUDY_REG
+		CSR JOIN CATISSUE_SPECIMEN_PROTOCOL CSP
+		ON CSR.CLINICAL_STUDY_ID=CSP.IDENTIFIER) CSNAME WHERE
+		EMPI_PARTICIPANT_USER_MAPPING.USER_ID=:userId
+		AND PARTIMAPPING.NO_OF_MATCHED_PARTICIPANTS!= -1 and
+		CSNAME.PARTICIPANT_ID=PARTIMAPPING.SEARCHED_PARTICIPANT_ID ) where
+		SEQ1=CNT1 start with SEQ1=1 connect by prior SEQ1+1=SEQ1 and prior
+		SEARCHED_PARTICIPANT_ID=SEARCHED_PARTICIPANT_ID ORDER BY CREATION_DATE
 	</sql-query>
-	
 
 </hibernate-mapping>

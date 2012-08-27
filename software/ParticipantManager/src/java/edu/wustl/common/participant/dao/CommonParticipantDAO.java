@@ -382,7 +382,7 @@ public class CommonParticipantDAO extends GenericHibernateDAO<IParticipant, Long
 		String query = participantMgrImplObj.getProcessedMatchedParticipantQuery(userId);
 		LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
 		columnValueBeanList.add(new ColumnValueBean(USER_ID, userId));
-		columnValueBeanList.add(new ColumnValueBean(NO_OF_MATCHED_PARTICIPANT, Integer.valueOf("-1")));
+		//columnValueBeanList.add(new ColumnValueBean(NO_OF_MATCHED_PARTICIPANT, Integer.valueOf("-1")));
 		return executeNamedQuery(query, 0,recordsPerPage, columnValueBeanList);
 	}
 

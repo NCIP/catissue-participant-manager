@@ -508,13 +508,13 @@ public class ParticipantMatchingBizLogic
 	 */
 	public List getProcessedMatchedParticipants(Long userId, int recordsPerPage) throws BizLogicException, ParticipantManagerException
 	{
+		List<List> outerList = null;
 		try
 		{
 			final IParticipantManager participantMgrImplObj = ParticipantManagerUtility.getParticipantMgrImplObj();
-			List list = participantDAO.getProcessedMatchedParticipants(userId,recordsPerPage);
-			list = new ArrayList(Arrays.asList(list));
-			//populateListWithCSName(list);
-			return list;
+			List<Object[]> list = participantDAO.getProcessedMatchedParticipants(userId,recordsPerPage);
+			outerList = edu.wustl.patientLookUp.util.Utility.convertToListofList(list);
+			return outerList;
 		}	
 		catch(DAOException daoExp)
 		{
