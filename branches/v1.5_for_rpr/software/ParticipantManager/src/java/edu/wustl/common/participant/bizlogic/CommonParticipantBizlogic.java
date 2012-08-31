@@ -343,7 +343,7 @@ public class CommonParticipantBizlogic extends NewDefaultBizLogic
 		final IParticipant participant = (IParticipant) obj;
 		// if for CS eMPI is enable then set the eMPI status as pending if its
 		// eligible
-		if (ParticipantManagerUtility.isEMPIEnable(participant.getId()))
+		//if (ParticipantManagerUtility.isEMPIEnable(participant.getId()))
 		{
 			insertParticipantToProcessingQue(participant, userIdSet);
 		}
@@ -432,8 +432,8 @@ public class CommonParticipantBizlogic extends NewDefaultBizLogic
 
 		try
 		{
-			if (ParticipantManagerUtility.isEMPIEnable(participant.getId())
-					&& ParticipantManagerUtility.isParticipantEdited(oldParticipant, participant))
+			if (/*ParticipantManagerUtility.isEMPIEnable(participant.getId())
+					&& */ParticipantManagerUtility.isParticipantEdited(oldParticipant, participant))
 			{
 				// if user resolved match by selecting a record from the grid,
 				// then insert entry into PARTICIPANT_EMPI_ID_MAPPING table
