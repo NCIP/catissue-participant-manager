@@ -4,7 +4,8 @@
 
 <hibernate-mapping>
 	<sql-query name="isParticipantMatchWithinCSCPEnable">
-		SELECT SP.PARTCIPNT_MATCH_WITHIN_CSCP FROM  CATISSUE_SPECIMEN_PROTOCOL SP WHERE SP.IDENTIFIER=:id
+		<return-scalar column="matchWithinCS" type="boolean"/>
+		SELECT SP.PARTCIPNT_MATCH_WITHIN_CSCP as matchWithinCS FROM  CATISSUE_SPECIMEN_PROTOCOL SP WHERE SP.IDENTIFIER=:id
 	</sql-query>
 	
 	<sql-query name="getPartcipantIdsList">

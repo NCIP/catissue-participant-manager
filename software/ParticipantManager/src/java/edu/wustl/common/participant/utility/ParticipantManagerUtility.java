@@ -594,15 +594,12 @@ public class ParticipantManagerUtility
 	public static boolean isParticipantMatchWithinCSCPEnable(Long id) throws DAOException
 	{
 		boolean status = false;
-		List list = new CommonParticipantDAO(getAppName(),null).isParticipantMatchWithinCSCPEnable(id);
+		List<Boolean> list = new CommonParticipantDAO(getAppName(),null).isParticipantMatchWithinCSCPEnable(id);
 		if (!list.isEmpty() && !"".equals(list.get(0)))
 		{
 			//List statusList = (List) list.get(0);
-			Object value = list.get(0);
-			if (value!=null && value.toString().equals("1"))
-			{
-				status = true;
-			}
+			return list.get(0);
+			
 		}
 		return status;
 //		boolean status = false;
