@@ -22,8 +22,8 @@ public class Constants
 	public static final String CDE_VITAL_STATUS = "Vital Status";
 
 	/** The Constant ACTIVITY_STATUS_VALUES. */
-	public static final String ACTIVITY_STATUS_VALUES[] = {"-- Select --", "Active", "Closed",
-			"Disabled"};
+	public static final String ACTIVITY_STATUS_VALUES[] = {"-- Select --", "Inactive", "Active", "Closed",
+		"Locked", "Disabled"};
 
 	/** The Constant CDE_NAME_GENDER. */
 	public static final String CDE_NAME_GENDER = "Gender";
