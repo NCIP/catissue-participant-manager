@@ -32,6 +32,7 @@ import edu.wustl.common.participant.domain.IParticipant;
 import edu.wustl.common.participant.utility.Constants;
 import edu.wustl.common.participant.utility.ParticipantManagerException;
 import edu.wustl.common.participant.utility.ParticipantManagerUtility;
+import edu.wustl.common.transformer.TransformerUtil;
 import edu.wustl.common.util.Utility;
 import edu.wustl.common.util.logger.Logger;
 import edu.wustl.dao.exception.DAOException;
@@ -218,7 +219,8 @@ public class ParticipantEMPIGenerationAction extends CommonAddEditAction
 	{
 		final IParticipant participant = (IParticipant) ParticipantManagerUtility
 				.getParticipantInstance();
-		((AbstractDomainObject) participant).setAllValues((AbstractActionForm) participantForm);
+		//((AbstractDomainObject) participant).setAllValues((AbstractActionForm) participantForm);
+		TransformerUtil.transform( (AbstractActionForm)participantForm, (AbstractDomainObject)participant);
 		participant.setId(participantForm.getId());
 		final EMPIParticipantRegistrationBizLogic bizLogic = new EMPIParticipantRegistrationBizLogic();
 		String regStatusMessage = "";
