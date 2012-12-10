@@ -192,6 +192,8 @@ public class CommonParticipantDAO extends GenericHibernateDAO<IParticipant, Long
 	
 	public void updateOldEMPIDetails(Long participantId, String empiId) throws DAOException
 	{
+		LOGGER.info("CommonParticipantDAO. locking Participant id : "+participantId);
+		LOGGER.info("CommonParticipantDAO. locking Participant whose old eMPI is  : "+empiId);
 		final LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
 		final LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
 		

@@ -435,6 +435,7 @@ public class CommonParticipantBizlogic extends NewDefaultBizLogic
 			if (/*ParticipantManagerUtility.isEMPIEnable(participant.getId())
 					&& */ParticipantManagerUtility.isParticipantEdited(oldParticipant, participant))
 			{
+				logger.info("commonParticipantBizLogic Participant is registered in empi enabled Study & record has been edited.");
 				// if user resolved match by selecting a record from the grid,
 				// then insert entry into PARTICIPANT_EMPI_ID_MAPPING table
 				// so that HL7 msg is sent with tmpMRN Id
@@ -442,6 +443,7 @@ public class CommonParticipantBizlogic extends NewDefaultBizLogic
 						&& participant.getGridValueSelected().equals(Constants.YES)
 						&& null != oldParticipant.getEmpiId())
 				{
+					logger.info("commonParticipantBizLogic Match selected for participant Whose Empi is already generated");
 					// Update PARTICIPANT_EMPI_ID_MAPPING table with tempMRN
 					ParticipantManagerUtility utility = new ParticipantManagerUtility();
 					utility.updateOldEMPIDetails(participant.getId(), oldParticipant.getEmpiId());
@@ -1109,8 +1111,8 @@ public class CommonParticipantBizlogic extends NewDefaultBizLogic
 	public void insert(Object participant, SessionDataBean sessionDataBean, int dummy)
 			throws BizLogicException
 	{
-		
-		
+
+
 	}
 
 	@Override
@@ -1119,7 +1121,7 @@ public class CommonParticipantBizlogic extends NewDefaultBizLogic
 			throws BizLogicException
 	{
 		update((IParticipant)participant, (IParticipant)oldParticipant);
-		
+
 	}
 
 }
