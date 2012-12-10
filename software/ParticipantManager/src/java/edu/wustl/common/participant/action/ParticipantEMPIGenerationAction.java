@@ -227,7 +227,11 @@ public class ParticipantEMPIGenerationAction extends CommonAddEditAction
 		try
 		{
 			//update empIId to blank and insert temp MRN entry into PARTICIPANT_EMPI_ID_MAPPING table, incase empiId was earlier generated and user said "Ignore and Create new empiId"
-
+			SessionDataBean sessionDataBean = (SessionDataBean) request.getSession().getAttribute(
+					Constants.SESSION_DATA);
+			LOGGER.info("ParticipantEMPIGenerationAction Ignore & create new flow for EMPI called");
+			LOGGER.info("ParticipantEMPIGenerationAction User id :"+sessionDataBean.getUserId());
+			LOGGER.info("ParticipantEMPIGenerationAction User Name :"+sessionDataBean.getLastName()+", "+sessionDataBean.getFirstName());
 			bizLogic.ignoreAndCreateNewFlow(participant);
 
 			//bizLogic.registerPatientToeMPI(participant);
