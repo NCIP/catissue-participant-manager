@@ -1,0 +1,99 @@
+
+validate:pre:build:
+     [echo] Checking for existence of GLOBUS_LOCATION envrironment variable.
+     [echo] wscore.relative.dir = ws-core-4.0.3
+     [echo] GLOBUS_LOCATION not set, downloading and installing http://gforge.nci.nih.gov/svnroot/commonlibrary/trunk/techstack-2006/os-independent/ws-core-enum-4.0.3.zip
+    [unzip] Expanding: D:\CommonPackage_BDA\CommonPackage\software\target\download\ws-core-enum-4.0.3.zip into c:\apps\CommonPackage-webapp
+     [echo] Completed install of wscore files into c:/apps/CommonPackage-webapp/ws-core-4.0.3 
+
+clean:
+   [delete] Deleting directory D:\CommonPackage_BDA\CommonPackage\software\target\dist
+   [delete] Deleting directory D:\CommonPackage_BDA\CommonPackage\software\target\temp
+
+init:
+     [echo]  ______   ______   _______ 
+     [echo] (____  \ (______) (_______)
+     [echo]  ____)  ) _     _  _______ 
+     [echo] |  __  ( | |   | ||  ___  |
+     [echo] | |__)  )| |__/ / | |   | |
+     [echo] |______/ |_____/  |_|   |_|
+    [mkdir] Created dir: D:\CommonPackage_BDA\CommonPackage\software\target\dist
+    [mkdir] Created dir: D:\CommonPackage_BDA\CommonPackage\software\target\dist\exploded
+    [mkdir] Created dir: D:\CommonPackage_BDA\CommonPackage\software\target\dist\exploded\CommonPackage-api
+    [mkdir] Created dir: D:\CommonPackage_BDA\CommonPackage\software\target\dist\exploded\CommonPackage-webapp
+    [mkdir] Created dir: D:\CommonPackage_BDA\CommonPackage\software\target\dist\exploded\common
+    [mkdir] Created dir: D:\CommonPackage_BDA\CommonPackage\software\target\dist\exploded\tools
+    [mkdir] Created dir: D:\CommonPackage_BDA\CommonPackage\software\target\temp
+
+build:CommonPackage-api:
+
+build:CommonPackage-webapp:
+Trying to override old definition of task shellscript
+Trying to override old definition of task propertycopy
+Trying to override old definition of task pathtofileset
+Trying to override old definition of task remoteant
+Trying to override old definition of task runtarget
+Trying to override old definition of task assert
+Trying to override old definition of task propertyregex
+Trying to override old definition of task math
+Trying to override old definition of task trycatch
+Trying to override old definition of task antserver
+Trying to override old definition of task antcallback
+Trying to override old definition of task compilewithwalls
+Trying to override old definition of task outofdate
+Trying to override old definition of task osfamily
+Trying to override old definition of task stopwatch
+Trying to override old definition of task throw
+Trying to override old definition of task antclipse
+Trying to override old definition of task urlencode
+Trying to override old definition of task timestampselector
+Trying to override old definition of task foreach
+Trying to override old definition of task if
+Trying to override old definition of task propertyselector
+Trying to override old definition of task sortlist
+Trying to override old definition of task antfetch
+Trying to override old definition of task post
+Trying to override old definition of task forget
+Trying to override old definition of task limit
+Trying to override old definition of task switch
+Trying to override old definition of task var
+Trying to override old definition of task inifile
+Trying to override old definition of task verifydesign
+
+init:
+   [delete] Deleting directory D:\CommonPackage_BDA\CommonPackage\software\CommonPackage\build\classes
+    [mkdir] Created dir: D:\CommonPackage_BDA\CommonPackage\software\CommonPackage\build\classes
+   [delete] Deleting directory D:\CommonPackage_BDA\CommonPackage\software\CommonPackage\junit
+    [mkdir] Created dir: D:\CommonPackage_BDA\CommonPackage\software\CommonPackage\junit
+    [mkdir] Created dir: D:\CommonPackage_BDA\CommonPackage\software\CommonPackage\junit\classes
+
+compile:
+    [javac] Compiling 152 source files to D:\CommonPackage_BDA\CommonPackage\software\CommonPackage\build\classes
+    [javac] D:\CommonPackage_BDA\CommonPackage\software\CommonPackage\src\java\edu\wustl\common\audit\AuditableClass.java:201: warning: non-varargs call of varargs method with inexact argument type for last parameter;
+    [javac] cast to java.lang.Class for a varargs call
+    [javac] cast to java.lang.Class[] for a non-varargs call and to suppress this warning
+    [javac] 				returnObject = Class.forName(className).getMethod(functionName, null)
+    [javac]                                                                                                 ^
+    [javac] D:\CommonPackage_BDA\CommonPackage\software\CommonPackage\src\java\edu\wustl\common\audit\AuditableClass.java:202: warning: non-varargs call of varargs method with inexact argument type for last parameter;
+    [javac] cast to java.lang.Object for a varargs call
+    [javac] cast to java.lang.Object[] for a non-varargs call and to suppress this warning
+    [javac] 								.invoke(objectOnWhichMethodToInvoke, null);
+    [javac]                                                                                                      ^
+    [javac] Note: Some input files use or override a deprecated API.
+    [javac] Note: Recompile with -Xlint:deprecation for details.
+    [javac] Note: Some input files use unchecked or unsafe operations.
+    [javac] Note: Recompile with -Xlint:unchecked for details.
+    [javac] 2 warnings
+     [copy] Copying 9 files to D:\CommonPackage_BDA\CommonPackage\software\CommonPackage\build\classes
+     [copy] Copying 6 files to D:\CommonPackage_BDA\CommonPackage\software\CommonPackage\build\classes
+
+build_code_zip:
+
+build_jar:
+[build_jar] Building jar: D:\CommonPackage_BDA\CommonPackage\software\CommonPackage\build\commonpackage-1.1.5.jar
+
+dist:
+
+build:all:
+
+BUILD SUCCESSFUL
