@@ -44,6 +44,7 @@ import edu.wustl.common.util.XMLPropertyHandler;
 import edu.wustl.common.util.global.CommonServiceLocator;
 import edu.wustl.common.util.logger.Logger;
 import edu.wustl.dao.exception.DAOException;
+import edu.wustl.dao.util.DAOUtility;
 import edu.wustl.patientLookUp.util.PatientLookupException;
 
 
@@ -152,8 +153,10 @@ public class EMPIParticipantListener implements MessageListener
 	public void onMessage(final Message message)
 	{
 		String personDemoGraphics = null;
+		final DAOUtility daoUtil = DAOUtility.getInstance();
 		try
 		{
+			daoUtil.beginTransaction();
 			if (message instanceof TextMessage)
 			{
 				personDemoGraphics = ((TextMessage) message).getText();
@@ -162,11 +165,20 @@ public class EMPIParticipantListener implements MessageListener
 				updateParticipantWithEMPIDetails(personDemoGraphics);
 				LOGGER.info("Processed demographics message---------------------");
 			}
+			daoUtil.commitTransaction();
 		}
 		catch (Exception e)
 		{
 			LOGGER.info(e.getCause());
 			LOGGER.info(e.getMessage());
+			try
+			{
+				daoUtil.rollbackTransaction();
+			}
+			catch (final Exception rollbackFailed)
+			{
+				LOGGER.error("Transaction failed !", rollbackFailed);
+			}
 		}
 	}
 
