@@ -11,7 +11,6 @@ import edu.wustl.dao.exception.DAOException;
 import edu.wustl.dao.newdao.GenericHibernateDAO;
 import edu.wustl.dao.query.generator.ColumnValueBean;
 import edu.wustl.dao.query.generator.DBTypes;
-import edu.wustl.dao.util.DAOUtility;
 
 
 public class EMPIParticipantDAO extends GenericHibernateDAO<IParticipant, Long>
@@ -61,25 +60,14 @@ public class EMPIParticipantDAO extends GenericHibernateDAO<IParticipant, Long>
 	public String getPermanentId(final String clinPortalId) throws DAOException
 	{
 		String permanentId = null;
-		DAOUtility daoUtil = DAOUtility.getInstance();
-		daoUtil.beginTransaction();
-		try
-		{
+
+
 			List result = executeNamedQuery(GET_PERMANANTID, null, null, new ColumnValueBean(
 					"clinPortalId", clinPortalId));
 			if (!result.isEmpty())
 			{
 				permanentId = result.get(0).toString();
 			}
-			daoUtil.commitTransaction();
-		}
-		catch (DAOException exc)
-		{
-			daoUtil.rollbackTransaction();
-			// TODO: handle exception
-			throw exc;
-		}
-
 
 		return permanentId;
 	}

@@ -12,9 +12,6 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.TextMessage;
-import javax.naming.InitialContext;
-import javax.transaction.Status;
-import javax.transaction.UserTransaction;
 
 import edu.wustl.common.exception.ApplicationException;
 import edu.wustl.common.exception.BizLogicException;
@@ -30,6 +27,7 @@ import edu.wustl.common.participant.utility.PropertyHandler;
 import edu.wustl.common.util.global.CommonServiceLocator;
 import edu.wustl.common.util.logger.Logger;
 import edu.wustl.dao.exception.DAOException;
+import edu.wustl.dao.util.DAOUtility;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -51,7 +49,7 @@ public class EMPIParticipantMergeMessageListener implements MessageListener
 			.getCommonLogger(EMPIParticipantMergeMessageListener.class);
 
 	private EMPIParticipantDAO empiDAO = new EMPIParticipantDAO(CommonServiceLocator.getInstance().getAppName(),null);
-	
+
 	/**
 	 * This method will be called as soon as the participant demographic message arrives in the queue.
 	 * Read the message from queue and update the participant.
@@ -63,15 +61,10 @@ public class EMPIParticipantMergeMessageListener implements MessageListener
 
 		String mergeMessage = "";
 		Map<String, String> messageValueMap = null;
-		UserTransaction transaction = null;
+		final DAOUtility daoUtil = DAOUtility.getInstance();
 		try
 		{
-			transaction = (UserTransaction) new InitialContext().lookup("java:comp/UserTransaction");
-			if (transaction.getStatus() == Status.STATUS_NO_TRANSACTION)
-			{
-				LOGGER.info("=========== Starting a new Transaction ================");
-				transaction.begin();
-			}
+			daoUtil.beginTransaction();
 			if (message instanceof TextMessage)
 			{
 				mergeMessage = ((TextMessage) message).getText();
@@ -81,8 +74,8 @@ public class EMPIParticipantMergeMessageListener implements MessageListener
 				getMessageToknized(mergeMessage, messageValueMap);
 				processMergeMessage(messageValueMap);
 				LOGGER.info("Processed merge message--------------------");
-				transaction.commit();
 			}
+			daoUtil.commitTransaction();
 		}
 		catch (JMSException exp)
 		{
@@ -96,8 +89,7 @@ public class EMPIParticipantMergeMessageListener implements MessageListener
 			LOGGER.error("Error during participant timer task", be);
 			try
 			{
-				if(transaction!=null)
-					transaction.rollback();
+				daoUtil.rollbackTransaction();
 			}
 			catch (final Exception rollbackFailed)
 			{
