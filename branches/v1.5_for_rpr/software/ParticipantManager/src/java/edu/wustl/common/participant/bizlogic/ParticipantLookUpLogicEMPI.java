@@ -14,6 +14,7 @@ import edu.wustl.common.participant.utility.Constants;
 import edu.wustl.common.participant.utility.ParticipantManagerUtility;
 import edu.wustl.common.util.XMLPropertyHandler;
 import edu.wustl.common.util.logger.Logger;
+import edu.wustl.dao.util.DAOUtility;
 import edu.wustl.patientLookUp.domain.PatientInformation;
 import edu.wustl.patientLookUp.lookUpServiceBizLogic.PatientInfoLookUpService;
 import edu.wustl.patientLookUp.util.PatientLookUpFactory;
@@ -99,7 +100,6 @@ public class ParticipantLookUpLogicEMPI implements IParticipantManagerLookupLogi
 					.getQueryExecutorImpl(dbURL, dbUser, dbPassword, dbDriver, dbSchema);
 			final List<PatientInformation> participantsEMPI = lookUpEMPI.patientLookupService(
 					patientInfo, xQueyExecutor, cutoffPoints, maxPartipntsToReturn);
-
 			final List<PatientInformation> matchingParticipantsList = processMatchedList(participantsEMPI);
 
 			return matchingParticipantsList;
@@ -154,6 +154,8 @@ public class ParticipantLookUpLogicEMPI implements IParticipantManagerLookupLogi
 		List empiParticipantsList = null;
 		try
 		{
+			DAOUtility daoUtility = DAOUtility.getInstance();
+			daoUtility.commitTransaction();
 			if (params == null)
 			{
 				throw new PatientLookupException("Params can not be null", null);
@@ -169,8 +171,8 @@ public class ParticipantLookUpLogicEMPI implements IParticipantManagerLookupLogi
 						.getValue(Constants.EMPIMAXNOOFPATIENS));
 				empiParticipantsList = searchMatchingParticipantFromEMPI(participant,
 						patientInfo);
-
 			}
+			daoUtility.beginTransaction();
 		}
 		catch (Exception e)
 		{
