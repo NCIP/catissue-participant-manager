@@ -25,7 +25,6 @@ import com.ibm.mq.jms.JMSC;
 import com.ibm.mq.jms.MQQueueConnectionFactory;
 
 import edu.wustl.common.beans.SessionDataBean;
-import edu.wustl.common.bizlogic.DefaultBizLogic;
 import edu.wustl.common.exception.ApplicationException;
 import edu.wustl.common.exception.BizLogicException;
 import edu.wustl.common.exception.ErrorKey;
@@ -76,7 +75,7 @@ public class ParticipantManagerUtility
 	{
 		return CommonServiceLocator.getInstance().getAppName();
 	}
-	
+
 	/**
 	 * Register wmq listener.
 	 *
@@ -599,7 +598,7 @@ public class ParticipantManagerUtility
 		{
 			//List statusList = (List) list.get(0);
 			return list.get(0);
-			
+
 		}
 		return status;
 //		boolean status = false;
@@ -844,7 +843,7 @@ public class ParticipantManagerUtility
 				}
 			}
 		}
-		
+
 //		for (Iterator iterator1 = columnList.iterator(); iterator1.hasNext();)
 //		{
 //			String colName1 = (String) iterator1.next();
@@ -1308,7 +1307,7 @@ public class ParticipantManagerUtility
 //		}
 //
 //	}
-		
+
 	/**
 	 * Populate patient object.
 	 *
@@ -1431,7 +1430,7 @@ public class ParticipantManagerUtility
 //		columnValueBeans.add(columnValueBeanList);
 //		String query = "DELETE FROM MATCHED_PARTICIPANT_MAPPING WHERE SEARCHED_PARTICIPANT_ID=?";
 //		jdbcdao.executeUpdate(query, columnValueBeans);
-//	}	
+//	}
 
 	/**
 	 * Updates the count of matched participants as 0 in case no matching was found.
@@ -1548,7 +1547,7 @@ public class ParticipantManagerUtility
 	 */
 	public static List<Long> getProcessedMatchedParticipantIds(Long userId) throws DAOException
 	{
-		
+
 		return new CommonParticipantDAO(getAppName(),null).getProcessedMatchedParticipantIds(userId);
 //		JDBCDAO dao = null;
 //		List<Long> particpantIdColl = new ArrayList<Long>();
@@ -2244,4 +2243,39 @@ public class ParticipantManagerUtility
 			}
 		}
 
+		public static void removeDuplicateSiteObject(IParticipant participantEMPI)
+		{
+			if(participantEMPI.getParticipantMedicalIdentifierCollection()!=null)
+			{
+				final Iterator itr = participantEMPI.getParticipantMedicalIdentifierCollection().iterator();
+				java.util.HashSet<Long> siteIdset = new java.util.HashSet<Long>();
+				Set<Long> duplicateSiteSet = new HashSet<Long>();
+				while (itr.hasNext())
+				{
+					final IParticipantMedicalIdentifier<IParticipant, ISite> partiMedobj = (IParticipantMedicalIdentifier<IParticipant, ISite>) itr
+							.next();
+					final ISite site = partiMedobj.getSite();
+					if (site != null && site.getId()!=null )
+					{
+						boolean checkDuplicate = siteIdset.add(site.getId());
+						if (!checkDuplicate)
+						{
+							//duplicate site present in collection , so find old one delete that one as well.
+							duplicateSiteSet.add(site.getId());
+						}
+					}
+				}
+
+				final Iterator newPMIiterator = participantEMPI.getParticipantMedicalIdentifierCollection().iterator();
+				while (newPMIiterator.hasNext())
+				{
+					final IParticipantMedicalIdentifier<IParticipant, ISite> partiMedobj = (IParticipantMedicalIdentifier<IParticipant, ISite>) newPMIiterator
+							.next();
+					if (duplicateSiteSet.contains(partiMedobj.getSite().getId()))
+					{
+						newPMIiterator.remove();
+					}
+				}
+			}
+		}
 }

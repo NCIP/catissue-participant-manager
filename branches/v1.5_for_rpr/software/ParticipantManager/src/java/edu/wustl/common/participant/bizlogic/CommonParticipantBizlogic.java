@@ -1010,6 +1010,8 @@ public class CommonParticipantBizlogic extends NewDefaultBizLogic
 				participantEMPI.getParticipantMedicalIdentifierCollection().addAll(medIdColTemp);
 			}
 		}
+		//Remove duplicate Site objects if there are any coming from CIDER.
+		ParticipantManagerUtility.removeDuplicateSiteObject(participantEMPI);
 		participant.setParticipantMedicalIdentifierCollection(participantEMPI
 				.getParticipantMedicalIdentifierCollection());
 		participant.setEmpiId(participantEMPI.getEmpiId());
