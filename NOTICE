@@ -1,0 +1,102 @@
+caTissue Participant Manager
+Copyright (c) 2009, Washington University in St. Louis, SemanticBits, Persistent Systems, Krishagni
+
+This project is distributed under the BSD 3-Clause License.
+Please see LICENSE file for details.
+
+caTissue Suite uses caTissue Participant Manager.
+
+The project was initially developed by Washington University in St. Louis, SemanticBits, Persistent Systems and Krishagni under funding from the CBIIT office of the National Cancer Institute.
+
+This project includes as sub-components other projects that are copyrighted by third parties and that distributed under various licenses. Please find a summary in the list below:
+
+In 2013, as part of the National Cancer Informatics Program (NCIP) Open Development Initiative, 
+the caTissue Participant Manager source code was migrated to GitHub to allow further development by the broader community.
+
+1 junit-frames.xsl, junit-noframes.xsl, checkstyle-frames-errors.xsl:
+   Copyright by Apache Software Foundation
+   Distributed under Apache License, Version 2.0
+2) default.xsl, plain.xsl: 
+   Copyright by University of Maryland, Chris Nappin 
+   Distributed under GNU licenses
+3) fancy-hist.xsl, fancy.xsl
+   Copyright by Etienne Giraudy, InStranet Inc 
+   Distributed under GNU licenses
+
+==================== Copyright notice by Apache Software Foundation =========================
+
+ * Copyright (c) Jun 15, 2004 Yale University.  All rights reserved.
+ *
+ * THIS SOFTWARE IS PROVIDED "AS IS," AND ANY EXPRESS OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE, ARE EXPRESSLY
+ * DISCLAIMED. IN NO EVENT SHALL YALE UNIVERSITY OR ITS EMPLOYEES BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED, THE COSTS OF
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED IN ADVANCE OF THE POSSIBILITY OF SUCH
+ * DAMAGE.
+ *
+ * Redistribution and use of this software in source or binary forms,
+ * with or without modification, are permitted, provided that the
+ * following conditions are met.
+ *
+ * 1. Any redistribution must include the above copyright notice and
+ * disclaimer and this list of conditions in any related documentation
+ * and, if feasible, in the redistributed software.
+ *
+ * 2. Any redistribution must include the acknowledgment, "This product
+ * includes software developed by Yale University," in any related
+ * documentation and, if feasible, in the redistributed software.
+ *
+ * 3. The names "Yale" and "Yale University" must not be used to endorse
+ * or promote products derived from this software.
+
+
+==================== Copyright notice by University of Maryland, Chris Nappin =========================
+
+<!--
+  FindBugs - Find bugs in Java programs
+  Copyright (C) 2004,2005 University of Maryland
+  Copyright (C) 2005, Chris Nappin
+
+  This library is free software; you can redistribute it and/or
+  modify it under the terms of the GNU Lesser General Public
+  License as published by the Free Software Foundation; either
+  version 2.1 of the License, or (at your option) any later version.
+
+  This library is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public
+  License along with this library; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+-->
+
+
+==================== Copyright notice by Etienne Giraudy, InStranet Inc =========================
+
+<!--
+  Copyright (C) 2005, 2006 Etienne Giraudy, InStranet Inc
+  Copyright (C) 2005, 2007 Etienne Giraudy
+
+  This library is free software; you can redistribute it and/or
+  modify it under the terms of the GNU Lesser General Public
+  License as published by the Free Software Foundation; either
+  version 2.1 of the License, or (at your option) any later version.
+
+  This library is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public
+  License along with this library; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+-->
+
