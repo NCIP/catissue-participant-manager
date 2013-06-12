@@ -1,7 +1,7 @@
 Welcome to the caTissue Participant Manager Project!
 =====================================
 
-caTissue Suite uses caTissue Participant Manager tool. caTissue Participant Manager is an Open Source project. It is written in Java using caCORE CSM, Hibernate and caTissue Core APIs.
+caTissue Participant Manager is an Open Source project used by caTissue Suite.  It is written in Java using caCORE CSM, Hibernate and caTissue Core APIs.
 
 The caTissue Participant Manager is distributed under the BSD 3-Clause License.
 Please see the NOTICE and LICENSE files for details.
