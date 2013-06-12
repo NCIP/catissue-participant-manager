@@ -1,0 +1,167 @@
+Buildfile: C:\DEV\GIT-WORK\catissue\catissue-participant-manager\software\ParticipantManager\build.xml
+
+init:
+     [echo] Initializing necessary parameters :
+   [delete] Deleting directory C:\DEV\GIT-WORK\catissue\catissue-participant-manager\software\target\temp\src\classes
+    [mkdir] Created dir: C:\DEV\GIT-WORK\catissue\catissue-participant-manager\software\target\temp\src\classes
+
+download-ivy:
+    [mkdir] Created dir: C:\Users\konkapv\.ivy
+     [echo] Installing ivy...
+      [get] Getting: http://repo1.maven.org/maven2/org/apache/ivy/ivy/2.0.0/ivy-2.0.0.jar
+      [get] To: C:\Users\konkapv\.ivy\ivy.jar
+
+init-ivy:
+
+resolve:
+No ivy:settings found for the default reference 'ivy.instance'.  A default instance will be used
+[ivy:retrieve] :: Ivy 2.0.0 - 20090108225011 :: http://ant.apache.org/ivy/ ::
+:: loading settings :: file = C:\DEV\GIT-WORK\catissue\catissue-participant-manager\software\ParticipantManager\ivysettings.xml
+[ivy:retrieve] :: resolving dependencies :: gov.nih.nci.catissue#participant-manager;1.0-SNAPSHOT
+[ivy:retrieve] 	confs: [default]
+[ivy:retrieve] 	found local#ParticipantManager;1.0 in local-repo-jars
+[ivy:retrieve] 	found gov.nih.nci.catissue#security-manager;1.1.7.3-SNAPSHOT in nci-mvn-nexus
+[ivy:retrieve] 	found gov.nih.nci.catissue#commons;1.3.1-SNAPSHOT in nci-mvn-nexus
+[ivy:retrieve] downloading C:\DEV\GIT-WORK\catissue\catissue-participant-manager\software\ParticipantManager\ivy.local.jars\com.ibm.mqbind.jar ...
+[ivy:retrieve] .. (40kB)
+[ivy:retrieve] 	[SUCCESSFUL ] local#ParticipantManager;1.0!com.ibm.mqbind.jar (12ms)
+[ivy:retrieve] downloading C:\DEV\GIT-WORK\catissue\catissue-participant-manager\software\ParticipantManager\ivy.local.jars\struts.jar ...
+[ivy:retrieve] ......... (486kB)
+[ivy:retrieve] 	[SUCCESSFUL ] local#ParticipantManager;1.0!struts.jar (9ms)
+[ivy:retrieve] downloading C:\DEV\GIT-WORK\catissue\catissue-participant-manager\software\ParticipantManager\ivy.local.jars\log4j-1.2.9.jar ...
+[ivy:retrieve] ....... (344kB)
+[ivy:retrieve] 	[SUCCESSFUL ] local#ParticipantManager;1.0!log4j-1.2.9.jar (12ms)
+[ivy:retrieve] downloading C:\DEV\GIT-WORK\catissue\catissue-participant-manager\software\ParticipantManager\ivy.local.jars\catissuecore.jar ...
+[ivy:retrieve] .................... (1181kB)
+[ivy:retrieve] 	[SUCCESSFUL ] local#ParticipantManager;1.0!catissuecore.jar (13ms)
+[ivy:retrieve] downloading C:\DEV\GIT-WORK\catissue\catissue-participant-manager\software\ParticipantManager\ivy.local.jars\query.jar ...
+[ivy:retrieve] .... (135kB)
+[ivy:retrieve] 	[SUCCESSFUL ] local#ParticipantManager;1.0!query.jar (11ms)
+[ivy:retrieve] downloading C:\DEV\GIT-WORK\catissue\catissue-participant-manager\software\ParticipantManager\ivy.local.jars\hibernate3.jar ...
+[ivy:retrieve] ................................ (1925kB)
+[ivy:retrieve] 	[SUCCESSFUL ] local#ParticipantManager;1.0!hibernate3.jar (12ms)
+[ivy:retrieve] downloading C:\DEV\GIT-WORK\catissue\catissue-participant-manager\software\ParticipantManager\ivy.local.jars\j2ee.jar ...
+[ivy:retrieve] ............................ (1688kB)
+[ivy:retrieve] 	[SUCCESSFUL ] local#ParticipantManager;1.0!j2ee.jar (12ms)
+[ivy:retrieve] downloading C:\DEV\GIT-WORK\catissue\catissue-participant-manager\software\ParticipantManager\ivy.local.jars\dom4j-1.6.jar ...
+[ivy:retrieve] ...... (306kB)
+[ivy:retrieve] 	[SUCCESSFUL ] local#ParticipantManager;1.0!dom4j-1.6.jar (8ms)
+[ivy:retrieve] downloading C:\DEV\GIT-WORK\catissue\catissue-participant-manager\software\ParticipantManager\ivy.local.jars\ant-contrib.jar ...
+[ivy:retrieve] .... (189kB)
+[ivy:retrieve] 	[SUCCESSFUL ] local#ParticipantManager;1.0!ant-contrib.jar (9ms)
+[ivy:retrieve] downloading C:\DEV\GIT-WORK\catissue\catissue-participant-manager\software\ParticipantManager\ivy.local.jars\servlet.jar ...
+[ivy:retrieve] ... (76kB)
+[ivy:retrieve] 	[SUCCESSFUL ] local#ParticipantManager;1.0!servlet.jar (12ms)
+[ivy:retrieve] downloading C:\DEV\GIT-WORK\catissue\catissue-participant-manager\software\ParticipantManager\ivy.local.jars\com.ibm.mq.jar ...
+[ivy:retrieve] ....... (344kB)
+[ivy:retrieve] 	[SUCCESSFUL ] local#ParticipantManager;1.0!com.ibm.mq.jar (8ms)
+[ivy:retrieve] downloading C:\DEV\GIT-WORK\catissue\catissue-participant-manager\software\ParticipantManager\ivy.local.jars\csmapi-4.2.jar ...
+[ivy:retrieve] .............. (817kB)
+[ivy:retrieve] 	[SUCCESSFUL ] local#ParticipantManager;1.0!csmapi-4.2.jar (9ms)
+[ivy:retrieve] downloading C:\DEV\GIT-WORK\catissue\catissue-participant-manager\software\ParticipantManager\ivy.local.jars\domain-authentication-manager.jar ...
+[ivy:retrieve] .. (9kB)
+[ivy:retrieve] 	[SUCCESSFUL ] local#ParticipantManager;1.0!domain-authentication-manager.jar (10ms)
+[ivy:retrieve] downloading C:\DEV\GIT-WORK\catissue\catissue-participant-manager\software\ParticipantManager\ivy.local.jars\commons-codec-1.3.jar ...
+[ivy:retrieve] .. (45kB)
+[ivy:retrieve] 	[SUCCESSFUL ] local#ParticipantManager;1.0!commons-codec-1.3.jar (7ms)
+[ivy:retrieve] downloading C:\DEV\GIT-WORK\catissue\catissue-participant-manager\software\ParticipantManager\ivy.local.jars\com.ibm.mqjms.jar ...
+[ivy:retrieve] ............................. (1756kB)
+[ivy:retrieve] 	[SUCCESSFUL ] local#ParticipantManager;1.0!com.ibm.mqjms.jar (9ms)
+[ivy:retrieve] downloading https://ncimvn.nci.nih.gov/nexus/content/repositories/snapshots/gov/nih/nci/catissue/security-manager/1.1.7.3-SNAPSHOT/security-manager-1.1.7.3-SNAPSHOT.pom ...
+[ivy:retrieve] .. (1kB)
+[ivy:retrieve] .. (0kB)
+[ivy:retrieve] 	[SUCCESSFUL ] gov.nih.nci.catissue#security-manager;1.1.7.3-SNAPSHOT!security-manager.pom (746ms)
+[ivy:retrieve] downloading https://ncimvn.nci.nih.gov/nexus/content/repositories/snapshots/gov/nih/nci/catissue/security-manager/1.1.7.3-SNAPSHOT/SecurityManager-1.1.7.3-SNAPSHOT.jar ...
+[ivy:retrieve] ................ (55kB)
+[ivy:retrieve] .. (0kB)
+[ivy:retrieve] 	[SUCCESSFUL ] gov.nih.nci.catissue#security-manager;1.1.7.3-SNAPSHOT!SecurityManager.jar (784ms)
+[ivy:retrieve] downloading https://ncimvn.nci.nih.gov/nexus/content/repositories/snapshots/gov/nih/nci/catissue/commons/1.3.1-SNAPSHOT/TreeApplet-1.3.1-SNAPSHOT.jar ...
+[ivy:retrieve] .... (9kB)
+[ivy:retrieve] .. (0kB)
+[ivy:retrieve] 	[SUCCESSFUL ] gov.nih.nci.catissue#commons;1.3.1-SNAPSHOT!TreeApplet.jar (969ms)
+[ivy:retrieve] downloading https://ncimvn.nci.nih.gov/nexus/content/repositories/snapshots/gov/nih/nci/catissue/commons/1.3.1-SNAPSHOT/washu-commons-1.3.1-SNAPSHOT.jar ...
+[ivy:retrieve] .................................................................................................................... (455kB)
+[ivy:retrieve] .. (0kB)
+[ivy:retrieve] 	[SUCCESSFUL ] gov.nih.nci.catissue#commons;1.3.1-SNAPSHOT!washu-commons.jar (1007ms)
+[ivy:retrieve] downloading https://ncimvn.nci.nih.gov/nexus/content/repositories/snapshots/gov/nih/nci/catissue/commons/1.3.1-SNAPSHOT/washu-commons-src-1.3.1-SNAPSHOT.jar ...
+[ivy:retrieve] .................................................................................................. (381kB)
+[ivy:retrieve] .. (0kB)
+[ivy:retrieve] 	[SUCCESSFUL ] gov.nih.nci.catissue#commons;1.3.1-SNAPSHOT!washu-commons-src.jar (1010ms)
+[ivy:retrieve] downloading https://ncimvn.nci.nih.gov/nexus/content/repositories/snapshots/gov/nih/nci/catissue/commons/1.3.1-SNAPSHOT/washu-commons-1.3.1-SNAPSHOT.pom ...
+[ivy:retrieve] .. (0kB)
+[ivy:retrieve] .. (0kB)
+[ivy:retrieve] 	[SUCCESSFUL ] gov.nih.nci.catissue#commons;1.3.1-SNAPSHOT!washu-commons.pom (789ms)
+[ivy:retrieve] :: resolution report :: resolve 3087ms :: artifacts dl 5503ms
+	---------------------------------------------------------------------
+	|                  |            modules            ||   artifacts   |
+	|       conf       | number| search|dwnlded|evicted|| number|dwnlded|
+	---------------------------------------------------------------------
+	|      default     |   3   |   3   |   3   |   0   ||   21  |   21  |
+	---------------------------------------------------------------------
+[ivy:retrieve] 
+[ivy:retrieve] 
+[ivy:retrieve] :: USE VERBOSE OR DEBUG MESSAGE LEVEL FOR MORE DETAILS
+[ivy:retrieve] :: retrieving :: gov.nih.nci.catissue#participant-manager
+[ivy:retrieve] 	confs: [default]
+[ivy:retrieve] 	1 artifacts copied, 20 already retrieved (45kB/19ms)
+
+compile:
+     [echo] Compiling Participant Manager source code :
+    [javac] Compiling 43 source files to C:\DEV\GIT-WORK\catissue\catissue-participant-manager\software\target\temp\src\classes
+    [javac] Note: Some input files use or override a deprecated API.
+    [javac] Note: Recompile with -Xlint:deprecation for details.
+    [javac] Note: Some input files use unchecked or unsafe operations.
+    [javac] Note: Recompile with -Xlint:unchecked for details.
+
+build_jar:
+     [echo] Building Participant Manager project jar :
+[build_jar] Building jar: C:\DEV\GIT-WORK\catissue\catissue-participant-manager\software\ParticipantManager\dist\ParticipantManager.jar
+
+init:
+     [echo] Initializing necessary parameters :
+   [delete] Deleting directory C:\DEV\GIT-WORK\catissue\catissue-participant-manager\software\target\temp\src\classes
+    [mkdir] Created dir: C:\DEV\GIT-WORK\catissue\catissue-participant-manager\software\target\temp\src\classes
+
+download-ivy:
+     [echo] Installing ivy...
+      [get] Getting: http://repo1.maven.org/maven2/org/apache/ivy/ivy/2.0.0/ivy-2.0.0.jar
+      [get] To: C:\Users\konkapv\.ivy\ivy.jar
+      [get] Not modified - so not downloaded
+
+init-ivy:
+
+resolve:
+No ivy:settings found for the default reference 'ivy.instance'.  A default instance will be used
+DEPRECATED: 'ivy.conf.file' is deprecated, use 'ivy.settings.file' instead
+[ivy:retrieve] :: Ivy 2.0.0 - 20090108225011 :: http://ant.apache.org/ivy/ ::
+:: loading settings :: file = C:\DEV\GIT-WORK\catissue\catissue-participant-manager\software\ParticipantManager\ivysettings.xml
+[ivy:retrieve] :: resolving dependencies :: gov.nih.nci.catissue#participant-manager;1.0-SNAPSHOT
+[ivy:retrieve] 	confs: [default]
+[ivy:retrieve] 	found local#ParticipantManager;1.0 in local-repo-jars
+[ivy:retrieve] 	found gov.nih.nci.catissue#security-manager;1.1.7.3-SNAPSHOT in nci-mvn-nexus
+[ivy:retrieve] 	found gov.nih.nci.catissue#commons;1.3.1-SNAPSHOT in nci-mvn-nexus
+[ivy:retrieve] :: resolution report :: resolve 125ms :: artifacts dl 26ms
+	---------------------------------------------------------------------
+	|                  |            modules            ||   artifacts   |
+	|       conf       | number| search|dwnlded|evicted|| number|dwnlded|
+	---------------------------------------------------------------------
+	|      default     |   3   |   0   |   0   |   0   ||   21  |   0   |
+	---------------------------------------------------------------------
+[ivy:retrieve] :: retrieving :: gov.nih.nci.catissue#participant-manager
+[ivy:retrieve] 	confs: [default]
+[ivy:retrieve] 	0 artifacts copied, 21 already retrieved (0kB/15ms)
+
+compile:
+     [echo] Compiling Participant Manager source code :
+    [javac] Compiling 43 source files to C:\DEV\GIT-WORK\catissue\catissue-participant-manager\software\target\temp\src\classes
+    [javac] Note: Some input files use or override a deprecated API.
+    [javac] Note: Recompile with -Xlint:deprecation for details.
+    [javac] Note: Some input files use unchecked or unsafe operations.
+    [javac] Note: Recompile with -Xlint:unchecked for details.
+
+build_code_zip:
+
+dist:
+
+BUILD SUCCESSFUL
+Total time: 15 seconds
