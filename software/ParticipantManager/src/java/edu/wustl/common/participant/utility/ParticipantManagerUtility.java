@@ -1053,9 +1053,11 @@ public class ParticipantManagerUtility
 			participantInfo.add(ParticipantManagerUtility.modifyNameWithProperCase(participant
 					.getMiddleName()));
 			participantInfo.add(Utility.parseDateToString(participant.getBirthDate(),
-					Constants.DATE_FORMAT));
+					CommonServiceLocator
+					.getInstance().getDatePattern()));
 			participantInfo.add(Utility.parseDateToString(participant.getDeathDate(),
-					Constants.DATE_FORMAT));
+					 CommonServiceLocator
+					.getInstance().getDatePattern()));
 			participantInfo.add(Utility.toString(participant.getVitalStatus()));
 			participantInfo.add(Utility.toString(participant.getGender()));
 			participantInfo.add(Utility.toString(participant.getSocialSecurityNumber()));
