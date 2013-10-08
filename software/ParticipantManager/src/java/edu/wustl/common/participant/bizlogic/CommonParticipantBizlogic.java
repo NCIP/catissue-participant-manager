@@ -23,6 +23,7 @@ import java.util.Set;
 
 import org.apache.commons.codec.language.Metaphone;
 
+import edu.wustl.catissuecore.dao.SiteDAO;
 import edu.wustl.common.beans.SessionDataBean;
 import edu.wustl.common.cde.CDEManager;
 import edu.wustl.common.exception.ApplicationException;
@@ -363,6 +364,11 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 				final String medicalRecordNo = partiMedobj.getMedicalRecordNumber();
 				if (site != null)
 				{
+					if(site.getId() == null && !validator.isEmpty(site.getName()))
+					{
+						SiteDAO siteDAO = new SiteDAO();
+						site.setId(siteDAO.getIdBySiteName((HibernateDAO)dao, site.getName()));
+					}
 					boolean checkDuplicate = siteIdset.add(site.getId());
 					if (!checkDuplicate)
 					{
@@ -371,7 +377,7 @@ public class CommonParticipantBizlogic extends CommonDefaultBizLogic {
 							"errors.participant.mediden.duplicate", "");
 					}
 				}
-				if (validator.isEmpty(medicalRecordNo) || site == null || site.getId() == null)
+				if (validator.isEmpty(medicalRecordNo) || (site == null || (site.getId() == null && validator.isEmpty(site.getName()))))
 				{
 					if (partiMedobj.getId() == null)
 					{
