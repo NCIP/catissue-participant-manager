@@ -1,12 +1,3 @@
-/*L
- *  Copyright Washington University in St. Louis
- *  Copyright SemanticBits
- *  Copyright Persistent Systems
- *  Copyright Krishagni
- *
- *  Distributed under the OSI-approved BSD 3-Clause License.
- *  See http://ncip.github.com/catissue-participant-manager/LICENSE.txt for details.
- */
 
 package edu.wustl.common.participant.utility;
 
@@ -32,7 +23,7 @@ public class Constants
 
 	/** The Constant ACTIVITY_STATUS_VALUES. */
 	public static final String ACTIVITY_STATUS_VALUES[] = {"-- Select --", "Inactive", "Active", "Closed",
-		"Locked", "Disabled"};
+		"Locked", "Disabled","Draft"};
 
 	/** The Constant CDE_NAME_GENDER. */
 	public static final String CDE_NAME_GENDER = "Gender";
@@ -54,6 +45,9 @@ public class Constants
 
 	/** The Constant ACTIVITY_STATUS_ACTIVE. */
 	public static final String ACTIVITY_STATUS_ACTIVE = "Active";
+	
+	/** The Constant ACTIVITY_STATUS_ACTIVE. */
+	public static final String ACTIVITY_STATUS_DRAFT = "Draft";
 
 	/** The Constant SESSION_DATA. */
 	public static final String SESSION_DATA = "sessionData";
@@ -362,6 +356,7 @@ public class Constants
 	public static final int PARTICIPANT_FORM_ID = 2;
 
 	public static final String GRID_CS_COLUMN_HEADER = "grid.cs.columnname";
+
 
 
 }

@@ -1,13 +1,3 @@
-/*L
- *  Copyright Washington University in St. Louis
- *  Copyright SemanticBits
- *  Copyright Persistent Systems
- *  Copyright Krishagni
- *
- *  Distributed under the OSI-approved BSD 3-Clause License.
- *  See http://ncip.github.com/catissue-participant-manager/LICENSE.txt for details.
- */
-
 package edu.wustl.common.participant.validator;
 
 import java.util.Collection;
@@ -204,8 +194,8 @@ public class CommonParticipantValidator
         validateEthnicity(participant);
 
 		if (operation.equals(Constants.ADD)) {
-			if (!Status.ACTIVITY_STATUS_ACTIVE.toString().equals(
-					participant.getActivityStatus())) {
+			if (!Status.ACTIVITY_STATUS_ACTIVE.toString().equals(participant.getActivityStatus()) && !Constants.ACTIVITY_STATUS_DRAFT.equals(participant.getActivityStatus()) )
+			{
 				throw new BizLogicException(null, null,
 						"activityStatus.active.errMsg", "");
 			}

@@ -1,12 +1,3 @@
-/*L
- *  Copyright Washington University in St. Louis
- *  Copyright SemanticBits
- *  Copyright Persistent Systems
- *  Copyright Krishagni
- *
- *  Distributed under the OSI-approved BSD 3-Clause License.
- *  See http://ncip.github.com/catissue-participant-manager/LICENSE.txt for details.
- */
 
 package edu.wustl.common.participant.action;
 
@@ -71,12 +62,22 @@ public class ParticipantLookupAction extends SecureAction
 				final edu.wustl.common.domain.AbstractDomainObject abstractDomain = domainObjectFactory
 						.getDomainObject(abstractForm.getFormId(), abstractForm);
 				final IParticipant participant = (IParticipant) abstractDomain;
+				
+				HttpSession session = request.getSession();
+				String studyMode = (String) session.getAttribute("StudyMode");
+				if (studyMode != null && studyMode.equalsIgnoreCase("Draft"))
+				{
+					target = Constants.PARTICIPANT_ADD_FORWARD;
+				}
+				else
+				{
 
 //				if (isCallToLkupLgic)
 //				{
 					List matchPartpantLst = ParticipantManagerUtility
 							.getListOfMatchingParticipants(participant, null, participantForm
 									.getCpId(),null);
+					
 
 //					if (matchPartpantLst!=null&&!matchPartpantLst.isEmpty()&&!"".equals(participant.getParticipantCode()))
 //					{
@@ -100,6 +101,7 @@ public class ParticipantLookupAction extends SecureAction
 					{
 						target = Constants.PARTICIPANT_ADD_FORWARD;
 					}
+				}
 //				}
 //				else
 //				{
