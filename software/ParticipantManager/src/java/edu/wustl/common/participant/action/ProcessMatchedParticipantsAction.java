@@ -63,6 +63,7 @@ public class ProcessMatchedParticipantsAction extends SecureAction
 			final HttpServletRequest request, final HttpServletResponse response) throws ApplicationException
 	{
 		final HttpSession session = request.getSession();
+		SessionDataBean sessionDataBean=(SessionDataBean) session.getAttribute(Constants.SESSION_DATA);
 		String target = null;
 		try
 		{
@@ -79,7 +80,7 @@ public class ProcessMatchedParticipantsAction extends SecureAction
 			if (isDelete != null && !"".equals(isDelete) && Constants.YES.equals(isDelete) && particicipantId != null
 					&& !"".equals(particicipantId))
 			{
-				ParticipantManagerUtility.deleteProcessedParticipant(Long.valueOf(particicipantId));
+				ParticipantManagerUtility.deleteProcessedParticipant(Long.valueOf(particicipantId),sessionDataBean);
 				setStatusMessage(request, "participant.processed.delete.success");
 			}
 

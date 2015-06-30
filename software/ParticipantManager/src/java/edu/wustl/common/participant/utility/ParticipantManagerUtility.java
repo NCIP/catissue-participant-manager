@@ -1410,9 +1410,9 @@ public class ParticipantManagerUtility
 	 *
 	 * @throws DAOException the DAO exception
 	 */
-	public static void deleteProcessedParticipant(Long id) throws DAOException
+	public static void deleteProcessedParticipant(Long id,SessionDataBean sessionDataBean) throws DAOException
 	{
-		new CommonParticipantDAO(getAppName(),null).deleteProcessedParticipant(id);
+		new CommonParticipantDAO(getAppName(),sessionDataBean).deleteProcessedParticipant(id);
 //		JDBCDAO jdbcdao = null;
 //		try
 //		{
@@ -2104,10 +2104,10 @@ public class ParticipantManagerUtility
 	 * @param jdbcdao
 	 * @throws DAOException
 	 */
-	public void updateOldEMPIDetails(Long participantId, String empiId)
+	public void updateOldEMPIDetails(Long participantId, String empiId,SessionDataBean sessionDataBean)
 			throws DAOException
 	{
-		new CommonParticipantDAO(getAppName(),null).updateOldEMPIDetails(participantId, empiId);
+		new CommonParticipantDAO(getAppName(),sessionDataBean).updateOldEMPIDetails(participantId, empiId);
 //		final LinkedList<LinkedList<ColumnValueBean>> columnValueBeans = new LinkedList<LinkedList<ColumnValueBean>>();
 //		final LinkedList<ColumnValueBean> columnValueBeanList = new LinkedList<ColumnValueBean>();
 //

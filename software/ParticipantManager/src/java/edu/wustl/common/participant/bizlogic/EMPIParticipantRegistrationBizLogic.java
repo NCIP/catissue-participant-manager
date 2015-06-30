@@ -931,10 +931,10 @@ public class EMPIParticipantRegistrationBizLogic {
 	 * @param participant the participant
 	 * @throws ApplicationException the application exception
 	 */
-	public void ignoreAndCreateNewFlow(final IParticipant participant) throws ApplicationException
+	public void ignoreAndCreateNewFlow(final IParticipant participant,SessionDataBean sessionDataBean) throws ApplicationException
 	{
 //		JDBCDAO jdbcdao = null;
-
+		empiDAO.setSessionDataBean(sessionDataBean);
 		try
 		{
 //			jdbcdao = getJDBCDAO();
@@ -944,7 +944,7 @@ public class EMPIParticipantRegistrationBizLogic {
 			{
 				// Update PARTICIPANT_EMPI_ID_MAPPING table with tempMRN
 				ParticipantManagerUtility utility = new ParticipantManagerUtility();
-				utility.updateOldEMPIDetails(participant.getId(), participant.getEmpiId());
+				utility.updateOldEMPIDetails(participant.getId(), participant.getEmpiId(),sessionDataBean);
 				participant.setEmpiId("");
 				this.setTempMrnId(participant.getId() + "T");
 			}

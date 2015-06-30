@@ -68,6 +68,8 @@ public class ParticipantEMPIGenerationAction extends CommonAddEditAction
 			final HttpServletRequest request, final HttpServletResponse response)
 	{
 		ActionForward forward = null;
+		SessionDataBean sessionDataBean = (SessionDataBean) request.getSession()
+				.getAttribute(Constants.SESSION_DATA);
 		final IParticipantForm participantForm = (IParticipantForm) form;
 		final String isGenerateHL7 = request.getParameter("isGenerateHL7");
 		final String isGenerateEMPID = request.getParameter("isGenerateEMPIID");
@@ -108,7 +110,7 @@ public class ParticipantEMPIGenerationAction extends CommonAddEditAction
 					{
 						// Delete that participant from the processed message queue.
 						ParticipantManagerUtility.deleteProcessedParticipant(participantForm
-								.getId());
+								.getId(),sessionDataBean);
 						// process next participant
 						forward = mapping.findForward(Constants.PROCESS_NEXT_PARTCIPANT);
 						request.setAttribute(ActionStatus.ACTIONSTAUS, ActionStatus.SUCCESSFUL);
@@ -128,8 +130,6 @@ public class ParticipantEMPIGenerationAction extends CommonAddEditAction
 				}
 				else
 				{
-					final SessionDataBean sessionDataBean = (SessionDataBean) request.getSession()
-					.getAttribute(Constants.SESSION_DATA);
 					Long userId = sessionDataBean.getUserId();
 					Long participantId = participantForm.getId();
 					generateEMPI(userId, participantId);
@@ -242,7 +242,7 @@ public class ParticipantEMPIGenerationAction extends CommonAddEditAction
 			LOGGER.info("ParticipantEMPIGenerationAction Ignore & create new flow for EMPI called");
 			LOGGER.info("ParticipantEMPIGenerationAction User id :"+sessionDataBean.getUserId());
 			LOGGER.info("ParticipantEMPIGenerationAction User Name :"+sessionDataBean.getLastName()+", "+sessionDataBean.getFirstName());
-			bizLogic.ignoreAndCreateNewFlow(participant);
+			bizLogic.ignoreAndCreateNewFlow(participant,sessionDataBean);
 
 			//bizLogic.registerPatientToeMPI(participant);
 			regStatusMessage = edu.wustl.common.util.global.Constants.SUCCESS;

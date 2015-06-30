@@ -159,7 +159,7 @@ public class MatchedParticipantsSearchAction extends CommonSearchAction
 			{
 				setStatusMessage(request, "participant.empiid.zero.match.message");
 				ParticipantManagerUtility.deleteProcessedParticipant(Long
-						.valueOf(participantId));
+						.valueOf(participantId),getSessionData(request));
 				request.setAttribute(Constants.ZERO_MATCHES, Constants.TRUE);
 				if ((partiForm.getBirthDate() == null || "".equals(partiForm.getBirthDate()))
 						&& (ssn == null || "".equals(ssn)))

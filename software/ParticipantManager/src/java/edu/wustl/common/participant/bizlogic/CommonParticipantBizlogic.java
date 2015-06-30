@@ -84,11 +84,12 @@ public class CommonParticipantBizlogic extends NewDefaultBizLogic
 	 *             the DAO exception
 	 */
 	public IParticipant insert(final IParticipant participant,
-			final IParticipantMedicalIdentifier pmi) throws BizLogicException
+			final IParticipantMedicalIdentifier pmi,SessionDataBean sessionDataBean) throws BizLogicException
 	{
 		//final IParticipant participant = (IParticipant) obj;
 		try
 		{
+			participantDao.setSessionDataBean(sessionDataBean);
 			setMetaPhoneCode(participant);
 			Collection<IParticipantMedicalIdentifier<IParticipant, ISite>> pmiCollection = participant
 					.getParticipantMedicalIdentifierCollection();
@@ -433,7 +434,7 @@ public class CommonParticipantBizlogic extends NewDefaultBizLogic
 	 *             the biz logic exception
 	 * @throws DAOException
 	 */
-	public void postUpdate(Object oldObj, Object currentObj, LinkedHashSet<Long> userIdSet)
+	public void postUpdate(Object oldObj, Object currentObj, LinkedHashSet<Long> userIdSet, SessionDataBean sessionDataBean)
 			throws BizLogicException
 	{
 		final IParticipant oldParticipant = (IParticipant) oldObj;
@@ -455,7 +456,7 @@ public class CommonParticipantBizlogic extends NewDefaultBizLogic
 					logger.info("commonParticipantBizLogic Match selected for participant Whose Empi is already generated");
 					// Update PARTICIPANT_EMPI_ID_MAPPING table with tempMRN
 					ParticipantManagerUtility utility = new ParticipantManagerUtility();
-					utility.updateOldEMPIDetails(participant.getId(), oldParticipant.getEmpiId());
+					utility.updateOldEMPIDetails(participant.getId(), oldParticipant.getEmpiId(),sessionDataBean);
 
 					utility.setEMPIIdStatus(participant.getId(), Constants.EMPI_ID_PENDING);
 				}
